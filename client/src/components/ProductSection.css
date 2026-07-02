@@ -1,0 +1,42 @@
+.featured-products {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.section-header h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+}
+
+.section-header p {
+    margin-top: 6px;
+    font-size: 15px;
+    color: #777;
+}
+
+.section-header a {
+    color: #2563eb;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.section-header a:hover {
+    text-decoration: underline;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
