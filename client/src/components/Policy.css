@@ -1,0 +1,46 @@
+.policy{
+    max-width:1200px;
+    margin:35px auto;
+    background:#fff;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    border:1px solid #ececec;
+}
+
+.policy-item{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:28px 25px;
+    border-right:1px solid #ececec;
+    transition:.3s;
+}
+
+.policy-item:last-child{
+    border-right:none;
+}
+
+.policy-item:hover{
+    background:#fafafa;
+}
+
+.policy-icon{
+    font-size:42px;
+    color:#0056b3;
+    flex-shrink:0;
+}
+
+.policy-item h3{
+    margin:0;
+    font-size:15px;
+    font-weight:700;
+    color:#111;
+    line-height:22px;
+}
+
+.policy-item p{
+    margin-top:6px;
+    font-size:13px;
+    color:#777;
+    line-height:20px;
+}
