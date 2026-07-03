@@ -1,45 +1,67 @@
 import "./Header.css";
+import { Link } from "react-router-dom";
 import { FiSearch, FiUser, FiShoppingCart } from "react-icons/fi";
-import { Link } from 'react-router-dom';
 
-export default function Header(){
+export default function Header() {
+  return (
+    <header className="header">
 
-    return(
+      <div className="logo">
+        <img src="/src/public/images/logo.png" alt="Logo" />
+      </div>
 
-        <header className="header">
+      <nav className="navbar">
+        <ul className="nav-menu">
 
-            <div className="logo">
-                <img src="src/public/images/logo.png" alt="Logo" />
-            </div>
+          <li>
+            <Link to="/">Trang chủ</Link>
+          </li>
 
-            <nav className="navbar">
-  <ul className="nav-menu">
-    <li><a href="/">Trang chủ</a></li>
-    <li><a href="/quan">Quần</a></li>
-    <li><a href="/ao">Áo</a></li>
-    <li><a href="/tui">Túi</a></li>
-    <li><a href="/giay">Giày</a></li>
-  </ul>
-</nav>
+          <li>
+            <Link to="/products">Sản phẩm</Link>
+          </li>
 
-            <div className="search-box">
-    <input
-        type="text"
-        placeholder="Bạn đang tìm kiếm gì?"
-    />
-    <FiSearch className="search-icon" />
-</div>
+          <li>
+            <Link to="/quan">Quần</Link>
+          </li>
 
-<Link to="/login"> <button className="icon-btn">
-    <FiUser />
-</button> </Link>
+          <li>
+            <Link to="/ao">Áo</Link>
+          </li>
 
-<button className="icon-btn">
-    <FiShoppingCart />
-</button>
+          <li>
+            <Link to="/tui">Túi</Link>
+          </li>
 
-        </header>
+          <li>
+            <Link to="/giay">Giày</Link>
+          </li>
 
-    );
+        </ul>
+      </nav>
 
+      <div className="header-right">
+
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Bạn đang tìm kiếm gì?"
+          />
+          <FiSearch className="search-icon" />
+        </div>
+
+        <button className="icon-btn">
+          <FiUser />
+        </button>
+
+        <Link to="/cart">
+    <Link to="/cart" className="icon-btn">
+  <FiShoppingCart />
+</Link>
+</Link>
+
+      </div>
+
+    </header>
+  );
 }
