@@ -34,7 +34,7 @@
     color: #ff6600;
 }
 
-.right{
+.header-right{
     display:flex;
     align-items:center;
     gap:12px;
@@ -82,4 +82,32 @@
 
 .icon-btn:hover{
     color:#ff6600;
+}
+
+.nav-menu a{
+    color:#222;
+    text-decoration:none;
+}
+
+.nav-menu a:hover{
+    color:#ff6600;
+}
+
+.icon-btn{
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#222;
+    text-decoration:none;
+    border:none;
+    background:transparent;
+    cursor:pointer;
+    font-size:22px;
+    transition:.3s;
+}
+
+.icon-btn:hover{
+    color:#2563eb;
 }
