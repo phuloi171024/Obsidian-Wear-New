@@ -1,17 +1,19 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-import Register from './pages/Register'; // Đường dẫn đến file đăng ký của em
-
-// Import 2 trang lớn từ thư mục pages của em
-import Home from './pages/Home';
+import Register from './pages/Register'; 
+import Home from "./pages/Home"; 
+import ProductPage from "./pages/ProductPage"; 
 import Login from './pages/Login';
+import CartPage from "./pages/CartPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/products" element={<ProductPage />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/cart" element={<CartPage />} />
         {/* Đường dẫn mặc định khi mở web -> Chạy trang chủ Home */}
         <Route path="/" element={<Home />} />
         
