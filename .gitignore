@@ -1,0 +1,25 @@
+# Laravel
+sever/vendor/
+sever/.env
+sever/storage/logs/*.log
+sever/storage/framework/cache/
+sever/storage/framework/sessions/
+sever/storage/framework/views/
+sever/bootstrap/cache/
+
+# Node / React
+client/node_modules/
+client/dist/
+client/.env
+client/.env.local
+client/.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
