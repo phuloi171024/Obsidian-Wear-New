@@ -123,7 +123,8 @@ const Login = () => {
 
         <p className="text-xs text-neutral-500 mt-6">
           Chưa có tài khoản?{' '}
-          <Link to="/" className="text-black font-bold hover:underline">
+          {/* ĐÃ SỬA: Đường dẫn to="/" cũ đổi thành to="/register" */}
+          <Link to="/register" className="text-black font-bold hover:underline">
             Đăng ký ngay
           </Link>
         </p>
