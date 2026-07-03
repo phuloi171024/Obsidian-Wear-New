@@ -1,4 +1,5 @@
-import "./Brands.css";
+
+        import "./Brands.css";
 
 export default function Brands() {
   const brands = [
