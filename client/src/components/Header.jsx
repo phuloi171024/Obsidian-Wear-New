@@ -1,8 +1,11 @@
 import "./Header.css";
 import { Link } from "react-router-dom";
 import { FiSearch, FiUser, FiShoppingCart } from "react-icons/fi";
+import { useState } from "react";
 
 export default function Header() {
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
   return (
     <header className="header">
 
@@ -50,15 +53,28 @@ export default function Header() {
           <FiSearch className="search-icon" />
         </div>
 
-        <button className="icon-btn">
-          <FiUser />
-        </button>
+        {/* User Menu */}
+        <div className="user-menu-wrapper">
+          <button
+            className="icon-btn"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
+            <FiUser />
+          </button>
 
-        <Link to="/cart">
-    <Link to="/cart" className="icon-btn">
-  <FiShoppingCart />
-</Link>
-</Link>
+          {showUserMenu && (
+            <div className="user-dropdown">
+              <Link to="/login">Đăng nhập</Link>
+              <Link to="/register">Đăng ký</Link>
+              <Link to="/forgot-password">Quên mật khẩu</Link>
+            </div>
+          )}
+        </div>
+
+        {/* Cart */}
+        <Link to="/cart" className="icon-btn">
+          <FiShoppingCart />
+        </Link>
 
       </div>
 
