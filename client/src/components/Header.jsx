@@ -7,36 +7,29 @@ export default function Header() {
     <header className="header">
 
       <div className="logo">
-        <img src="/src/public/images/logo.png" alt="Logo" />
+        <img src="/images/logo.png" alt="Logo Obsidian Wear" />
       </div>
 
       <nav className="navbar">
         <ul className="nav-menu">
-
           <li>
             <Link to="/">Trang chủ</Link>
           </li>
-
           <li>
             <Link to="/products">Sản phẩm</Link>
           </li>
-
           <li>
             <Link to="/quan">Quần</Link>
           </li>
-
           <li>
             <Link to="/ao">Áo</Link>
           </li>
-
           <li>
             <Link to="/tui">Túi</Link>
           </li>
-
           <li>
             <Link to="/giay">Giày</Link>
           </li>
-
         </ul>
       </nav>
 
@@ -50,15 +43,14 @@ export default function Header() {
           <FiSearch className="search-icon" />
         </div>
 
-        <button className="icon-btn">
+        <button className="icon-btn" title="Tài khoản">
           <FiUser />
         </button>
 
-        <Link to="/cart">
-    <Link to="/cart" className="icon-btn">
-  <FiShoppingCart />
-</Link>
-</Link>
+        {/* Đã sửa: Chỉ dùng 1 thẻ Link duy nhất và áp class trực tiếp vào nó */}
+        <Link to="/cart" className="icon-btn" title="Giỏ hàng">
+          <FiShoppingCart />
+        </Link>
 
       </div>
 
