@@ -19,6 +19,11 @@ function App() {
 
         {/* Đường dẫn khi gõ /login -> Chạy trang đăng nhập Login */}
         <Route path="/login" element={<Login />} />
+
+<Route path="/register" element={<Register />} />
+
+<Route path="/forgot-password" element={<ForgotPassword />} />
+        
       </Routes>
     </BrowserRouter>
   );
