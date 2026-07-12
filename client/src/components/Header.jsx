@@ -1,8 +1,11 @@
 import "./Header.css";
 import { Link } from "react-router-dom";
 import { FiSearch, FiUser, FiShoppingCart } from "react-icons/fi";
+import { useState } from "react";
 
 export default function Header() {
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
   return (
     <header className="header">
 

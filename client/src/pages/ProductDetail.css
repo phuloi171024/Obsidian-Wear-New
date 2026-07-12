@@ -1,0 +1,304 @@
+/* =========================
+   Breadcrumb
+========================= */
+
+.breadcrumb{
+    width:1200px;
+    margin:30px auto;
+    font-size:15px;
+    color:#888;
+}
+
+.breadcrumb span{
+    color:#222;
+    font-weight:600;
+}
+
+/* =========================
+   Layout
+========================= */
+
+.product-detail{
+    width:1200px;
+    margin:auto;
+    display:flex;
+    gap:50px;
+    padding:40px;
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+/* =========================
+   Image
+========================= */
+
+.product-image{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#f7f7f7;
+    border-radius:10px;
+    padding:30px;
+}
+
+.product-main-image{
+    width:100%;
+    max-width:500px;
+    transition:.3s;
+}
+
+.product-main-image:hover{
+    transform:scale(1.04);
+}
+
+/* =========================
+   Product Info
+========================= */
+
+.product-info{
+    flex:1;
+}
+
+.product-info h1{
+    font-size:38px;
+    margin-bottom:15px;
+}
+
+.rating{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.stars{
+    color:#ffb400;
+    font-size:18px;
+}
+
+.rating span{
+    color:#666;
+    font-size:14px;
+}
+
+.product-info h2{
+    font-size:34px;
+    color:#3563ff;
+    margin-bottom:30px;
+}
+
+.product-info hr{
+    border:none;
+    border-top:1px solid #eee;
+    margin:25px 0;
+}
+
+/* =========================
+   Option
+========================= */
+
+.option{
+    margin-bottom:25px;
+}
+
+.option h4{
+    margin-bottom:12px;
+    font-size:17px;
+}
+
+.size-list,
+.color-list{
+    display:flex;
+    gap:10px;
+}
+
+.size-list button{
+    width:46px;
+    height:42px;
+    border:1px solid #ddd;
+    background:#fff;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.color-list button{
+    padding:10px 18px;
+    border:1px solid #ddd;
+    background:#fff;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.size-list button:hover,
+.color-list button:hover{
+    border-color:#3563ff;
+}
+
+.size-list .active{
+    background:#3563ff;
+    color:#fff;
+}
+
+.color-list .active{
+    background:#222;
+    color:#fff;
+}
+
+/* =========================
+   Quantity
+========================= */
+
+.quantity-box{
+    display:flex;
+    align-items:center;
+    width:85px;
+    height:30px;
+    border:1px solid #dcdcdc;
+    border-radius:4px;
+    overflow:hidden;
+    background:#fff;
+}
+
+.qty-btn{
+    width:28px;
+    height:30px;
+    border:none;
+    background:#f5f5f5;
+    color:#666;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.qty-btn:hover{
+    background:#ececec;
+}
+
+.quantity-box input{
+    width:30px;
+    border:none;
+    outline:none;
+    text-align:center;
+    font-size:14px;
+    background:#fff;
+}
+
+/* =========================
+   Cart
+========================= */
+
+.cart-action{
+    display:flex;
+    gap:10px;
+    margin-top:30px;
+}
+
+.add-cart{
+    flex:1;
+    height:50px;
+    border:none;
+    background:#3563ff;
+    color:#fff;
+    font-size:16px;
+    border-radius:6px;
+    cursor:pointer;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px; /* khoảng cách icon và chữ */
+}
+
+.add-cart:hover{
+    background:#234fe8;
+}
+
+.share-btn{
+    width:50px;
+    border:1px solid #ddd;
+    background:#fff;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+/* =========================
+   Product Meta
+========================= */
+
+.product-meta{
+    margin-top:30px;
+    border-top:1px solid #eee;
+    padding-top:20px;
+}
+
+.product-meta p{
+    margin:10px 0;
+    color:#666;
+    line-height:1.7;
+}
+
+/* =========================
+   Description
+========================= */
+
+.description-box{
+    width:1200px;
+    margin:35px auto 80px;
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.tab{
+    display:flex;
+    border-bottom:1px solid #eee;
+}
+
+.tab button{
+    background:none;
+    border:none;
+    padding:18px 30px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.tab .active{
+    color:#3563ff;
+    border-bottom:2px solid #3563ff;
+}
+
+.tab-content{
+    padding:30px;
+    line-height:1.8;
+    color:#666;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media(max-width:1200px){
+
+    .product-detail,
+    .description-box,
+    .breadcrumb{
+        width:95%;
+    }
+
+}
+
+@media(max-width:768px){
+
+    .product-detail{
+        flex-direction:column;
+    }
+
+    .product-image,
+    .product-info{
+        width:100%;
+    }
+
+}
