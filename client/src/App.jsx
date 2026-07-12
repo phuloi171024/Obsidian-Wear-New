@@ -1,25 +1,23 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import ProductPage from "./pages/ProductPage";
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Register from './pages/Register'; 
+import Home from "./pages/Home"; 
+import ProductPage from "./pages/ProductPage"; 
+import Login from './pages/Login';
 import CartPage from "./pages/CartPage";
-import ProductDetail from "./pages/ProductDetail";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
+import PaymentPage from "./pages/PaymentPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-
         <Route path="/" element={<Home />} />
-
         <Route path="/products" element={<ProductPage />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
 
-        <Route path="/cart" element={<CartPage />} />  
-
-        <Route path="/product/:id" element={<ProductDetail />} />
-
+        {/* Đường dẫn khi gõ /login -> Chạy trang đăng nhập Login */}
         <Route path="/login" element={<Login />} />
 
 <Route path="/register" element={<Register />} />
