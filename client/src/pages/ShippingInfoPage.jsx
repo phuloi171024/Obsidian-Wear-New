@@ -48,8 +48,10 @@ export default function ShippingInfoPage() {
     navigate("/payment");
   };
 
+  // 1. Đã thêm "Sản Phẩm" vào ngay sau "Trang chủ" trong danh sách navLinks
   const navLinks = [
     { label: "Trang chủ", href: "/" },
+    { label: "Sản phẩm", href: "/products" }, 
     { label: "Quần", href: "/products" },
     { label: "Áo", href: "/products" },
     { label: "Túi", href: "/products" },
@@ -102,9 +104,16 @@ export default function ShippingInfoPage() {
                 className="bg-transparent outline-none text-xs text-gray-600 placeholder-gray-400 w-full"
               />
             </div>
-            <button aria-label="Tài khoản" className="text-gray-700 hover:text-indigo-600 transition">
+            
+            {/* 2. Đã đổi thẻ <button> cũ thành <Link> để dẫn trực tiếp tới trang đăng nhập / đăng ký (Ví dụ: /login) */}
+            <Link 
+              to="/login" 
+              aria-label="Tài khoản" 
+              className="text-gray-700 hover:text-indigo-600 transition flex items-center"
+            >
               <FaRegUser className="text-lg" />
-            </button>
+            </Link>
+
             <Link to="/cart" aria-label="Giỏ hàng" className="text-gray-700 hover:text-indigo-600 transition">
               <FaShoppingBag className="text-lg" />
             </Link>

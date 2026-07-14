@@ -5,9 +5,9 @@ import { FiSearch, FiUser, FiShoppingCart } from "react-icons/fi";
 export default function Header() {
   return (
     <header className="header">
-      <div className="logo">
+      <Link to="/" className="logo">
         <img src="/src/public/images/logo.png" alt="Logo" />
-      </div>
+      </Link>
 
       <nav className="navbar">
         <ul className="nav-menu">
@@ -18,16 +18,16 @@ export default function Header() {
             <Link to="/products">Sản phẩm</Link>
           </li>
           <li>
-            <Link to="/quan">Quần</Link>
+            <Link to="/products">Quần</Link>
           </li>
           <li>
-            <Link to="/ao">Áo</Link>
+            <Link to="/products">Áo</Link>
           </li>
           <li>
-            <Link to="/tui">Túi</Link>
+            <Link to="/products">Túi</Link>
           </li>
           <li>
-            <Link to="/giay">Giày</Link>
+            <Link to="/products">Giày</Link>
           </li>
         </ul>
       </nav>
