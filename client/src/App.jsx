@@ -6,6 +6,9 @@ import ProductPage from "./pages/ProductPage";
 import Login from './pages/Login';
 import CartPage from "./pages/CartPage";
 import PaymentPage from "./pages/PaymentPage";
+import ProductDetail from "./pages/ProductDetail";
+import Contact from "./pages/Contact/Contact";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -16,6 +19,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/contact" element={<Contact />} />
 
         {/* Đường dẫn khi gõ /login -> Chạy trang đăng nhập Login */}
         <Route path="/login" element={<Login />} />
