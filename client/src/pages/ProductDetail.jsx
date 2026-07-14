@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./ProductDetail.css";
@@ -105,8 +105,16 @@ export default function ProductDetail() {
       <Header />
 
       <div className="breadcrumb">
-        Trang chủ &gt; <span>{product.name}</span>
-      </div>
+  <Link to="/">Trang chủ</Link>
+
+  <span className="separator">&gt;</span>
+
+  <Link to="/products">Sản phẩm</Link>
+
+  <span className="separator">&gt;</span>
+
+  <span className="current-page">{product.name}</span>
+</div>
 
       <div className="product-detail">
 
