@@ -1,4 +1,3 @@
-import Header from "../components/Header";
 import Banner from "../components/Banner";
 import Policy from "../components/Policy";
 import Categories from "../components/Categories";
@@ -10,8 +9,6 @@ import Footer from "../components/Footer";
 export default function Home() {
     return (
         <>
-            <Header />
-
             <Banner />
 
             <Policy />

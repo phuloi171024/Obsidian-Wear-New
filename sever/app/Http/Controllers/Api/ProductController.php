@@ -18,7 +18,7 @@ class ProductController extends Controller
     }
 
     // Xem chi tiết sản phẩm
-    public function show($id)
+    public function show( int $id)
     {
         // Eager loading đầy đủ các quan hệ, bao gồm cả đánh giá và thông tin người đánh giá
         $product = Product::with(['category', 'brand', 'variants', 'images', 'reviews.user'])
