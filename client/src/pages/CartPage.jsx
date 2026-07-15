@@ -2,8 +2,10 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./CartPage.css";
 import { FiTrash2, FiShoppingCart, FiArrowRight } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
+  const navigate = useNavigate();
   return (
     <>
       <Header />
@@ -115,13 +117,13 @@ export default function CartPage() {
 
               </div>
 
-              <button className="checkout-btn">
-
-                Tiến hành thanh toán
-
-                <FiArrowRight/>
-
-              </button>
+              <button
+  className="checkout-btn"
+  onClick={() => navigate("/checkout")}
+>
+  Tiến hành thanh toán
+  <FiArrowRight />
+</button>
 
               <button className="continue-btn">
 
