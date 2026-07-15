@@ -4,7 +4,7 @@ import Header from './components/Header';
 import Register from './pages/Register'; 
 import Home from "./pages/Home"; 
 import ProductPage from "./pages/ProductPage"; 
-import ProductDetail from "./pages/ProductDetail"; // Thêm dòng này
+import ProductDetail from "./pages/ProductDetail";
 import Login from './pages/Login';
 import CartPage from "./pages/CartPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -18,10 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductPage />} />
-        
-        {/* Đây là route quan trọng vừa được thêm vào cho trang Chi tiết sản phẩm */}
         <Route path="/product/:id" element={<ProductDetail />} />
-        
         <Route path="/register" element={<Register />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/payment" element={<PaymentPage />} />

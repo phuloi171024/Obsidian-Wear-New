@@ -302,3 +302,30 @@
     }
 
 }
+
+.breadcrumb{
+    max-width:1200px;
+    margin:25px auto;
+    font-size:14px;
+    color:#666;
+}
+
+.breadcrumb a{
+    color:#666;
+    text-decoration:none;
+    transition:.3s;
+}
+
+.breadcrumb a:hover{
+    color:#2f80ed;
+}
+
+.separator{
+    margin:0 8px;
+    color:#999;
+}
+
+.current-page{
+    color:#222;
+    font-weight:600;
+}

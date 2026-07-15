@@ -1,4 +1,6 @@
 import "./Footer.css";
+import { Link } from "react-router-dom";
+
 import {
   FaFacebook,
   FaInstagram,
@@ -67,7 +69,11 @@ export default function Footer() {
             <li>Chính sách vận chuyển</li>
             <li>Chính sách đổi trả</li>
             <li>Hướng dẫn chọn size</li>
-            <li>Liên hệ</li>
+            <li>
+  <Link to="/contact" className="footer-link">
+    Liên hệ
+  </Link>
+</li>
           </ul>
         </div>
 
