@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Register from './pages/Register'; 
 import Home from "./pages/Home"; 
 import ProductPage from "./pages/ProductPage"; 
+import PantsPage from "./pages/PantsPage";
+import AoPage from "./pages/AoPage";
+import TuiPage from "./pages/TuiPage";
+import GiayPage from "./pages/GiayPage";
 import Login from './pages/Login';
 import CartPage from "./pages/CartPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -16,6 +20,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductPage />} />
+        <Route path="/products/pants" element={<PantsPage />} />
+        <Route path="/products/ao" element={<AoPage />} />
+        <Route path="/products/tui" element={<TuiPage />} />
+        <Route path="/products/giay" element={<GiayPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/ShippingInfoPage" element={<ShippingInfoPage />} />

@@ -18,17 +18,17 @@ export default function Header() {
             <Link to="/products">Sản phẩm</Link>
           </li>
           <li>
-            <Link to="/products">Quần</Link>
+            <Link to="/products/pants">Quần</Link>
           </li>
-          <li>
-            <Link to="/products">Áo</Link>
-          </li>
-          <li>
-            <Link to="/products">Túi</Link>
-          </li>
-          <li>
-            <Link to="/products">Giày</Link>
-          </li>
+        <li>
+  <Link to="/products/ao">Áo</Link>
+      </li>
+    <li>
+  <Link to="/products/tui">Túi</Link>
+</li>
+<li>
+  <Link to="/products/giay">Giày</Link>
+</li>
         </ul>
       </nav>
 
