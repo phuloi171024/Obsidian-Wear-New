@@ -15,4 +15,9 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Product::class);
     }
+    // Một biến thể (size/màu) có thể nằm trong giỏ hàng của nhiều khách hàng khác nhau
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
 }

@@ -1,13 +1,20 @@
 import "./Header.css";
 import { Link } from "react-router-dom";
 import { FiSearch, FiUser, FiShoppingCart } from "react-icons/fi";
+import { useState } from "react";
 
 export default function Header() {
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
   return (
     <header className="header">
       <Link to="/" className="logo">
         <img src="/src/public/images/logo.png" alt="Logo" />
+<<<<<<< HEAD
       </Link>
+=======
+      </div>
+>>>>>>> main
 
       <nav className="navbar">
         <ul className="nav-menu">
@@ -33,6 +40,7 @@ export default function Header() {
       </nav>
 
       <div className="header-right">
+<<<<<<< HEAD
         <div className="search-box">
           <input type="text" placeholder="Bạn đang tìm kiếm gì?" />
           <FiSearch className="search-icon" />
@@ -40,6 +48,38 @@ export default function Header() {
 
         <Link to="/register" className="icon-btn">
           <FiUser />
+=======
+
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Bạn đang tìm kiếm gì?"
+          />
+          <FiSearch className="search-icon" />
+        </div>
+
+        {/* User Menu */}
+        <div className="user-menu-wrapper">
+          <button
+            className="icon-btn"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
+            <FiUser />
+          </button>
+
+          {showUserMenu && (
+            <div className="user-dropdown">
+              <Link to="/login">Đăng nhập</Link>
+              <Link to="/register">Đăng ký</Link>
+              <Link to="/forgot-password">Quên mật khẩu</Link>
+            </div>
+          )}
+        </div>
+
+        {/* Cart */}
+        <Link to="/cart" className="icon-btn">
+          <FiShoppingCart />
+>>>>>>> main
         </Link>
 
         <Link to="/cart" className="icon-btn">
@@ -48,4 +88,8 @@ export default function Header() {
       </div>
     </header>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> main

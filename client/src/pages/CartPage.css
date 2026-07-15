@@ -371,3 +371,68 @@ gap:20px;
 }
 
 }
+
+/* ========================= */
+/* Delivery Notes */
+/* ========================= */
+
+.cart-notes{
+    margin-top:24px;
+    width:calc(100% - 40px);
+}
+
+.note-box{
+    width:100%;
+    margin-bottom:18px;
+    padding:18px 22px;
+    border-left:4px solid;
+    border-radius:6px;
+    box-sizing:border-box;
+}
+
+.note-box h4{
+    margin:0 0 12px;
+    font-size:16px;
+    font-weight:700;
+}
+
+.note-box ul,
+.note-box ol{
+    margin:0;
+    padding-left:18px;
+}
+
+.note-box li{
+    font-size:14px;
+    line-height:1.9;
+}
+
+/* Khối vàng */
+
+.note-box.warning{
+    background:#fff8e8;
+    border-left-color:#f59e0b;
+}
+
+.note-box.warning h4{
+    color:#d97706;
+}
+
+.note-box.warning li{
+    color:#b45309;
+}
+
+/* Khối xanh */
+
+.note-box.info{
+    background:#eef5ff;
+    border-left-color:#3b82f6;
+}
+
+.note-box.info h4{
+    color:#2563eb;
+}
+
+.note-box.info li{
+    color:#2563eb;
+}
