@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // 1. Import useNavigate ở đây
+import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaMapMarkerAlt, FaCheck } from 'react-icons/fa';
 import Header from '../components/Header';
 
 export default function PaymentPage() {
   const [activeTab, setActiveTab] = useState('cod');
-  const navigate = useNavigate(); // 2. Khởi tạo hook navigate ở đây
+  const navigate = useNavigate();
+
+  const order = {
+    code: 'ORD21751592',
+    total: '1.920.000',
+    method: 'Thanh toán khi nhận hàng (COD)',
+  };
 
   const steps = [
     { label: 'Giỏ hàng', icon: FaShoppingCart, status: 'done', href: '/cart' },
@@ -103,8 +109,8 @@ export default function PaymentPage() {
             </div>
 
             <div className="space-y-2.5 text-sm">
-              <p className="text-gray-600"><span className="font-semibold text-gray-800">Mã đơn hàng:</span> ORD21751592</p>
-              <p className="text-gray-600"><span className="font-semibold text-gray-800">Tổng tiền cần thanh toán:</span> <span className="text-red-500 font-bold text-base">1.920.000 đ</span></p>
+              <p className="text-gray-600"><span className="font-semibold text-gray-800">Mã đơn hàng:</span> {order.code}</p>
+              <p className="text-gray-600"><span className="font-semibold text-gray-800">Tổng tiền cần thanh toán:</span> <span className="text-red-500 font-bold text-base">{order.total} đ</span></p>
               <p className="text-gray-600"><span className="font-semibold text-gray-800">Phương thức:</span> Thanh toán khi nhận hàng</p>
             </div>
 
@@ -128,17 +134,17 @@ export default function PaymentPage() {
               <p>4. Nhận biên lai xác nhận thanh toán</p>
             </div>
 
-            {/* ================= 3. THÊM SỰ KIỆN KHU VỰC NÀY ================= */}
+            {/* Nút hành động */}
             <div className="pt-4 space-y-3">
-              <button 
-                onClick={() => navigate('/cart')} 
+              <button
+                onClick={() => navigate('/order-success', { state: { order } })}
                 className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm"
               >
                 <span>✓ Xác nhận thanh toán COD</span>
               </button>
-              
-              <button 
-                onClick={() => navigate('/order-details')} // Bạn thay đổi đường dẫn này trùng với Router chi tiết đơn hàng của bạn nhé! (Hoặc dùng navigate(-1) nếu muốn quay lại trang trước đó)
+
+              <button
+                onClick={() => navigate('/ShippingInfoPage')}
                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-3 px-4 rounded-xl transition-colors"
               >
                 Quay lại chi tiết đơn hàng
