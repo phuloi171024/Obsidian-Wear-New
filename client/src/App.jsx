@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Contact from "./pages/Contact/Contact";
 import CheckoutPage from "./pages/CheckoutPage";
+import OrdersPage from "./pages/OrdersPage";
 
 function App() {
   return (
@@ -31,6 +32,8 @@ function App() {
 <Route path="/contact" element={<Contact />} />
         
         <Route path="/checkout" element={<CheckoutPage />} />
+
+        <Route path="/orders" element={<OrdersPage />} />
       </Routes>
     </BrowserRouter>
   );
