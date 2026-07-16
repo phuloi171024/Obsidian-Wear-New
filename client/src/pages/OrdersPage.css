@@ -1,0 +1,151 @@
+.orders-page {
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 0 30px;
+}
+
+.account-layout {
+  display: flex;
+  gap: 30px;
+}
+
+.account-sidebar {
+  width: 280px;
+}
+
+.account-sidebar h2 {
+  font-size: 28px;
+  margin-bottom: 25px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid #eee;
+}
+
+.avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#6f58ff,#4b8cff);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+}
+
+.user-info h4 {
+  margin: 0;
+}
+
+.user-info span {
+  font-size: 13px;
+  color: #777;
+}
+
+.account-menu {
+  list-style: none;
+  padding: 0;
+  margin-top: 25px;
+}
+
+.account-menu li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.account-menu li.active {
+  background: #eef4ff;
+  color: #2563eb;
+}
+
+.logout {
+  color: red;
+}
+
+.orders-content {
+  flex: 1;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.orders-header a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.orders-table thead {
+  background: #f8f9fb;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 18px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.order-id {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.price {
+  font-weight: 600;
+}
+
+.status {
+  background: #fff3cd;
+  color: #9a6700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.view-btn {
+  width: 65px;
+  height: 42px;
+  border: none;
+  background: #eef4ff;
+  color: #2563eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.orders-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.orders-title svg {
+  color: #111827;
+  font-size: 24px;
+}
