@@ -1,6 +1,7 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./OrdersPage.css";
+import { Link } from "react-router-dom";
 
 import {
   FiUser,
@@ -66,27 +67,31 @@ export default function OrdersPage() {
 
             <ul className="account-menu">
 
-              <li>
-                <FiUser />
-                Thông tin cá nhân
-              </li>
+  <li>
+    <Link to="/profile">
+      <FiUser />
+      Thông tin cá nhân
+    </Link>
+  </li>
 
-              <li className="active">
-                <FiClipboard />
-                Đơn hàng của tôi
-              </li>
+  <li className="active">
+    <Link to="/orders">
+      <FiClipboard />
+      Đơn hàng của tôi
+    </Link>
+  </li>
 
-              <li>
-                <FiLock />
-                Đổi mật khẩu
-              </li>
+  <li>
+    <FiLock />
+    Đổi mật khẩu
+  </li>
 
-              <li className="logout">
-                <FiLogOut />
-                Đăng xuất
-              </li>
+  <li className="logout">
+    <FiLogOut />
+    Đăng xuất
+  </li>
 
-            </ul>
+</ul>
 
           </div>
 
