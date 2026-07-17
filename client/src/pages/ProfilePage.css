@@ -1,0 +1,93 @@
+.profile-content{
+    flex:1;
+    background:#fff;
+    padding:30px;
+    border-radius:10px;
+}
+
+.profile-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.profile-header h2{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:24px;
+}
+
+.profile-header span{
+    color:#999;
+    font-size:13px;
+}
+
+.profile-form{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
+}
+
+.profile-form .form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.profile-form .form-group label{
+    font-size:14px;
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+.profile-form .form-group input{
+    height:45px;
+    border:1px solid #ddd;
+    border-radius:6px;
+    padding:0 15px;
+    font-size:15px;
+}
+
+.profile-btn{
+    margin-top:30px;
+    text-align:right;
+}
+
+.profile-btn button{
+    background:#2563eb;
+    color:#fff;
+    border:none;
+    padding:12px 26px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.profile-btn button:hover{
+    background:#1d4ed8;
+}
+
+.account-menu a{
+    text-decoration: none;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.account-menu a:hover{
+    text-decoration: none;
+}
+
+.account-menu a:visited{
+    text-decoration: none;
+}
+
+.account-menu a:active{
+    text-decoration: none;
+}
+
+.account-menu a:focus{
+    text-decoration: none;
+}
