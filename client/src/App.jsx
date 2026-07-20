@@ -8,6 +8,8 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Contact from "./pages/Contact/Contact";
 import CheckoutPage from "./pages/CheckoutPage";
+import OrdersPage from "./pages/OrdersPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -31,6 +33,10 @@ function App() {
 <Route path="/contact" element={<Contact />} />
         
         <Route path="/checkout" element={<CheckoutPage />} />
+
+        <Route path="/orders" element={<OrdersPage />} />
+
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   );
