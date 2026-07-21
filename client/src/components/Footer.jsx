@@ -68,7 +68,11 @@ export default function Footer() {
             <li>Câu hỏi thường gặp</li>
             <li>Chính sách vận chuyển</li>
             <li>Chính sách đổi trả</li>
-            <li>Hướng dẫn chọn size</li>
+            <li>
+  <Link to="/size-guide" className="footer-link">
+    Hướng dẫn chọn size
+  </Link>
+</li>
             <li>
   <Link to="/contact" className="footer-link">
     Liên hệ
