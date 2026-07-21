@@ -25,20 +25,20 @@ export default function Header() {
           </li>
 
           <li>
-            <Link to="/quan">Quần</Link>
-          </li>
+  <Link to="/products">Quần</Link>
+</li>
 
-          <li>
-            <Link to="/ao">Áo</Link>
-          </li>
+<li>
+  <Link to="/products">Áo</Link>
+</li>
 
-          <li>
-            <Link to="/tui">Túi</Link>
-          </li>
+<li>
+  <Link to="/products">Túi</Link>
+</li>
 
-          <li>
-            <Link to="/giay">Giày</Link>
-          </li>
+<li>
+  <Link to="/products">Giày</Link>
+</li>
 
         </ul>
       </nav>
