@@ -1,0 +1,357 @@
+/* ================= PAGE ================= */
+
+.size-page{
+    background:#fff;
+    padding:30px 0 70px;
+    min-height:100vh;
+}
+
+.size-page .container{
+    max-width:1200px;
+    margin:auto;
+    padding:0 20px;
+}
+
+/* ================= BREADCRUMB ================= */
+
+.breadcrumb{
+    max-width:1200px;
+    margin:20px auto;
+    padding:0 20px;
+    font-size:15px;
+    color:#777;
+}
+
+.breadcrumb a{
+    color:#777;
+    text-decoration:none;
+    transition:.2s;
+}
+
+.breadcrumb a:hover{
+    color:#ff6600;
+}
+
+.separator{
+    margin:0 8px;
+    color:#999;
+}
+
+.current{
+    color:#222;
+    font-weight:600;
+}
+
+/* ================= TITLE ================= */
+
+.page-title{
+    text-align:center;
+    font-size:36px;
+    font-weight:700;
+    color:#222;
+    margin-bottom:45px;
+    text-transform:uppercase;
+}
+
+.size-section{
+    margin-bottom:70px;
+}
+
+.size-section h2{
+    text-align:center;
+    font-size:26px;
+    font-weight:700;
+    color:#222;
+    margin-bottom:30px;
+    text-transform:uppercase;
+}
+
+/* ================= LAYOUT ================= */
+
+.shirt-layout,
+.pants-layout{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:35px;
+    align-items:flex-start;
+}
+
+/* ================= IMAGE ================= */
+
+.shirt-image,
+.pants-image{
+    background:#fafafa;
+    border:1px solid #e5e5e5;
+    border-radius:10px;
+    padding:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.size-image-box{
+    position:relative;
+    width:300px;
+}
+
+.size-product{
+    width:100%;
+    display:block;
+}
+
+/* ================= TABLE ================= */
+
+.shirt-table table,
+.pants-table table,
+.pants-info table{
+    width:100%;
+    border-collapse:collapse;
+    border:1px solid #ddd;
+    background:#fff;
+}
+
+.shirt-table th,
+.shirt-table td,
+.pants-table th,
+.pants-table td,
+.pants-info th,
+.pants-info td{
+    border:1px solid #ddd;
+    padding:14px;
+    text-align:center;
+    font-size:15px;
+}
+
+.shirt-table th,
+.pants-table th,
+.pants-info th{
+    background:#f5f5f5;
+    color:#222;
+    font-weight:700;
+}
+
+.shirt-table td,
+.pants-table td,
+.pants-info td{
+    color:#444;
+}
+
+.shirt-table tbody tr:hover,
+.pants-table tbody tr:hover,
+.pants-info tbody tr:hover{
+    background:#fafafa;
+}
+
+.pants-info{
+    margin-top:40px;
+}
+
+.note{
+    margin-top:12px;
+    color:#666;
+    font-size:14px;
+    font-style:italic;
+}
+
+/* ================= ĐƯỜNG ĐO ÁO ================= */
+
+.line-height{
+    position:absolute;
+    left:-18px;
+    top:15px;
+    height:82%;
+    border-left:3px solid #e53935;
+}
+
+.line-height::before,
+.line-height::after{
+    content:"";
+    position:absolute;
+    left:-6px;
+    width:12px;
+    border-top:3px solid #e53935;
+}
+
+.line-height::before{
+    top:0;
+    transform:rotate(-35deg);
+}
+
+.line-height::after{
+    bottom:0;
+    transform:rotate(35deg);
+}
+
+.line-width{
+    position:absolute;
+    left:12px;
+    right:12px;
+    top:120px;
+    border-top:3px solid #e53935;
+}
+
+.line-width::before,
+.line-width::after{
+    content:"";
+    position:absolute;
+    top:-6px;
+    height:12px;
+    border-left:3px solid #e53935;
+}
+
+.line-width::before{
+    left:0;
+    transform:rotate(-35deg);
+}
+
+.line-width::after{
+    right:0;
+    transform:rotate(35deg);
+}
+
+.label-a{
+    position:absolute;
+    left:-42px;
+    top:145px;
+    color:#e53935;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.label-b{
+    position:absolute;
+    left:140px;
+    top:90px;
+    color:#e53935;
+    font-size:22px;
+    font-weight:bold;
+}
+
+/* ================= ĐƯỜNG ĐO QUẦN ================= */
+
+.pants-height{
+    position:absolute;
+    left:-18px;
+    top:18px;
+    height:82%;
+    border-left:3px solid #e53935;
+}
+
+.pants-height::before,
+.pants-height::after{
+    content:"";
+    position:absolute;
+    left:-6px;
+    width:12px;
+    border-top:3px solid #e53935;
+}
+
+.pants-height::before{
+    top:0;
+    transform:rotate(-35deg);
+}
+
+.pants-height::after{
+    bottom:0;
+    transform:rotate(35deg);
+}
+
+.pants-waist{
+    position:absolute;
+    left:12px;
+    right:12px;
+    top:42px;
+    border-top:3px solid #e53935;
+}
+
+.pants-waist::before,
+.pants-waist::after{
+    content:"";
+    position:absolute;
+    top:-6px;
+    height:12px;
+    border-left:3px solid #e53935;
+}
+
+.pants-waist::before{
+    left:0;
+    transform:rotate(-35deg);
+}
+
+.pants-waist::after{
+    right:0;
+    transform:rotate(35deg);
+}
+
+.label-c{
+    position:absolute;
+    left:-42px;
+    top:145px;
+    color:#e53935;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.label-d{
+    position:absolute;
+    left:140px;
+    top:8px;
+    color:#e53935;
+    font-size:22px;
+    font-weight:bold;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:992px){
+
+.shirt-layout,
+.pants-layout{
+    grid-template-columns:1fr;
+}
+
+.shirt-image,
+.pants-image{
+    max-width:380px;
+    margin:auto;
+}
+
+.page-title{
+    font-size:30px;
+}
+
+.size-section h2{
+    font-size:22px;
+}
+
+}
+
+@media(max-width:768px){
+
+.page-title{
+    font-size:26px;
+}
+
+.size-section h2{
+    font-size:20px;
+}
+
+.shirt-table th,
+.shirt-table td,
+.pants-table th,
+.pants-table td,
+.pants-info th,
+.pants-info td{
+    font-size:13px;
+    padding:10px 8px;
+}
+
+.pants-info{
+    overflow-x:auto;
+}
+
+.pants-info table{
+    min-width:650px;
+}
+
+}
