@@ -10,6 +10,7 @@ import Contact from "./pages/Contact/Contact";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
+import SizeGuide from "./pages/SizeGuide";
 
 function App() {
   return (
@@ -37,6 +38,8 @@ function App() {
         <Route path="/orders" element={<OrdersPage />} />
 
         <Route path="/profile" element={<ProfilePage />} />
+
+        <Route path="/size-guide" element={<SizeGuide />} />
       </Routes>
     </BrowserRouter>
   );
