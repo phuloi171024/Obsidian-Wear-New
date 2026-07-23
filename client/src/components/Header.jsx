@@ -10,11 +10,7 @@ export default function Header() {
     <header className="header">
       <Link to="/" className="logo">
         <img src="/src/public/images/logo.png" alt="Logo" />
-<<<<<<< HEAD
       </Link>
-=======
-      </div>
->>>>>>> main
 
       <nav className="navbar">
         <ul className="nav-menu">
@@ -27,34 +23,21 @@ export default function Header() {
           <li>
             <Link to="/products/pants">Quần</Link>
           </li>
-        <li>
-  <Link to="/products/ao">Áo</Link>
-      </li>
-    <li>
-  <Link to="/products/tui">Túi</Link>
-</li>
-<li>
-  <Link to="/products/giay">Giày</Link>
-</li>
+          <li>
+            <Link to="/products/ao">Áo</Link>
+          </li>
+          <li>
+            <Link to="/products/tui">Túi</Link>
+          </li>
+          <li>
+            <Link to="/products/giay">Giày</Link>
+          </li>
         </ul>
       </nav>
 
       <div className="header-right">
-<<<<<<< HEAD
         <div className="search-box">
           <input type="text" placeholder="Bạn đang tìm kiếm gì?" />
-          <FiSearch className="search-icon" />
-        </div>
-
-        <Link to="/register" className="icon-btn">
-          <FiUser />
-=======
-
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Bạn đang tìm kiếm gì?"
-          />
           <FiSearch className="search-icon" />
         </div>
 
@@ -79,17 +62,8 @@ export default function Header() {
         {/* Cart */}
         <Link to="/cart" className="icon-btn">
           <FiShoppingCart />
->>>>>>> main
-        </Link>
-
-        <Link to="/cart" className="icon-btn">
-          <FiShoppingCart />
         </Link>
       </div>
     </header>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> main
