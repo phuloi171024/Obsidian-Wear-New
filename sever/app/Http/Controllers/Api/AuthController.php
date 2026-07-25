@@ -26,7 +26,8 @@ class AuthController extends Controller
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
-            'password' => Hash::make($request->password),
+            // Model có cast 'hashed' nên KHÔNG cần Hash::make() — truyền thẳng plain text
+            'password' => $request->password,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -55,6 +56,11 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Email hoặc mật khẩu không đúng!'], 401);
+        }
+
+        // Kiểm tra tài khoản có bị khoá không
+        if (!$user->status) {
+            return response()->json(['message' => 'Tài khoản của bạn đã bị khoá!'], 403);
         }
 
         // Xóa token cũ (nếu muốn chỉ cho 1 phiên đăng nhập)
@@ -92,13 +98,15 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name'  => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $user->update($request->only('name', 'email'));
+        // Thêm phone để user có thể cập nhật số điện thoại
+        $user->update($request->only('name', 'email', 'phone'));
 
         return response()->json([
             'message' => 'Cập nhật thông tin thành công!',
@@ -124,7 +132,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Mật khẩu hiện tại không đúng!'], 400);
         }
 
-        $user->update(['password' => Hash::make($request->password)]);
+        // Model có cast 'hashed' nên KHÔNG cần Hash::make() — truyền thẳng plain text
+        $user->update(['password' => $request->password]);
 
         // Xóa tất cả token cũ, buộc đăng nhập lại
         $user->tokens()->delete();

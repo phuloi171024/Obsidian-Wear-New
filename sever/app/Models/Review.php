@@ -14,11 +14,15 @@ class Review extends Model
         'product_id',
         'rating',
         'comment',
+        'status',
     ];
 
-    protected $casts = [
-        'rating' => 'integer',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'rating' => 'integer',
+        ];
+    }
 
     // Đánh giá thuộc về 1 người dùng
     public function user()

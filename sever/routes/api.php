@@ -9,6 +9,16 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AddressController;
 
+// Admin Controllers
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProductController   as AdminProductController;
+use App\Http\Controllers\Admin\CategoryController  as AdminCategoryController;
+use App\Http\Controllers\Admin\BrandController     as AdminBrandController;
+use App\Http\Controllers\Admin\OrderController     as AdminOrderController;
+use App\Http\Controllers\Admin\UserController      as AdminUserController;
+use App\Http\Controllers\Admin\CouponController    as AdminCouponController;
+use App\Http\Controllers\Admin\ReviewController    as AdminReviewController;
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES — Không cần đăng nhập
@@ -64,4 +74,66 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/addresses/{id}',           [AddressController::class, 'update']);
     Route::delete('/addresses/{id}',        [AddressController::class, 'destroy']);
     Route::put('/addresses/{id}/default',   [AddressController::class, 'setDefault']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES — Yêu cầu đăng nhập + quyền Admin
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+
+    // Dashboard — thống kê tổng hợp
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // Quản lý Sản phẩm
+    Route::get('/products',                               [AdminProductController::class, 'index']);
+    Route::post('/products',                              [AdminProductController::class, 'store']);
+    Route::get('/products/{id}',                          [AdminProductController::class, 'show']);
+    Route::put('/products/{id}',                          [AdminProductController::class, 'update']);
+    Route::delete('/products/{id}',                       [AdminProductController::class, 'destroy']);
+    Route::post('/products/{id}/images',                  [AdminProductController::class, 'uploadImages']);
+    Route::delete('/products/{id}/images/{imageId}',      [AdminProductController::class, 'deleteImage']);
+    Route::post('/products/{id}/variants',                [AdminProductController::class, 'storeVariant']);
+    Route::put('/products/{id}/variants/{variantId}',     [AdminProductController::class, 'updateVariant']);
+    Route::delete('/products/{id}/variants/{variantId}',  [AdminProductController::class, 'deleteVariant']);
+
+    // Quản lý Danh mục
+    Route::get('/categories',       [AdminCategoryController::class, 'index']);
+    Route::post('/categories',      [AdminCategoryController::class, 'store']);
+    Route::get('/categories/{id}',  [AdminCategoryController::class, 'show']);
+    Route::put('/categories/{id}',  [AdminCategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [AdminCategoryController::class, 'destroy']);
+
+    // Quản lý Thương hiệu
+    Route::get('/brands',       [AdminBrandController::class, 'index']);
+    Route::post('/brands',      [AdminBrandController::class, 'store']);
+    Route::get('/brands/{id}',  [AdminBrandController::class, 'show']);
+    Route::put('/brands/{id}',  [AdminBrandController::class, 'update']);
+    Route::delete('/brands/{id}', [AdminBrandController::class, 'destroy']);
+
+    // Quản lý Đơn hàng
+    Route::get('/orders',              [AdminOrderController::class, 'index']);
+    Route::get('/orders/{id}',         [AdminOrderController::class, 'show']);
+    Route::put('/orders/{id}/status',  [AdminOrderController::class, 'updateStatus']);
+
+    // Quản lý Người dùng
+    Route::get('/users',               [AdminUserController::class, 'index']);
+    Route::get('/users/{id}',          [AdminUserController::class, 'show']);
+    Route::put('/users/{id}',          [AdminUserController::class, 'update']);
+    Route::put('/users/{id}/status',   [AdminUserController::class, 'toggleStatus']);
+
+    // Quản lý Mã giảm giá
+    Route::get('/coupons',       [AdminCouponController::class, 'index']);
+    Route::post('/coupons',      [AdminCouponController::class, 'store']);
+    Route::get('/coupons/{id}',  [AdminCouponController::class, 'show']);
+    Route::put('/coupons/{id}',  [AdminCouponController::class, 'update']);
+    Route::delete('/coupons/{id}', [AdminCouponController::class, 'destroy']);
+
+    // Quản lý Đánh giá
+    Route::get('/reviews',                [AdminReviewController::class, 'index']);
+    Route::put('/reviews/{id}/approve',   [AdminReviewController::class, 'approve']);
+    Route::put('/reviews/{id}/hide',      [AdminReviewController::class, 'hide']);
+    Route::delete('/reviews/{id}',        [AdminReviewController::class, 'destroy']);
 });

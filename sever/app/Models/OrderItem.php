@@ -3,13 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes; 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class OrderItem extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['order_id', 'product_variant_id', 'quantity', 'price']; 
-    // Thuộc về đơn hàng nào [cite: 65]
+    protected $fillable = ['order_id', 'product_variant_id', 'quantity', 'price'];
+
+    // Thuộc về đơn hàng nào
     public function order()
     {
         return $this->belongsTo(Order::class);

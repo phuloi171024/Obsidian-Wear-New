@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes; 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Product extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['category_id', 'brand_id', 'name', 'slug', 'sku', 'price', 'thumbnail', 'description', 'status']; 
+    protected $fillable = [
+        'category_id', 'brand_id', 'name', 'slug',
+        'sku', 'price', 'thumbnail', 'description', 'status',
+    ];
 
     // Sản phẩm thuộc về 1 danh mục [cite: 61]
     public function category()
