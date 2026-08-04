@@ -18,6 +18,8 @@ use App\Http\Controllers\Admin\OrderController     as AdminOrderController;
 use App\Http\Controllers\Admin\UserController      as AdminUserController;
 use App\Http\Controllers\Admin\CouponController    as AdminCouponController;
 use App\Http\Controllers\Admin\ReviewController    as AdminReviewController;
+use App\Http\Controllers\Admin\FlashSaleController as AdminFlashSaleController;
+use App\Http\Controllers\Admin\PostController      as AdminPostController;
 
 /*
 |--------------------------------------------------------------------------
@@ -136,4 +138,22 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::put('/reviews/{id}/approve',   [AdminReviewController::class, 'approve']);
     Route::put('/reviews/{id}/hide',      [AdminReviewController::class, 'hide']);
     Route::delete('/reviews/{id}',        [AdminReviewController::class, 'destroy']);
+
+    // Quản lý Flash Sale
+    Route::get('/flash-sales',                              [AdminFlashSaleController::class, 'index']);
+    Route::post('/flash-sales',                             [AdminFlashSaleController::class, 'store']);
+    Route::get('/flash-sales/{id}',                         [AdminFlashSaleController::class, 'show']);
+    Route::put('/flash-sales/{id}',                         [AdminFlashSaleController::class, 'update']);
+    Route::delete('/flash-sales/{id}',                      [AdminFlashSaleController::class, 'destroy']);
+    Route::post('/flash-sales/{id}/products',               [AdminFlashSaleController::class, 'addProducts']);
+    Route::delete('/flash-sales/{id}/products/{productId}', [AdminFlashSaleController::class, 'removeProduct']);
+
+    // Quản lý Blog / Bài viết
+    Route::get('/posts',               [AdminPostController::class, 'index']);
+    Route::post('/posts',              [AdminPostController::class, 'store']);
+    Route::get('/posts/{id}',          [AdminPostController::class, 'show']);
+    Route::put('/posts/{id}',          [AdminPostController::class, 'update']);
+    Route::delete('/posts/{id}',       [AdminPostController::class, 'destroy']);
+    Route::put('/posts/{id}/publish',  [AdminPostController::class, 'publish']);
+    Route::put('/posts/{id}/draft',    [AdminPostController::class, 'draft']);
 });

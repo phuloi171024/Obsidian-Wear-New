@@ -75,3 +75,25 @@ export const adminReviewApi = {
   hide:    (id)     => api.put(`/admin/reviews/${id}/hide`),
   delete:  (id)     => api.delete(`/admin/reviews/${id}`),
 }
+
+// ── Admin Flash Sales ──────────────────────────────────────────────────────
+export const adminFlashSaleApi = {
+  list:          (params)        => api.get('/admin/flash-sales', { params }),
+  get:           (id)            => api.get(`/admin/flash-sales/${id}`),
+  create:        (data)          => api.post('/admin/flash-sales', data),
+  update:        (id, data)      => api.put(`/admin/flash-sales/${id}`, data),
+  delete:        (id)            => api.delete(`/admin/flash-sales/${id}`),
+  addProducts:   (id, data)      => api.post(`/admin/flash-sales/${id}/products`, data),
+  removeProduct: (id, productId) => api.delete(`/admin/flash-sales/${id}/products/${productId}`),
+}
+
+// ── Admin Posts (Blog) ─────────────────────────────────────────────────────
+export const adminPostApi = {
+  list:    (params)   => api.get('/admin/posts', { params }),
+  get:     (id)       => api.get(`/admin/posts/${id}`),
+  create:  (data)     => api.post('/admin/posts', data),
+  update:  (id, data) => api.put(`/admin/posts/${id}`, data),
+  delete:  (id)       => api.delete(`/admin/posts/${id}`),
+  publish: (id)       => api.put(`/admin/posts/${id}/publish`),
+  draft:   (id)       => api.put(`/admin/posts/${id}/draft`),
+}

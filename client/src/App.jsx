@@ -14,6 +14,8 @@ import OrdersPage     from './pages/admin/OrdersPage'
 import UsersPage      from './pages/admin/UsersPage'
 import CouponsPage    from './pages/admin/CouponsPage'
 import ReviewsPage    from './pages/admin/ReviewsPage'
+import FlashSalePage  from './pages/admin/FlashSalePage'
+import PostsPage      from './pages/admin/PostsPage'
 
 export default function App() {
   return (
@@ -57,6 +59,8 @@ export default function App() {
             <Route path="users"     element={<UsersPage />} />
             <Route path="coupons"   element={<CouponsPage />} />
             <Route path="reviews"   element={<ReviewsPage />} />
+            <Route path="flash-sales" element={<FlashSalePage />} />
+            <Route path="posts"     element={<PostsPage />} />
           </Route>
 
           {/* 404 fallback */}

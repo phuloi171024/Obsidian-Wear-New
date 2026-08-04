@@ -2,21 +2,39 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Package, Tag, Award,
   ShoppingBag, Users, Ticket, Star,
+  Zap, FileText,
   LogOut, ChevronRight,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import toast from 'react-hot-toast'
 import './Sidebar.css'
 
-const navItems = [
-  { to: '/admin',           icon: LayoutDashboard, label: 'Dashboard',    exact: true },
-  { to: '/admin/products',  icon: Package,         label: 'Sản phẩm' },
-  { to: '/admin/categories',icon: Tag,             label: 'Danh mục' },
-  { to: '/admin/brands',    icon: Award,           label: 'Thương hiệu' },
-  { to: '/admin/orders',    icon: ShoppingBag,     label: 'Đơn hàng' },
-  { to: '/admin/users',     icon: Users,           label: 'Người dùng' },
-  { to: '/admin/coupons',   icon: Ticket,          label: 'Coupon' },
-  { to: '/admin/reviews',   icon: Star,            label: 'Đánh giá' },
+const navGroups = [
+  {
+    label: 'MENU CHÍNH',
+    items: [
+      { to: '/admin',            icon: LayoutDashboard, label: 'Dashboard',    exact: true },
+      { to: '/admin/products',   icon: Package,         label: 'Sản phẩm' },
+      { to: '/admin/categories', icon: Tag,             label: 'Danh mục' },
+      { to: '/admin/brands',     icon: Award,           label: 'Thương hiệu' },
+      { to: '/admin/orders',     icon: ShoppingBag,     label: 'Đơn hàng' },
+      { to: '/admin/users',      icon: Users,           label: 'Người dùng' },
+    ],
+  },
+  {
+    label: 'KHUYẾN MÃI',
+    items: [
+      { to: '/admin/coupons',     icon: Ticket,   label: 'Coupon' },
+      { to: '/admin/flash-sales', icon: Zap,      label: 'Flash Sale' },
+    ],
+  },
+  {
+    label: 'NỘI DUNG',
+    items: [
+      { to: '/admin/posts',   icon: FileText, label: 'Blog & Bài viết' },
+      { to: '/admin/reviews', icon: Star,     label: 'Đánh giá' },
+    ],
+  },
 ]
 
 export default function Sidebar() {
@@ -42,18 +60,22 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="sidebar-nav">
-        <div className="sidebar-nav-label">MENU</div>
-        {navItems.map(({ to, icon: Icon, label, exact }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={exact}
-            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-          >
-            <Icon size={18} />
-            <span>{label}</span>
-            <ChevronRight size={14} className="sidebar-link-arrow" />
-          </NavLink>
+        {navGroups.map(group => (
+          <div key={group.label}>
+            <div className="sidebar-nav-label">{group.label}</div>
+            {group.items.map(({ to, icon: Icon, label, exact }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={exact}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
+                <Icon size={18} />
+                <span>{label}</span>
+                <ChevronRight size={14} className="sidebar-link-arrow" />
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 
