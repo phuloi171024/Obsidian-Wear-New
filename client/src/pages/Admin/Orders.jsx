@@ -1,15 +1,15 @@
 import "./Orders.css";
+import { useState } from "react";
 import {
   FiCalendar,
   FiSearch,
   FiFilter,
   FiMoreHorizontal,
-  FiDownload,
   FiChevronLeft,
   FiChevronRight,
 } from "react-icons/fi";
 
-const orders = [
+const ordersPage1 = [
   {
     id: "ORD-0012506",
     date: "20/11/2023 10:30",
@@ -76,7 +76,80 @@ const orders = [
   },
 ];
 
+const ordersPage2 = [
+  {
+    id: "ORD-0012498",
+    date: "19/11/2023 11:30",
+    customer: "Phi Nguyen",
+    total: "2.950.000 VND",
+    payment: "COD/Chuyển khoản",
+    status: "Đã giao",
+  },
+  {
+    id: "ORD-0012497",
+    date: "19/11/2023 11:30",
+    customer: "Phi Nguyen",
+    total: "990.000 VND",
+    payment: "COD/Chuyển khoản",
+    status: "Đang giao",
+  },
+  {
+    id: "ORD-0012496",
+    date: "19/11/2023 11:30",
+    customer: "Phi Nguyen",
+    total: "3.250.000 VND",
+    payment: "COD/Chuyển khoản",
+    status: "Đã giao",
+  },
+  {
+    id: "ORD-0012495",
+    date: "19/11/2023 11:30",
+    customer: "Phi Nguyen",
+    total: "1.590.000 VND",
+    payment: "COD/Chuyển khoản",
+    status: "Chờ xác nhận",
+  },
+  {
+    id: "ORD-0012494",
+    date: "19/11/2023 11:30",
+    customer: "Phi Nguyen",
+    total: "2.180.000 VND",
+    payment: "COD/Chuyển khoản",
+    status: "Đang giao",
+  },
+  {
+    id: "ORD-0012493",
+    date: "19/11/2023 11:30",
+    customer: "Phi Nguyen",
+    total: "870.000 VND",
+    payment: "COD/Chuyển khoản",
+    status: "Hủy đơn",
+  },
+  {
+    id: "ORD-0012492",
+    date: "19/11/2023 11:30",
+    customer: "Phi Nguyen",
+    total: "1.390.000 VND",
+    payment: "COD/Chuyển khoản",
+    status: "Đã giao",
+  },
+  {
+    id: "ORD-0012491",
+    date: "19/11/2023 11:30",
+    customer: "Phi nguyen",
+    total: "4.150.000 VND",
+    payment: "COD/Chuyển khoản",
+    status: "Đang giao",
+  },
+];
+
 export default function Orders() {
+  const [page, setPage] = useState(1);
+
+const orders =
+  page === 1
+    ? ordersPage1
+    : ordersPage2;
   const badgeClass = (status) => {
     switch (status) {
       case "Đang giao":
@@ -107,11 +180,6 @@ export default function Orders() {
 
           <button className="add-btn">
             Tạo đơn mới
-          </button>
-
-          <button className="excel-btn">
-            <FiDownload />
-            Xuất Excel
           </button>
 
         </div>
@@ -198,27 +266,33 @@ export default function Orders() {
 
       <div className="pagination">
 
-        <button>
-          <FiChevronLeft />
-        </button>
+  <button
+    onClick={() => setPage(page === 1 ? 1 : page - 1)}
+  >
+    <FiChevronLeft />
+  </button>
 
-        <button className="active">
-          1
-        </button>
+  <button
+    className={page === 1 ? "active" : ""}
+    onClick={() => setPage(1)}
+  >
+    1
+  </button>
 
-        <button>2</button>
+  <button
+    className={page === 2 ? "active" : ""}
+    onClick={() => setPage(2)}
+  >
+    2
+  </button>
 
-        <button>3</button>
+  <button
+    onClick={() => setPage(page === 2 ? 2 : page + 1)}
+  >
+    <FiChevronRight />
+  </button>
 
-        <span>...</span>
-
-        <button>50</button>
-
-        <button>
-          <FiChevronRight />
-        </button>
-
-      </div>
+</div>
 
     </div>
   );

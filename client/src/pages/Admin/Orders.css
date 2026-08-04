@@ -52,23 +52,6 @@
   background: #0d3b88;
 }
 
-.excel-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  border: 1px solid #ddd;
-  height: 42px;
-  padding: 0 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.excel-btn:hover {
-  background: #f6f6f6;
-}
-
 /* ===== Filter ===== */
 
 .filter-bar {
