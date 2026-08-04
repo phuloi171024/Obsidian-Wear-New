@@ -9,7 +9,7 @@ export const authApi = {
 
 // ── Admin Dashboard ────────────────────────────────────────────────────────
 export const dashboardApi = {
-  getStats: () => api.get('/admin/dashboard'),
+  getStats: (params) => api.get('/admin/dashboard', { params }),
 }
 
 // ── Admin Products ─────────────────────────────────────────────────────────

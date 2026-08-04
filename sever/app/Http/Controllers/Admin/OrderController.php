@@ -9,13 +9,15 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-    // Thứ tự trạng thái đơn hàng hợp lệ
+    // Thứ tự trạng thái đơn hàng hợp lệ (bao gồm đổi/trả hàng)
     const STATUS_FLOW = [
-        'pending'    => ['processing', 'cancelled'],
-        'processing' => ['shipped', 'cancelled'],
-        'shipped'    => ['delivered'],
-        'delivered'  => [],
-        'cancelled'  => [],
+        'pending'          => ['processing', 'cancelled'],
+        'processing'       => ['shipped', 'cancelled'],
+        'shipped'          => ['delivered', 'return_requested'],
+        'delivered'        => ['return_requested'],
+        'cancelled'        => [],
+        'return_requested' => ['returned', 'delivered'], // delivered = từ chối hoàn trả
+        'returned'         => [],
     ];
 
     /**
@@ -79,7 +81,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,return_requested,returned',
         ]);
 
         if ($validator->fails()) {

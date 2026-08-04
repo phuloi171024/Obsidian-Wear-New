@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { dashboardApi } from '../../api'
 import {
   TrendingUp, ShoppingBag, Users, Package,
-  ArrowUpRight, ArrowDownRight, Activity,
+  ArrowUpRight, ArrowDownRight, Activity, Calendar,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar,
@@ -43,16 +43,25 @@ const CustomTooltip = ({ active, payload, label, formatter }) => {
   return null
 }
 
+const PERIOD_OPTIONS = [
+  { value: '7',           label: '7 ngày qua' },
+  { value: '30',          label: '30 ngày qua' },
+  { value: 'this_month',  label: 'Tháng này' },
+  { value: 'last_month',  label: 'Tháng trước' },
+]
+
 export default function DashboardPage() {
   const [data,    setData]    = useState(null)
   const [loading, setLoading] = useState(true)
+  const [period,  setPeriod]  = useState('7')
 
   useEffect(() => {
-    dashboardApi.getStats()
+    setLoading(true)
+    dashboardApi.getStats({ period })
       .then(res => setData(res.data))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [period])
 
   if (loading) return (
     <div className="loading-center">
@@ -105,6 +114,26 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {/* Page Header với Period Selector */}
+      <div className="page-header" style={{ marginBottom: 20 }}>
+        <div>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-subtitle">Tổng quan hoạt động kinh doanh</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Calendar size={15} style={{ color: 'var(--text-muted)' }} />
+          {PERIOD_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setPeriod(opt.value)}
+              className={`btn btn-sm ${period === opt.value ? 'btn-primary' : 'btn-secondary'}`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Stat Cards */}
       <div className="grid-4 mb-6">
         {statCards.map((card, i) => {
@@ -138,7 +167,9 @@ export default function DashboardPage() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold" style={{ fontSize: '0.95rem' }}>Doanh thu 7 ngày</h3>
+              <h3 className="font-bold" style={{ fontSize: '0.95rem' }}>
+                Doanh thu {PERIOD_OPTIONS.find(o => o.value === period)?.label ?? '7 ngày qua'}
+              </h3>
               <p className="text-xs text-muted" style={{ marginTop: 2 }}>Tổng giá trị đơn hàng hoàn thành</p>
             </div>
             <span className="badge badge-purple">Triệu đồng</span>

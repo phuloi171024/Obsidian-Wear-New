@@ -13,23 +13,50 @@ class DashboardController extends Controller
 {
     /**
      * Trả về thống kê tổng hợp cho Dashboard admin
-     * GET /admin/dashboard
+     * GET /admin/dashboard?period=7|30|this_month|last_month
      */
-    public function index()
+    public function index(Request $request)
     {
-        $now   = Carbon::now();
+        $period = $request->get('period', '7');
+        $now    = Carbon::now();
+
+        // Xác định khoảng thời gian theo period
+        switch ($period) {
+            case '30':
+                $dateFrom = $now->copy()->subDays(30)->startOfDay();
+                $dateTo   = $now->copy()->endOfDay();
+                $chartDays = 30;
+                break;
+            case 'this_month':
+                $dateFrom  = $now->copy()->startOfMonth();
+                $dateTo    = $now->copy()->endOfDay();
+                $chartDays = $now->day;
+                break;
+            case 'last_month':
+                $dateFrom  = $now->copy()->subMonth()->startOfMonth();
+                $dateTo    = $now->copy()->subMonth()->endOfMonth();
+                $chartDays = $now->copy()->subMonth()->daysInMonth;
+                break;
+            default: // '7'
+                $dateFrom  = $now->copy()->subDays(6)->startOfDay();
+                $dateTo    = $now->copy()->endOfDay();
+                $chartDays = 7;
+        }
+
         $month = $now->month;
         $year  = $now->year;
 
-        // Chỉ tính doanh thu từ đơn hàng đã giao thành công
+        // Chỉ tính doanh thu từ đơn hàng đã giao thành công trong khoảng period
         $revenueThisMonth = Order::where('status', 'delivered')
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
+            ->whereBetween('created_at', [$dateFrom, $dateTo])
             ->sum('total_amount');
 
+        // Doanh thu kỳ trước (same duration before dateFrom)
+        $duration         = $dateFrom->diffInDays($dateTo) + 1;
+        $prevDateFrom     = $dateFrom->copy()->subDays($duration);
+        $prevDateTo       = $dateFrom->copy()->subDay();
         $revenueLastMonth = Order::where('status', 'delivered')
-            ->whereMonth('created_at', $now->copy()->subMonth()->month)
-            ->whereYear('created_at', $now->copy()->subMonth()->year)
+            ->whereBetween('created_at', [$prevDateFrom, $prevDateTo])
             ->sum('total_amount');
 
         $revenueGrowth = $revenueLastMonth > 0
@@ -75,24 +102,22 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Doanh thu 7 ngày gần nhất (chỉ đếm đơn đã giao thành công)
-        $last7Days = collect(range(6, 0))->map(function ($daysAgo) {
-            $date = Carbon::now()->subDays($daysAgo);
+        // Doanh thu theo ngày trong khoảng period
+        $last7Days = collect(range($chartDays - 1, 0))->map(function ($daysAgo) use ($dateFrom, $chartDays) {
+            $date    = $dateFrom->copy()->addDays($chartDays - 1 - $daysAgo);
             $revenue = Order::where('status', 'delivered')
                 ->whereDate('created_at', $date->toDateString())
                 ->sum('total_amount');
-
             return [
                 'date'    => $date->format('d/m'),
                 'revenue' => (float) $revenue,
             ];
         });
 
-        // ── Đơn hàng 7 ngày gần nhất ───────────────────────────────────────────
-        $last7DaysOrders = collect(range(6, 0))->map(function ($daysAgo) {
-            $date = Carbon::now()->subDays($daysAgo);
+        // Đơn hàng theo ngày trong khoảng period
+        $last7DaysOrders = collect(range($chartDays - 1, 0))->map(function ($daysAgo) use ($dateFrom, $chartDays) {
+            $date  = $dateFrom->copy()->addDays($chartDays - 1 - $daysAgo);
             $count = Order::whereDate('created_at', $date->toDateString())->count();
-
             return [
                 'date'   => $date->format('d/m'),
                 'orders' => $count,
