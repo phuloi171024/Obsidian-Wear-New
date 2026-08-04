@@ -5,8 +5,15 @@ import {
   FiLock,
   FiEye
 } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc"; // Thêm icon Google từ react-icons
 
 export default function Login() {
+  // Hàm xử lý khi bấm nút Đăng nhập Google
+  const handleGoogleLogin = () => {
+    // Trỏ thẳng về API Route xử lý Google Socialite ở Backend Laravel của em
+    window.location.href = "http://127.0.0.1:8000/api/auth/google";
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-box">
@@ -22,27 +29,24 @@ export default function Login() {
         <div className="form-group">
           <label>E-mail</label>
           <div className="input-wrapper">
-  <FiMail className="input-icon" />
-
-  <input
-    type="email"
-    placeholder="email@của bạn.com"
-  />
-</div>
+            <FiMail className="input-icon" />
+            <input
+              type="email"
+              placeholder="email@của bạn.com"
+            />
+          </div>
         </div>
 
         <div className="form-group">
           <label>Mật khẩu</label>
           <div className="input-wrapper">
-  <FiLock className="input-icon" />
-
-  <input
-    type="password"
-    placeholder="••••••••"
-  />
-
-  <FiEye className="eye-icon" />
-</div>
+            <FiLock className="input-icon" />
+            <input
+              type="password"
+              placeholder="••••••••"
+            />
+            <FiEye className="eye-icon" />
+          </div>
         </div>
 
         <div className="auth-row">
@@ -59,6 +63,21 @@ export default function Login() {
         <button className="auth-submit">
           Đăng nhập
         </button>
+
+        {/* --- PHẦN ĐĂNG NHẬP BẰNG GOOGLE --- */}
+        <div className="auth-divider">
+          <span>Hoặc tiếp tục với</span>
+        </div>
+
+        <button 
+          type="button" 
+          className="google-login-btn"
+          onClick={handleGoogleLogin}
+        >
+          <FcGoogle style={{ fontSize: "20px", marginRight: "10px" }} />
+          Đăng nhập bằng Google
+        </button>
+        {/* ---------------------------------- */}
 
         <div className="auth-footer">
           Bạn chưa có tài khoản?

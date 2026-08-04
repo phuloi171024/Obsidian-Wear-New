@@ -7,8 +7,14 @@ import {
   FiLock,
   FiEye
 } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc"; // Thêm icon Google
 
 export default function Register() {
+  // Hàm xử lý chuyển hướng sang API Google Login của Laravel Backend
+  const handleGoogleLogin = () => {
+    window.location.href = "http://127.0.0.1:8000/api/auth/google";
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-box">
@@ -22,90 +28,95 @@ export default function Register() {
         <h2>Đăng ký tài khoản</h2>
 
         <div className="form-group">
-  <label>Họ và tên</label>
-
-  <div className="input-wrapper">
-    <FiUser className="input-icon" />
-    <input
-      type="text"
-      placeholder="Nguyễn Văn A"
-    />
-  </div>
-</div>
-
-        <div className="form-group">
-  <label>E-mail</label>
-
-  <div className="input-wrapper">
-    <FiMail className="input-icon" />
-    <input
-      type="email"
-      placeholder="email@của bạn.com"
-    />
-  </div>
-</div>
+          <label>Họ và tên</label>
+          <div className="input-wrapper">
+            <FiUser className="input-icon" />
+            <input
+              type="text"
+              placeholder="Nguyễn Văn A"
+            />
+          </div>
+        </div>
 
         <div className="form-group">
-  <label>Số điện thoại (tùy chọn)</label>
-
-  <div className="input-wrapper">
-    <FiPhone className="input-icon" />
-    <input
-      type="tel"
-      placeholder="0123456789"
-    />
-  </div>
-</div>
-
-        <div className="form-group">
-  <label>Mật khẩu</label>
-
-  <div className="input-wrapper">
-    <FiLock className="input-icon" />
-
-    <input
-      type="password"
-      placeholder="••••••••"
-    />
-
-    <FiEye className="eye-icon" />
-  </div>
-</div>
+          <label>E-mail</label>
+          <div className="input-wrapper">
+            <FiMail className="input-icon" />
+            <input
+              type="email"
+              placeholder="email@của bạn.com"
+            />
+          </div>
+        </div>
 
         <div className="form-group">
-  <label>Xác nhận mật khẩu</label>
+          <label>Số điện thoại (tùy chọn)</label>
+          <div className="input-wrapper">
+            <FiPhone className="input-icon" />
+            <input
+              type="tel"
+              placeholder="0123456789"
+            />
+          </div>
+        </div>
 
-  <div className="input-wrapper">
-    <FiLock className="input-icon" />
+        <div className="form-group">
+          <label>Mật khẩu</label>
+          <div className="input-wrapper">
+            <FiLock className="input-icon" />
+            <input
+              type="password"
+              placeholder="••••••••"
+            />
+            <FiEye className="eye-icon" />
+          </div>
+        </div>
 
-    <input
-      type="password"
-      placeholder="••••••••"
-    />
-
-    <FiEye className="eye-icon" />
-  </div>
-</div>
+        <div className="form-group">
+          <label>Xác nhận mật khẩu</label>
+          <div className="input-wrapper">
+            <FiLock className="input-icon" />
+            <input
+              type="password"
+              placeholder="••••••••"
+            />
+            <FiEye className="eye-icon" />
+          </div>
+        </div>
 
         <label className="checkbox">
-  <input type="checkbox" />
-
-  <span>
-    Tôi đồng ý với{" "}
-    <a href="#" className="policy-link">
-      Điều khoản
-    </a>{" "}
-    và{" "}
-    <a href="#" className="policy-link">
-      Chính sách bảo mật
-    </a>{" "}
-    của Obsidian Wear
-  </span>
-</label>
+          <input type="checkbox" />
+          <span>
+            Tôi đồng ý với{" "}
+            <a href="#" className="policy-link">
+              Điều khoản
+            </a>{" "}
+            và{" "}
+            <a href="#" className="policy-link">
+              Chính sách bảo mật
+            </a>{" "}
+            của Obsidian Wear
+          </span>
+        </label>
 
         <button className="auth-submit">
           Đăng ký
         </button>
+
+        {/* --- PHẦN ĐĂNG KÝ/ĐĂNG NHẬP NHANH BẰNG GOOGLE --- */}
+        <div className="auth-divider">
+          <span>Hoặc tiếp tục với</span>
+        </div>
+
+        <button 
+          type="button" 
+          className="google-login-btn"
+          onClick={handleGoogleLogin}
+        >
+          <FcGoogle style={{ fontSize: "20px", marginRight: "10px" }} />
+          Đăng ký bằng Google
+        </button>
+        {/* ------------------------------------------------ */}
 
         <div className="auth-footer">
           Đã có tài khoản?
