@@ -27,7 +27,7 @@ export default function AoPage() {
       try {
         setLoading(true);
         const filters = { 
-          category: "Áo", // Đổi thành "Giày" hoặc "Túi" nếu dùng cho trang khác
+          category: "Áo", 
           sort: sortOption 
         };
 

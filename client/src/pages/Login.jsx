@@ -1,90 +1,146 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import toast, { Toaster } from "react-hot-toast";
 import "./Auth.css";
-import { Link } from "react-router-dom";
-import {
-  FiMail,
-  FiLock,
-  FiEye
-} from "react-icons/fi";
-import { FcGoogle } from "react-icons/fc"; // Thêm icon Google từ react-icons
 
 export default function Login() {
-  // Hàm xử lý khi bấm nút Đăng nhập Google
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && (data.access_token || data.token)) {
+        const token = data.access_token || data.token;
+        
+        // Lưu token để bảo vệ trang cá nhân
+        localStorage.setItem("access_token", token);
+        
+        if (data.data) {
+          localStorage.setItem("user_info", JSON.stringify(data.data));
+        }
+
+        toast.success(data.message || "Đăng nhập thành công!");
+        
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } else {
+        toast.error(data.message || "Email hoặc mật khẩu không chính xác!");
+      }
+    } catch (error) {
+      console.error("Lỗi kết nối:", error);
+      toast.error("Không thể kết nối đến máy chủ!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Xử lý chuyển hướng đến Google Login của Laravel
   const handleGoogleLogin = () => {
-    // Trỏ thẳng về API Route xử lý Google Socialite ở Backend Laravel của em
-    window.location.href = "http://127.0.0.1:8000/api/auth/google";
+    window.location.href = "http://localhost:8000/api/auth/google";
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-box">
+    <>
+      <Toaster position="top-right" />
+      
+      <div className="auth-page">
+        <div className="auth-box">
+          {/* Logo trang web */}
+          <img 
+            src="/src/public/images/logo.png" 
+            alt="Logo" 
+            className="auth-logo"
+            onError={(e) => { e.target.style.display = 'none'; }} 
+          />
 
-        <img
-          src="/src/public/images/logo.png"
-          alt="logo"
-          className="auth-logo"
-        />
+          <h2>Đăng nhập tài khoản</h2>
 
-        <h2>Đăng nhập</h2>
+          <form onSubmit={handleLogin}>
+            {/* Ô Email */}
+            <div className="form-group">
+              <label>Email *</label>
+              <div className="input-wrapper">
+                <FiMail className="input-icon" />
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  placeholder="name@example.com"
+                  required 
+                />
+              </div>
+            </div>
 
-        <div className="form-group">
-          <label>E-mail</label>
-          <div className="input-wrapper">
-            <FiMail className="input-icon" />
-            <input
-              type="email"
-              placeholder="email@của bạn.com"
-            />
+            {/* Ô Mật khẩu kèm icon ẩn/hiện */}
+            <div className="form-group">
+              <label>Mật khẩu *</label>
+              <div className="input-wrapper">
+                <FiLock className="input-icon" />
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  placeholder="Nhập mật khẩu của bạn"
+                  required 
+                />
+                <span 
+                  className="eye-icon" 
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </span>
+              </div>
+            </div>
+
+            {/* Hàng chức năng (Ghi nhớ & Quên mật khẩu) */}
+            <div className="auth-row">
+              <label className="checkbox" style={{ margin: 0 }}>
+                <input type="checkbox" /> Ghi nhớ đăng nhập
+              </label>
+              <Link to="/forgot-password">Quên mật khẩu?</Link>
+            </div>
+
+            {/* Nút Submit */}
+            <button type="submit" disabled={isLoading} className="auth-submit">
+              {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+            </button>
+          </form>
+
+          {/* Đường phân cách */}
+          <div className="auth-divider">
+            <span>Hoặc đăng nhập với</span>
+          </div>
+
+          {/* Nút đăng nhập Google */}
+          <button type="button" className="google-login-btn" onClick={handleGoogleLogin}>
+            Tiếp tục với Google
+          </button>
+
+          {/* Chân trang chuyển sang đăng ký */}
+          <div className="auth-footer">
+            Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
           </div>
         </div>
-
-        <div className="form-group">
-          <label>Mật khẩu</label>
-          <div className="input-wrapper">
-            <FiLock className="input-icon" />
-            <input
-              type="password"
-              placeholder="••••••••"
-            />
-            <FiEye className="eye-icon" />
-          </div>
-        </div>
-
-        <div className="auth-row">
-          <label className="checkbox">
-            <input type="checkbox" />
-            Ghi nhớ đăng nhập
-          </label>
-
-          <Link to="/forgot-password">
-            Quên mật khẩu?
-          </Link>
-        </div>
-
-        <button className="auth-submit">
-          Đăng nhập
-        </button>
-
-        {/* --- PHẦN ĐĂNG NHẬP BẰNG GOOGLE --- */}
-        <div className="auth-divider">
-          <span>Hoặc tiếp tục với</span>
-        </div>
-
-        <button 
-          type="button" 
-          className="google-login-btn"
-          onClick={handleGoogleLogin}
-        >
-          <FcGoogle style={{ fontSize: "20px", marginRight: "10px" }} />
-          Đăng nhập bằng Google
-        </button>
-        {/* ---------------------------------- */}
-
-        <div className="auth-footer">
-          Bạn chưa có tài khoản?
-          <Link to="/register"> Đăng ký ngay</Link>
-        </div>
-
       </div>
-    </div>
+    </>
   );
 }

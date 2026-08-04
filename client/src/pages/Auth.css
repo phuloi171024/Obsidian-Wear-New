@@ -1,239 +1,278 @@
-/* ============ AUTH PAGE LAYOUT ============ */
-.auth-page{
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:
-        radial-gradient(circle at 15% 20%, rgba(52, 103, 214, 0.06), transparent 40%),
-        radial-gradient(circle at 85% 80%, rgba(31, 41, 55, 0.04), transparent 40%),
-        #f7f8fa;
-    padding:40px 20px;
+/* ============ BỐ CỤC TỔNG THỂ ============ */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #f6f8fb 0%, #e5e7eb 100%);
+  padding: 40px 20px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.auth-box{
-    width:100%;
-    max-width:360px;
-    background:#ffffff;
-    border:1px solid #eef0f3;
-    border-radius:16px;
-    box-shadow:0 4px 6px rgba(0,0,0,0.02), 0 12px 32px rgba(15,23,42,0.06);
-    padding:40px 32px 32px;
-    box-sizing:border-box;
+.auth-box {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  padding: 48px 36px 40px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-box::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, #111827, #3b82f6);
 }
 
 /* ============ LOGO ============ */
-.auth-logo{
-    width:110px;
-    display:block;
-    margin:0 auto 28px;
+.auth-logo {
+  width: 120px;
+  display: block;
+  margin: 0 auto 24px;
+  mix-blend-mode: multiply; 
 }
 
-/* ============ HEADING ============ */
-.auth-box h2{
-    text-align:center;
-    font-size:21px;
-    font-weight:800;
-    color:#1f2937;
-    letter-spacing:-0.01em;
-    margin-bottom:12px;
+/* ============ TIÊU ĐỀ ============ */
+.auth-box h2 {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.01em;
+  margin-bottom: 28px;
 }
 
-.auth-desc{
-    text-align:center;
-    color:#6b7280;
-    font-size:14px;
-    line-height:1.6;
-    margin-bottom:28px;
+/* ============ FORM & INPUT ============ */
+.form-group {
+  margin-bottom: 20px;
 }
 
-/* ============ FORM ============ */
-.form-group{
-    margin-bottom:18px;
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
 }
 
-.form-group label{
-    display:block;
-    margin-bottom:8px;
-    font-size:13px;
-    font-weight:600;
-    color:#374151;
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
-.form-group input{
-    width:100%;
-    height:46px;
-    border:1px solid #dbe1ea;
-    border-radius:8px;
-    padding:0 14px;
-    font-size:14px;
-    outline:none;
-    box-sizing:border-box;
-    background:#fbfcfd;
-    transition:border-color .2s, box-shadow .2s, background .2s;
-}
-
-.form-group input::placeholder{
-    color:#b0b6c0;
-}
-
-.form-group input:focus{
-    border-color:#3b82f6;
-    background:#fff;
-    box-shadow:0 0 0 3px rgba(59,130,246,0.12);
-}
-
-.auth-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin:12px 0 20px;
-    font-size:13px;
-}
-
-.auth-row a{
-    color:#2563eb;
-    text-decoration:none;
-    font-weight:500;
-    transition:color .2s;
-}
-
-.auth-row a:hover{
-    color:#1d4ed8;
-}
-
-/* ============ SUBMIT BUTTON ============ */
-.auth-submit{
-    width:100%;
-    height:48px;
-    border:none;
-    border-radius:8px;
-    background:#3467d6;
-    color:white;
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-    transition:background .2s, transform .1s;
-}
-
-.auth-submit:hover:not(:disabled){
-    background:#2958c3;
-}
-
-.auth-submit:active:not(:disabled){
-    transform:scale(0.99);
-}
-
-.auth-submit:disabled{
-    background:#c3cbd8;
-    cursor:not-allowed;
-}
-
-/* ============ FOOTER ============ */
-.auth-footer{
-    margin-top:22px;
-    text-align:center;
-    font-size:13px;
-    color:#6b7280;
-}
-
-.auth-footer a{
-    color:#2563eb;
-    text-decoration:none;
-    font-weight:600;
-    transition:color .2s;
-}
-
-.auth-footer a:hover{
-    color:#1d4ed8;
-}
-
-/* ============ CHECKBOX ============ */
-.checkbox{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:13px;
-    color:#666;
-    margin-bottom:18px;
-}
-
-.checkbox input{
-    width:14px !important;
-    height:14px !important;
-    margin:0;
-    flex-shrink:0;
-}
-
-/* ============ INPUT WITH ICON ============ */
-.auth-box input{
-    width:100%;
-    height:46px;
-    border:1px solid #dbe1ea;
-    border-radius:8px;
-    padding:0 14px;
-    font-size:14px;
-    outline:none;
-    box-sizing:border-box;
-    background:#fbfcfd;
-    transition:border-color .2s, box-shadow .2s, background .2s;
-}
-
-.auth-box input:focus{
-    border-color:#3b82f6;
-    background:#fff;
-    box-shadow:0 0 0 3px rgba(59,130,246,0.12);
-}
-
-.input-wrapper{
-    position:relative;
-}
-
-.input-wrapper input{
-    width:100%;
-    height:46px;
-    padding-left:40px;
-    padding-right:38px;
-    border:1px solid #dbe1ea;
-    border-radius:8px;
-    box-sizing:border-box;
-}
-
-.input-icon{
-    position:absolute;
-    left:14px;
-    top:50%;
-    transform:translateY(-50%);
-    color:#9ca3af;
-    font-size:15px;
-}
-
-.eye-icon{
-    position:absolute;
-    right:14px;
-    top:50%;
-    transform:translateY(-50%);
-    color:#9ca3af;
-    font-size:15px;
-    cursor:pointer;
-}
-
-/* ============ POLICY LINK ============ */
-.policy-link {
-  color: #1677ff;
-  text-decoration: none;
+/* Thiết lập ô input chuẩn: chừa khoảng trống bên trái (48px) cho icon và bên phải (48px) cho nút ẩn/hiện mật khẩu */
+.input-wrapper input {
+  width: 100%;
+  height: 52px;
+  padding-left: 48px !important;
+  padding-right: 48px !important;
+  border: 2px solid #f3f4f6;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 500;
-  transition: 0.2s;
+  color: #111827;
+  background: #f9fafb;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
-.policy-link:hover {
-  color: #4096ff;
+.input-wrapper input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.input-wrapper input:focus {
+  border-color: #111827;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Định vị icon bên trái nằm gọn gàng, không bị vướng chữ */
+.input-icon {
+  position: absolute;
+  left: 16px;
+  color: #9ca3af;
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.input-wrapper input:focus ~ .input-icon {
+  color: #111827;
+}
+
+/* Định vị icon con mắt bên phải */
+.eye-icon {
+  position: absolute;
+  right: 16px;
+  color: #9ca3af;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s;
+}
+
+.eye-icon:hover {
+  color: #111827;
+}
+
+/* ============ HÀNG CHỨC NĂNG ============ */
+.auth-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+
+.auth-row a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-row a:hover {
   text-decoration: underline;
 }
 
-/* ============ RESPONSIVE ============ */
-@media (max-width: 420px){
-    .auth-box{
-        padding:32px 24px 24px;
-    }
+/* ============ NÚT BẤM CHÍNH ============ */
+.auth-submit {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 12px;
+  background: #111827;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
+  font-family: inherit;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background: #1f2937;
+  transform: translateY(-2px);
+}
+
+/* ============ NÚT GOOGLE ============ */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 24px 0;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.auth-divider span {
+  padding: 0 12px;
+}
+
+.google-login-btn {
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 24px;
+  font-family: inherit;
+}
+
+.google-login-btn:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* ============ CHECKBOX (Tạo khoảng cách an toàn với nút đăng ký) ============ */
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: #4b5563;
+  cursor: pointer;
+  margin-top: 20px;
+  margin-bottom: 28px; 
+  line-height: 1.5;
+}
+
+.checkbox input {
+  width: 18px !important;
+  height: 18px !important;
+  margin: 2px 0 0 0;
+  cursor: pointer;
+  accent-color: #111827;
+  flex-shrink: 0;
+}
+
+/* ============ CHÂN TRANG ============ */
+.auth-footer {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.auth-footer a {
+  color: #111827;
+  text-decoration: none;
+  font-weight: 800;
+  margin-left: 6px;
+}
+
+.auth-footer a:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.policy-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ============ SỬA LỖI HIỂN THỊ TIẾNG VIỆT ============ */
+.auth-page, 
+.auth-box, 
+.auth-box h2, 
+input, 
+button {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+.auth-box h2,
+.auth-submit,
+.auth-divider,
+.google-login-btn {
+  text-transform: none !important;
+  font-size: 16px !important;
 }

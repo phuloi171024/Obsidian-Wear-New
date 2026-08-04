@@ -14,7 +14,7 @@ export default function OrderSuccessPage() {
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] flex flex-col font-sans">
       <Header />
 
-      <main className="flex-grow max-w-2xl w-full mx-auto px-4 py-16 flex flex-col items-center text-center">
+      <main className="grow max-w-2xl w-full mx-auto px-4 py-16 flex flex-col items-center text-center">
         <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
           <FaCheckCircle className="text-green-600 text-5xl" />
         </div>

@@ -2,14 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes; // Bảng của em có deleted_at
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'slug', 'status'];
+    protected $fillable = [
+        'name', 
+        'slug', 
+        'status'
+    ];
 
     // Một danh mục có nhiều sản phẩm 
     public function products()

@@ -2,15 +2,54 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaMapMarkerAlt, FaCheck } from 'react-icons/fa';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
+import toast, { Toaster } from "react-hot-toast";
 
 export default function PaymentPage() {
   const [activeTab, setActiveTab] = useState('cod');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const order = {
     code: 'ORD21751592',
     total: '1.920.000',
     method: 'Thanh toán khi nhận hàng (COD)',
+  };
+
+  // API ĐẶT HÀNG
+  const handleConfirmOrder = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      toast.error("Vui lòng đăng nhập để đặt hàng!");
+      return navigate("/login");
+    }
+
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:8000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token.trim()}`
+        },
+        body: JSON.stringify({
+          payment_method: activeTab
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.status) {
+        toast.success("Đặt hàng thành công!");
+        navigate('/order-success', { state: { order } });
+      } else {
+        toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+      }
+    } catch (error) {
+      toast.error("Không thể kết nối tới máy chủ.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [
@@ -21,7 +60,7 @@ export default function PaymentPage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] flex flex-col font-sans">
-      
+      <Toaster position="top-right" />
       <Header />
 
       {/* ================= MAIN CONTENT SECTION ================= */}
@@ -89,13 +128,13 @@ export default function PaymentPage() {
           <div className="flex border-b border-gray-200 mb-8">
             <button 
               onClick={() => setActiveTab('cod')}
-              className={`flex items-center space-x-2 pb-3 px-2 border-b-2 font-semibold text-sm transition-colors ${activeTab === 'cod' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+              className={`flex items-center space-x-2 pb-3 px-2 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${activeTab === 'cod' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
             >
-              <span>$ Tiền mặt khi nhận hàng</span>
+              <span>💵 Tiền mặt khi nhận hàng</span>
             </button>
             <button 
               onClick={() => setActiveTab('sepay')}
-              className={`flex items-center space-x-2 pb-3 px-6 border-b-2 font-semibold text-sm transition-colors ${activeTab === 'sepay' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+              className={`flex items-center space-x-2 pb-3 px-6 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${activeTab === 'sepay' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
             >
               <span>💳 Sepay</span>
             </button>
@@ -137,15 +176,16 @@ export default function PaymentPage() {
             {/* Nút hành động */}
             <div className="pt-4 space-y-3">
               <button
-                onClick={() => navigate('/order-success', { state: { order } })}
-                className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm"
+                onClick={handleConfirmOrder}
+                disabled={loading}
+                className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm cursor-pointer"
               >
-                <span>✓ Xác nhận thanh toán COD</span>
+                <span>{loading ? "Đang xử lý..." : "✓ Xác nhận thanh toán COD"}</span>
               </button>
 
               <button
                 onClick={() => navigate('/ShippingInfoPage')}
-                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-3 px-4 rounded-xl transition-colors"
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-3 px-4 rounded-xl transition-colors cursor-pointer"
               >
                 Quay lại chi tiết đơn hàng
               </button>
@@ -155,91 +195,7 @@ export default function PaymentPage() {
         </div>
       </main>
 
-      {/* ================= FOOTER SECTION ================= */}
-      <footer className="bg-[#ffffff] border-t border-gray-100 pt-14 pb-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
-          
-          <div className="space-y-4">
-            <h4 className="text-xs font-black tracking-normal text-black">Về Obsidian Wear</h4>
-            <p className="text-xs text-gray-600 leading-relaxed font-medium">
-              Obsidian Wear cung cảp các sản phẩm quần áo thể thao chất lượng cao với nhiều phong cách đa dạng cho nam, nữ và trẻ em.
-            </p>
-            
-            <div className="flex items-center space-x-2 pt-1">
-              <a href="#" className="w-7 h-7 rounded-full bg-[#1877F2] flex items-center justify-center text-white text-xs font-bold hover:opacity-85 transition-opacity">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2c4.477 2 10 2 10c4.991 0 9.103 3.657 9.875 8.438v-8.438H17v2.219h1.438c.313 0 .563.25.563.563v2.813H17V22h-3v-6.188h-2.188V13H14v-2.313c0-2.156 1.313-3.344 3.25-3.344.938 0 1.938.156 1.938.156v2.125H18.06c-1.063 0-1.375.656-1.375 1.344V13h2.406l-.375 2.813H16.69V22c5.523 0 10-4.477 10-10z"/></svg>
-              </a>
-              <a href="#" className="w-7 h-7 rounded-full bg-[#E4405F] flex items-center justify-center text-white hover:opacity-85 transition-opacity">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-              </a>
-              <a href="#" className="w-7 h-7 rounded-full bg-[#1DA1F2] flex items-center justify-center text-white hover:opacity-85 transition-opacity">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
-              </a>
-              <a href="#" className="w-7 h-7 rounded-full bg-[#FF0000] flex items-center justify-center text-white hover:opacity-85 transition-opacity">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-              </a>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-black tracking-normal text-black">Về Obsidian Wear</h4>
-            <ul className="space-y-2.5 text-xs text-gray-500 font-semibold">
-              <li><a href="#" className="hover:text-black transition-colors">Sản phẩm</a></li>
-              <li><a href="#" className="hover:text-black transition-colors">Áo nam</a></li>
-              <li><a href="#" className="hover:text-black transition-colors">Áo nữ</a></li>
-              <li><a href="#" className="hover:text-black transition-colors">Áo trẻ em</a></li>
-              <li><a href="#" className="hover:text-black transition-colors">Khuyến mãi</a></li>
-            </ul>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-black tracking-normal text-black">Về Obsidian Wear</h4>
-            <ul className="space-y-2.5 text-xs text-gray-500 font-semibold">
-              <li><a href="#" className="hover:text-black transition-colors">Câu hỏi thường gặp</a></li>
-              <li><a href="#" className="hover:text-black transition-colors">Chính sách vận chuyển</a></li>
-              <li><a href="#" className="hover:text-black transition-colors">Chính sách đổi trả</a></li>
-              <li><a href="#" className="hover:text-black transition-colors">Hướng dẫn chọn size</a></li>
-              <li><a href="#" className="hover:text-black transition-colors">Liên hệ</a></li>
-            </ul>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-black tracking-normal text-black">Về Obsidian Wear</h4>
-            <ul className="space-y-3.5 text-xs text-gray-500 font-semibold">
-              <li className="flex items-start space-x-2.5">
-                <span className="text-[#3b82f6] text-sm leading-none">⚙️</span>
-                <span className="leading-relaxed">123 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh</span>
-              </li>
-              <li className="flex items-center space-x-2.5">
-                <span className="text-[#3b82f6] text-sm leading-none">📞</span>
-                <span>+84 123 456 789</span>
-              </li>
-              <li className="flex items-center space-x-2.5">
-                <span className="text-[#3b82f6] text-sm leading-none">✉️</span>
-                <span>Hello@obsidianwear.vn</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 pt-6 border-t border-gray-100 flex flex-col space-y-4">
-          <div className="space-y-2">
-            <h5 className="text-[11px] font-black tracking-normal text-black uppercase">Phương Thức Thanh Toán</h5>
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="px-2.5 py-1 bg-white border border-gray-200 rounded text-[10px] font-black text-[#1A1F71] shadow-xs select-none">VISA</span>
-              <span className="px-2.5 py-1 bg-white border border-gray-200 rounded text-[10px] font-black text-[#FF5F00] shadow-xs select-none">mastercard</span>
-              <span className="px-2.5 py-1 bg-white border border-gray-200 rounded text-[10px] font-black text-[#0066B2] shadow-xs select-none">JCB</span>
-              <span className="px-2 py-0.5 bg-white border border-gray-200 rounded text-[10px] font-bold text-[#E02020] font-serif italic shadow-xs select-none">VNPAY</span>
-              <span className="px-2 py-0.5 bg-[#A50064] border border-[#A50064] rounded text-[9px] font-bold text-white shadow-xs select-none">mo mo</span>
-            </div>
-          </div>
-          
-          <div className="text-center text-[11px] text-gray-500 font-medium pt-2">
-            © 2026 OBSIDIAN WEAR. All rights reserved
-          </div>
-        </div>
-      </footer>
-
+      <Footer />
     </div>
   );
 }

@@ -2,14 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class Brand extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'slug', 'status']; 
+    protected $fillable = [
+        'name', 
+        'slug', 
+        'status'
+    ]; 
 
     // Một thương hiệu có nhiều sản phẩm
     public function products()

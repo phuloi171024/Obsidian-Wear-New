@@ -39,7 +39,7 @@ class ProductController extends Controller
         $query = Product::with(['category', 'brand', 'images', 'variants'])
             ->where('status', true);
 
-        // A. Tìm kiếm theo từ khóa (Tên sản phẩm hoặc Tên thương hiệu)
+        // A. Tìm kiếm theo từ khóa
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -50,17 +50,27 @@ class ProductController extends Controller
             });
         }
 
-        // B. Lọc theo Danh mục
+        // B. LỌC THEO DANH MỤC: Bổ sung lọc theo tên chữ (Áo, Quần, Giày, Túi) từ React gửi lên
+        if ($request->has('category') && !empty($request->category)) {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('name', $request->category);
+            });
+        }
+        // Giữ lại lọc theo category_id phòng hờ sau này cần dùng
         if ($request->has('category_id') && !empty($request->category_id)) {
             $query->where('category_id', $request->category_id);
         }
 
         // C. Lọc theo Thương hiệu
-        if ($request->has('brand_id') && !empty($request->brand_id)) {
+        if ($request->has('brand_ids') && !empty($request->brand_ids)) {
+            // Frontend gửi chuỗi "1,2,3" -> cần tách ra thành mảng [1,2,3]
+            $brandIds = explode(',', $request->brand_ids);
+            $query->whereIn('brand_id', $brandIds);
+        } elseif ($request->has('brand_id') && !empty($request->brand_id)) {
             $query->where('brand_id', $request->brand_id);
         }
 
-        // D. Lọc theo Khoảng giá (min_price - max_price)
+        // D. Lọc theo Khoảng giá
         if ($request->has('min_price') && is_numeric($request->min_price)) {
             $query->where('price', '>=', $request->min_price);
         }
@@ -68,7 +78,7 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        // E. Lọc theo Size hoặc Màu sắc (thông qua mảng biến thể variants)
+        // E. Lọc theo Size hoặc Màu sắc
         if ($request->has('size') || $request->has('color')) {
             $query->whereHas('variants', function ($v) use ($request) {
                 if ($request->has('size') && !empty($request->size)) {
@@ -80,7 +90,7 @@ class ProductController extends Controller
             });
         }
 
-        // F. Sắp xếp (mới nhất, giá tăng/giảm)
+        // F. Sắp xếp
         if ($request->has('sort')) {
             switch ($request->sort) {
                 case 'price_asc':
@@ -98,8 +108,9 @@ class ProductController extends Controller
             $query->latest();
         }
 
-        // Phân trang (Mặc định 12 sản phẩm/trang)
-        $products = $query->paginate($request->get('per_page', 12));
+        // G. TRẢ VỀ MẢNG DỮ LIỆU THẲNG THAY VÌ PHÂN TRANG OBJECT
+        // Đổi từ paginate() sang get() để React đếm .length > 0 dễ dàng
+        $products = $query->get();
 
         return response()->json([
             'status' => true,
@@ -108,9 +119,9 @@ class ProductController extends Controller
     }
 
     /**
-     * 3. Xem chi tiết 1 sản phẩm (Kèm biến thể, hình ảnh & kiểm tra tồn kho)
+     * 3. Xem chi tiết 1 sản phẩm
      */
-    public function show($id)
+    public function show( int $id)
     {
         $product = Product::with(['category', 'brand', 'images', 'variants'])
             ->where('status', true)

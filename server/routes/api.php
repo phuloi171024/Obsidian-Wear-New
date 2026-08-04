@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProductController as ClientProductController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\CartController;
+use App\Http\Controllers\Api\CartController;
+
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\Api\OrderController as ClientOrderController; 
 
 // 2. Phân hệ Quản trị viên (Admin API)
 use App\Http\Controllers\Admin\DashboardController;
@@ -43,7 +45,7 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 // Social Login bằng Google
-Route::get('/auth/google/url', [AuthController::class, 'redirectToGoogle']);
+Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
 
@@ -76,6 +78,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/add', [CartController::class, 'add']);
     Route::put('/cart/update/{id}', [CartController::class, 'update']);
     Route::delete('/cart/remove/{id}', [CartController::class, 'remove']);
+
+    // 👈 BỔ SUNG: Quản lý đơn hàng của chính khách hàng đang đăng nhập
+    Route::get('/orders', [ClientOrderController::class, 'index']);       // Lấy danh sách đơn hàng của user
+    Route::post('/orders', [ClientOrderController::class, 'store']);      // Tạo đơn hàng mới từ giỏ hàng
+    Route::get('/orders/{id}', [ClientOrderController::class, 'show']);   // Xem chi tiết 1 đơn hàng
+    Route::put('/orders/{id}/cancel', [ClientOrderController::class, 'cancel']); // Hủy đơn hàng
 });
 
 
@@ -101,7 +109,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::put('/products/{id}/variants/{variantId}', [AdminProductController::class, 'updateVariant']);
     Route::delete('/products/{id}/variants/{variantId}', [AdminProductController::class, 'deleteVariant']);
 
-    // 3.5. Quản Lý Đơn Hàng (Orders)
+    // 3.5. Quản Lý Đơn Hàng (Orders - Dành cho Admin quản lý toàn hệ thống)
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::get('/orders/{id}', [AdminOrderController::class, 'show']);
     Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);

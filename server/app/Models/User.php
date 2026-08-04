@@ -9,6 +9,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+// 👇 Khai báo đầy đủ các Model quan hệ để VS Code hết báo vạch đỏ P1009
+use App\Models\Address;
+use App\Models\Order;
+use App\Models\Review;
+use App\Models\CartItem;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -22,7 +28,11 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
+        'google_id', // Trường nhận ID từ Google
+        'role',      // Phân quyền
+        'status',    // Trạng thái hoạt động
     ];
 
     /**
@@ -54,7 +64,7 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    // Một người dùng có nhiều địa chỉ nhận hàng (Đã gộp và sửa lỗi trùng)
+    // Một người dùng có nhiều địa chỉ nhận hàng
     public function addresses()
     {
         return $this->hasMany(Address::class, 'user_id', 'id');

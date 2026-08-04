@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header';
+import Header from './components/Header'; // Chú ý: import ở App.jsx chỉ là ./
 
 // Import các trang Client & Tài khoản
 import Home from "./pages/Home"; 
@@ -17,8 +17,9 @@ import Contact from "./pages/Contact/Contact";
 import SizeGuide from "./pages/SizeGuide";
 import ProfilePage from "./pages/ProfilePage";
 import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
+import ShippingInfoPage from "./pages/ShippingInfoPage";
 import PaymentPage from "./pages/PaymentPage";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
 import OrdersPage from "./pages/OrdersPage";
 
 // Import các trang Admin
@@ -35,23 +36,17 @@ import Comments from "./pages/Admin/Comments";
 // 1. TRẠM KIỂM SOÁT BẢO MẬT (ROUTE GUARDS)
 // ==========================================
 
-// Trạm 1: Dành cho trang BẮT BUỘC ĐĂNG NHẬP (Private)
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("token"); 
-  
+  const isAuthenticated = localStorage.getItem("access_token"); 
   if (!isAuthenticated) {
-    // Chưa đăng nhập? Đá về trang login ngay lập tức
     return <Navigate to="/login" replace />;
   }
   return children; 
 };
 
-// Trạm 2: Dành cho trang CHỈ DÀNH CHO KHÁCH (Guest)
 const GuestRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("token"); 
-  
+  const isAuthenticated = localStorage.getItem("access_token"); 
   if (isAuthenticated) {
-    // Đã đăng nhập rồi mà còn vào trang Login/Register? Đá về trang chủ
     return <Navigate to="/" replace />;
   }
   return children;
@@ -65,7 +60,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* NHÓM 1: PUBLIC - Ai cũng vào được (Không cần kiểm tra) */}
+        {/* NHÓM 1: PUBLIC */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductPage />} />
         <Route path="/product/:id" element={<ProductDetail />} />
@@ -76,19 +71,20 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/size-guide" element={<SizeGuide />} />
 
-        {/* NHÓM 2: GUEST ONLY - Phải CHƯA ĐĂNG NHẬP mới được vào */}
+        {/* NHÓM 2: GUEST ONLY */}
         <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
         <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
         <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
 
-        {/* NHÓM 3: PRIVATE - Bắt buộc PHẢI ĐĂNG NHẬP mới được vào */}
+        {/* NHÓM 3: PRIVATE - Bắt buộc PHẢI ĐĂNG NHẬP */}
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
-        <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+        <Route path="/shipping-info" element={<ProtectedRoute><ShippingInfoPage /></ProtectedRoute>} />
         <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+        <Route path="/order-success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
 
-        {/* NHÓM 4: ADMIN - Khu vực quản trị hệ thống */}
+        {/* NHÓM 4: ADMIN */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
