@@ -1,9 +1,9 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
-import Register from './pages/Register'; 
-import Home from "./pages/Home"; 
-import ProductPage from "./pages/ProductPage"; 
+import Register from './pages/Register';
+import Home from "./pages/Home";
+import ProductPage from "./pages/ProductPage";
 import ProductDetail from "./pages/ProductDetail";
 import Login from './pages/Login';
 import CartPage from "./pages/CartPage";
@@ -14,12 +14,20 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import SizeGuide from "./pages/SizeGuide";
+import AdminPage from "./pages/AdminPage";
+
+function ConditionalHeader() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  if (isAdminRoute) return null;
+  return <Header />;
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <Header /> 
-      
+      <ConditionalHeader />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductPage />} />
@@ -33,8 +41,9 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-
         <Route path="/size-guide" element={<SizeGuide />} />
+
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   );
