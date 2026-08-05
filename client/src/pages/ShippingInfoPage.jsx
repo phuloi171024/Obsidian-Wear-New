@@ -45,10 +45,11 @@ export default function ShippingInfoPage() {
       setErrors(newErrors);
       return;
     }
+    // LƯU THÔNG TIN GIAO HÀNG VÀ CHUYỂN TRANG
+    localStorage.setItem("shipping_info", JSON.stringify(form));
     navigate("/payment");
   };
 
-  // 1. Đã thêm "Sản Phẩm" vào ngay sau "Trang chủ" trong danh sách navLinks
   const navLinks = [
     { label: "Trang chủ", href: "/" },
     { label: "Sản phẩm", href: "/products" }, 
@@ -76,7 +77,7 @@ export default function ShippingInfoPage() {
   const total = "1.920.000";
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
       <header className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-8">
           <Link to="/" className="flex items-center shrink-0">
@@ -105,7 +106,6 @@ export default function ShippingInfoPage() {
               />
             </div>
             
-            {/* 2. Đã đổi thẻ <button> cũ thành <Link> để dẫn trực tiếp tới trang đăng nhập / đăng ký (Ví dụ: /login) */}
             <Link 
               to="/login" 
               aria-label="Tài khoản" 
@@ -266,7 +266,7 @@ export default function ShippingInfoPage() {
 
                 <button
                   onClick={handleSubmit}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition mt-2"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition mt-2 cursor-pointer"
                 >
                   Tiến hành thanh toán
                 </button>

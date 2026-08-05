@@ -1,178 +1,127 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
+import Header from "../components/Header";
 import "./ProductDetail.css";
+import { productService } from "../services/productService";
+import toast, { Toaster } from "react-hot-toast";
 
-const products = [
-  {
-    id: 1,
-    name: "Quần Jeans Ôm Vừa",
-    price: "299.000đ",
-    image: "/src/public/images/quanjeans.png",
-    rating: "4.8",
-    description: "Quần jeans ôm vừa, chất liệu co giãn, mặc thoải mái."
-  },
-  {
-    id: 2,
-    name: "Quần Short Thể Thao",
-    price: "599.000đ",
-    image: "/src/public/images/quanshortthethao.png",
-    rating: "4.9",
-    description: "Quần short thể thao năng động."
-  },
-  {
-    id: 3,
-    name: "Quần Jeans Slim Fit",
-    price: "499.000đ",
-    image: "/src/public/images/quanjeansslimfit.png",
-    rating: "5.0",
-    description: "Thiết kế trẻ trung, ôm dáng."
-  },
-  {
-    id: 4,
-    name: "Áo Phông Cotton Cơ Bản",
-    price: "359.000đ",
-    image: "/src/public/images/aophongcotton.png",
-    rating: "5.1",
-    description: "Áo cotton mềm mại."
-  },
-  {
-    id: 5,
-    name: "Áo Khoác Denim Nam",
-    price: "899.000đ",
-    image: "/src/public/images/aokhoacdenimnam.png",
-    rating: "5.2",
-    description: "Áo khoác denim phong cách."
-  },
-  {
-    id: 6,
-    name: "Áo Khoác Bomber Nữ",
-    price: "429.000đ",
-    image: "/src/public/images/aokhoacbombernu.png",
-    rating: "5.3",
-    description: "Bomber nữ cá tính."
-  },
-  {
-    id: 7,
-    name: "Quần Shorts Trẻ Em",
-    price: "349.000đ",
-    image: "/src/public/images/quanshortstreem.png",
-    rating: "5.4",
-    description: "Short trẻ em."
-  },
-  {
-    id: 8,
-    name: "Áo Gile Len Nam",
-    price: "699.000đ",
-    image: "/src/public/images/aogilelennam.png",
-    rating: "5.5",
-    description: "Áo gile len."
-  },
-  {
-    id: 9,
-    name: "Áo Hoodie Unisex",
-    price: "699.000đ",
-    image: "/src/public/images/aohoodieunisex.png",
-    rating: "5.6",
-    description: "Hoodie unisex."
-  },
-  {
-    id: 10,
-    name: "Áo Sơ Mi",
-    price: "250.000đ",
-    image: "/src/public/images/aosomi.png",
-    rating: "4.5",
-    description: "Áo sơ mi lịch lãm, phù hợp đi làm và đi chơi."
-  }
-];
-
-// Danh sách đánh giá mẫu ban đầu
 const initialReviews = [
-  {
-    id: 1,
-    name: "Minh Anh",
-    rating: 5,
-    comment: "Chất lượng rất tốt, đúng như mô tả. Sẽ mua lại lần sau.",
-    date: "20/07/2026"
-  },
-  {
-    id: 2,
-    name: "Quốc Huy",
-    rating: 4,
-    comment: "Sản phẩm ổn, giao hàng hơi chậm một chút.",
-    date: "18/07/2026"
-  },
-  {
-    id: 3,
-    name: "Thu Trang",
-    rating: 5,
-    comment: "Form đẹp, chất vải mát, mặc rất thoải mái.",
-    date: "15/07/2026"
-  }
+  { id: 1, name: "Minh Anh", rating: 5, comment: "Chất lượng rất tốt, đúng như mô tả.", date: "20/07/2026" },
+  { id: 2, name: "Quốc Huy", rating: 4, comment: "Sản phẩm ổn, giao hàng nhanh.", date: "18/07/2026" }
 ];
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const navigate = useNavigate(); // 2. Khởi tạo hook chuyển trang
+  const navigate = useNavigate();
 
-  const product = products.find((item) => item.id === Number(id));
-
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
   const [quantity, setQuantity] = useState(1);
-  const [size, setSize] = useState("M");
-  const [color, setColor] = useState("Black");
+  const [size, setSize] = useState("");
+  const [color, setColor] = useState("");
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
 
-  // Tab mô tả / đánh giá
   const [activeTab, setActiveTab] = useState("description");
-
-  // State đánh giá
   const [reviews, setReviews] = useState(initialReviews);
-  const [newReview, setNewReview] = useState({
-    name: "",
-    rating: 5,
-    comment: ""
-  });
+  const [newReview, setNewReview] = useState({ name: "", rating: 5, comment: "" });
 
-  // Tự động cuộn lên đầu trang và reset lại state khi thay đổi sản phẩm
   useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const data = await productService.getProductById(id);
+        setProduct(data);
+
+        if (data && data.variants) {
+          const sizes = [...new Set(data.variants.map((v) => v.size))];
+          const colors = [...new Set(data.variants.map((v) => v.color))];
+          
+          setAvailableSizes(sizes);
+          setAvailableColors(colors);
+          
+          if (sizes.length > 0) setSize(sizes[0]);
+          if (colors.length > 0) setColor(colors[0]);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
     window.scrollTo(0, 0);
     setQuantity(1);
     setActiveTab("description");
   }, [id]);
 
-  if (!product) {
-    return <h2>Không tìm thấy sản phẩm</h2>;
-  }
+  if (loading) return <h2 style={{ textAlign: "center", padding: "100px" }}>Đang tải thông tin sản phẩm...</h2>;
+  if (!product) return <h2 style={{ textAlign: "center", padding: "100px" }}>Không tìm thấy sản phẩm!</h2>;
 
-  // Sản phẩm liên quan
-  const relatedProducts = products
-    .filter((item) => item.id !== product.id)
-    .slice(0, 4);
+  const averageRating = reviews.length > 0 
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) 
+    : 0;
 
-  // Tính điểm trung bình đánh giá
-  const averageRating =
-    reviews.length > 0
-      ? (
-          reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-        ).toFixed(1)
-      : 0;
+  // Xử lý thêm vào giỏ hàng và gọi API chuẩn
+  const handleAddToCart = async () => {
+    if (!size || !color) {
+      toast.error("Vui lòng chọn Kích thước và Màu sắc!");
+      return;
+    }
 
-  // Xử lý Thêm vào giỏ hàng và chuyển trang
-  const handleAddToCart = () => {
-    // Nếu dự án của bạn lưu giỏ hàng vào localStorage/Context, xử lý tại đây:
-    // const cartItem = { ...product, quantity, size, color };
-    
-    // Chuyển hướng sang trang giỏ hàng
-    navigate("/cart");
+    const selectedVariant = product.variants?.find(
+      (v) => v.size === size && v.color === color
+    );
+
+    if (!selectedVariant) {
+      toast.error("Sản phẩm với phân loại này hiện không có sẵn!");
+      return;
+    }
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/api/cart/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token.trim()}`
+        },
+        body: JSON.stringify({
+          product_variant_id: selectedVariant.id,
+          quantity: quantity
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+        navigate("/cart");
+      } else {
+        toast.error(data.message || "Thêm vào giỏ hàng thất bại!");
+      }
+    } catch (error) {
+      console.error("Lỗi kết nối:", error);
+      toast.error("Không thể kết nối đến máy chủ!");
+    }
   };
 
   const handleSubmitReview = (e) => {
     e.preventDefault();
-
     if (!newReview.name.trim() || !newReview.comment.trim()) {
       alert("Vui lòng nhập đầy đủ tên và nội dung đánh giá.");
       return;
     }
-
     const review = {
       id: Date.now(),
       name: newReview.name,
@@ -180,13 +129,14 @@ export default function ProductDetail() {
       comment: newReview.comment,
       date: new Date().toLocaleDateString("vi-VN")
     };
-
     setReviews([review, ...reviews]);
     setNewReview({ name: "", rating: 5, comment: "" });
   };
 
   return (
     <>
+      <Toaster position="top-right" />
+      <Header />
       <div className="breadcrumb">
         <Link to="/">Trang chủ</Link>
         <span className="separator">&gt;</span>
@@ -198,7 +148,7 @@ export default function ProductDetail() {
       <div className="product-detail">
         <div className="product-image">
           <img
-            src={product.image}
+            src={product.thumbnail || (product.images && product.images[0]?.image_path) || "https://placehold.co/500"}
             alt={product.name}
             className="product-main-image"
           />
@@ -215,19 +165,17 @@ export default function ProductDetail() {
               <i className="fa-solid fa-star"></i>
               <i className="fa-solid fa-star-half-stroke"></i>
             </div>
-            <span>
-              {averageRating} ({reviews.length} đánh giá)
-            </span>
+            <span>{averageRating} ({reviews.length} đánh giá)</span>
           </div>
 
-          <h2>{product.price}</h2>
+          <h2>{new Intl.NumberFormat('vi-VN').format(product.price)} đ</h2>
 
           <hr />
 
           <div className="option">
             <h4>Kích thước</h4>
             <div className="size-list">
-              {["S", "M", "L", "XL"].map((item) => (
+              {availableSizes.length > 0 ? availableSizes.map((item) => (
                 <button
                   key={item}
                   className={size === item ? "active" : ""}
@@ -235,43 +183,35 @@ export default function ProductDetail() {
                 >
                   {item}
                 </button>
-              ))}
+              )) : <span>Freesize</span>}
             </div>
           </div>
 
           <div className="option">
             <h4>Màu sắc</h4>
             <div className="color-list">
-              <button
-                className={color === "Black" ? "active" : ""}
-                onClick={() => setColor("Black")}
-              >
-                Black
-              </button>
+              {availableColors.length > 0 ? availableColors.map((item) => (
+                <button
+                  key={item}
+                  className={color === item ? "active" : ""}
+                  onClick={() => setColor(item)}
+                >
+                  {item}
+                </button>
+              )) : <span>Mặc định</span>}
             </div>
           </div>
 
           <div className="option">
             <h4>Số lượng</h4>
             <div className="quantity-box">
-              <button
-                className="qty-btn"
-                onClick={() => quantity > 1 && setQuantity(quantity - 1)}
-              >
-                -
-              </button>
+              <button className="qty-btn" onClick={() => quantity > 1 && setQuantity(quantity - 1)}>-</button>
               <input type="text" value={quantity} readOnly />
-              <button
-                className="qty-btn"
-                onClick={() => setQuantity(quantity + 1)}
-              >
-                +
-              </button>
+              <button className="qty-btn" onClick={() => setQuantity(quantity + 1)}>+</button>
             </div>
           </div>
 
           <div className="cart-action">
-            {/* 3. Gắn hàm handleAddToCart vào sự kiện onClick */}
             <button className="add-cart" onClick={handleAddToCart}>
               <i className="fa-solid fa-cart-shopping"></i> Thêm vào giỏ hàng
             </button>
@@ -281,84 +221,38 @@ export default function ProductDetail() {
           </div>
 
           <div className="product-meta">
-            <p>
-              <b>Thương hiệu:</b> Nike
-            </p>
-            <p>
-              <b>Danh mục:</b> Shorts
-            </p>
-            <p>
-              <b>Chất liệu:</b> 90% Polyester, 10% Elastane
-            </p>
-            <p>
-              <b>Kiểu dáng:</b> Sportswear
-            </p>
-            <p>
-              <b>Phù hợp:</b> Nam
-            </p>
-            <p>
-              <b>Kiểu dáng:</b> Regular
-            </p>
-            <p>
-              <b>Hướng dẫn giặt:</b> Giặt máy với nước lạnh, không tẩy, phơi
-              tự nhiên.
-            </p>
-            <p>
-              <b>Mùa:</b> Summer
-            </p>
-            <p>
-              <b>Tình trạng:</b> Còn hàng
-            </p>
+            <p><b>Thương hiệu:</b> {product.brand ? product.brand.name : "Chưa cập nhật"}</p>
+            <p><b>Danh mục:</b> {product.category ? product.category.name : "Chưa cập nhật"}</p>
+            <p><b>SKU:</b> {product.sku}</p>
+            <p><b>Tình trạng:</b> {product.status ? "Còn hàng" : "Ngừng kinh doanh"}</p>
           </div>
         </div>
       </div>
 
-      {/* Mô tả sản phẩm / Đánh giá */}
       <div className="description-box">
         <div className="tab">
-          <button
-            className={activeTab === "description" ? "active" : ""}
-            onClick={() => setActiveTab("description")}
-          >
+          <button className={activeTab === "description" ? "active" : ""} onClick={() => setActiveTab("description")}>
             Mô tả sản phẩm
           </button>
-          <button
-            className={activeTab === "reviews" ? "active" : ""}
-            onClick={() => setActiveTab("reviews")}
-          >
+          <button className={activeTab === "reviews" ? "active" : ""} onClick={() => setActiveTab("reviews")}>
             Đánh giá ({reviews.length})
           </button>
         </div>
 
         {activeTab === "description" && (
           <div className="tab-content">
-            <p>{product.description}</p>
+            <p>{product.description || "Chưa có mô tả cho sản phẩm này."}</p>
           </div>
         )}
 
         {activeTab === "reviews" && (
           <div className="tab-content reviews-section">
-            {/* Form gửi đánh giá */}
             <form className="review-form" onSubmit={handleSubmitReview}>
               <h4>Viết đánh giá của bạn</h4>
-
-              <input
-                type="text"
-                placeholder="Tên của bạn"
-                value={newReview.name}
-                onChange={(e) =>
-                  setNewReview({ ...newReview, name: e.target.value })
-                }
-              />
-
+              <input type="text" placeholder="Tên của bạn" value={newReview.name} onChange={(e) => setNewReview({ ...newReview, name: e.target.value })} />
               <div className="rating-select">
                 <label>Số sao: </label>
-                <select
-                  value={newReview.rating}
-                  onChange={(e) =>
-                    setNewReview({ ...newReview, rating: e.target.value })
-                  }
-                >
+                <select value={newReview.rating} onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })}>
                   <option value={5}>5 sao</option>
                   <option value={4}>4 sao</option>
                   <option value={3}>3 sao</option>
@@ -366,21 +260,10 @@ export default function ProductDetail() {
                   <option value={1}>1 sao</option>
                 </select>
               </div>
-
-              <textarea
-                placeholder="Nội dung đánh giá..."
-                value={newReview.comment}
-                onChange={(e) =>
-                  setNewReview({ ...newReview, comment: e.target.value })
-                }
-              ></textarea>
-
-              <button type="submit" className="submit-review-btn">
-                Gửi đánh giá
-              </button>
+              <textarea placeholder="Nội dung đánh giá..." value={newReview.comment} onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}></textarea>
+              <button type="submit" className="submit-review-btn">Gửi đánh giá</button>
             </form>
 
-            {/* Danh sách đánh giá */}
             <div className="review-list">
               {reviews.map((r) => (
                 <div className="review-item" key={r.id}>
@@ -388,20 +271,11 @@ export default function ProductDetail() {
                     <span className="review-name">{r.name}</span>
                     <span className="review-date">{r.date}</span>
                   </div>
-
                   <div className="review-stars">
                     {Array.from({ length: 5 }).map((_, index) => (
-                      <i
-                        key={index}
-                        className={
-                          index < r.rating
-                            ? "fa-solid fa-star"
-                            : "fa-regular fa-star"
-                        }
-                      ></i>
+                      <i key={index} className={index < r.rating ? "fa-solid fa-star" : "fa-regular fa-star"}></i>
                     ))}
                   </div>
-
                   <p className="review-comment">{r.comment}</p>
                 </div>
               ))}
@@ -409,25 +283,6 @@ export default function ProductDetail() {
           </div>
         )}
       </div>
-
-      {/* Sản phẩm liên quan */}
-      <div className="related-products">
-        <h3>Sản phẩm liên quan</h3>
-        <div className="related-list">
-          {relatedProducts.map((item) => (
-            <Link
-              to={`/product/${item.id}`}
-              className="related-card"
-              key={item.id}
-            >
-              <img src={item.image} alt={item.name} />
-              <h4>{item.name}</h4>
-              <p>{item.price}</p>
-            </Link>
-          ))}
-        </div>
-      </div>
-
       <Footer />
     </>
   );

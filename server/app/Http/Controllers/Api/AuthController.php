@@ -75,12 +75,12 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         // Kiểm tra tài khoản và mật khẩu
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Email hoặc mật khẩu không chính xác!'
-            ], 401);
-        }
+       if (!$user || !$user->password || !Hash::check($request->password, $user->password)) {
+    return response()->json([
+        'status'  => false,
+        'message' => 'Email hoặc mật khẩu không chính xác!'
+    ], 401);
+}
 
         // Kiểm tra xem tài khoản có bị khóa không
         if (!$user->status) {
@@ -211,27 +211,24 @@ class AuthController extends Controller
     }
 
     /**
-     * 6. Lấy URL chuyển hướng đến trang Đăng nhập Google
+     * 6. Chuyển hướng trực tiếp đến trang Đăng nhập Google
      */
-    public function redirectToGoogle()
+  public function redirectToGoogle()
     {
-        // Chế độ stateless() bắt buộc dành cho API (không dùng session)
-        $url = Socialite::driver('google')->stateless()->redirect()->getTargetUrl();
+        /** @var \Laravel\Socialite\Two\GoogleProvider $provider */
+        $provider = Socialite::driver('google');
         
-        return response()->json([
-            'status' => true,
-            'url'    => $url
-        ], 200);
+        return $provider->stateless()->redirect();
     }
-
     /**
      * 7. Xử lý dữ liệu Google trả về và cấp Token
      */
-    public function handleGoogleCallback()
+   public function handleGoogleCallback()
     {
         try {
-            // Lấy thông tin user từ Google
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            /** @var \Laravel\Socialite\Two\GoogleProvider $provider */
+            $provider = Socialite::driver('google');
+            $googleUser = $provider->stateless()->user();
 
             // Kiểm tra xem email này đã tồn tại trong DB chưa
             $user = User::where('email', $googleUser->getEmail())->first();
@@ -247,7 +244,7 @@ class AuthController extends Controller
                     'status'    => true,
                 ]);
             } else {
-                // Nếu đã có tài khoản (đăng ký bằng form trước đó), chỉ cần cập nhật google_id
+                // Nếu đã có tài khoản, cập nhật google_id nếu chưa có
                 $user->update(['google_id' => $googleUser->getId()]);
             }
 
@@ -258,8 +255,8 @@ class AuthController extends Controller
             return redirect()->away('http://localhost:5173/login?token=' . $token);
 
         } catch (\Exception $e) {
-            // Nếu có lỗi (người dùng hủy đăng nhập), trả về trang login kèm lỗi
-            return redirect()->away('http://localhost:5173/login?error=google_auth_failed');
+            // Nếu có lỗi, trả về trang login kèm thông báo lỗi
+           dd($e->getMessage());
         }
     }
 }

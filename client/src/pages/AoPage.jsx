@@ -9,12 +9,12 @@ export default function AoPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Các State quản lý bộ lọc tương ứng với giao diện mẫu của em
+  // Các State quản lý bộ lọc và sắp xếp
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [priceFilter, setPriceFilter] = useState("all"); // "all", "under_1m", "1m_2m", "over_2m"
+  const [priceFilter, setPriceFilter] = useState("all"); 
   const [sortOption, setSortOption] = useState("default");
 
-  // Xử lý chọn/bỏ chọn Thương hiệu
+  // Hàm xử lý chọn/bỏ chọn Thương hiệu
   const handleBrandToggle = (brandId) => {
     setSelectedBrands(prev => 
       prev.includes(brandId) ? prev.filter(id => id !== brandId) : [...prev, brandId]
@@ -26,10 +26,9 @@ export default function AoPage() {
     const fetchFilteredProducts = async () => {
       try {
         setLoading(true);
-
-        const filters = {
-          category: "Áo", // Lọc cứng theo danh mục Áo
-          sort: sortOption
+        const filters = { 
+          category: "Áo", 
+          sort: sortOption 
         };
 
         if (selectedBrands.length > 0) {
@@ -48,7 +47,7 @@ export default function AoPage() {
         const data = await productService.getProducts(filters);
         setProducts(data);
       } catch (error) {
-        console.error("Lỗi khi tải dữ liệu lọc sản phẩm Áo:", error);
+        console.error("Lỗi khi tải dữ liệu lọc sản phẩm:", error);
       } finally {
         setLoading(false);
       }
@@ -62,11 +61,11 @@ export default function AoPage() {
       <Header />
 
       <div className="product-page">
-        {/* THANH BỘ LỢC BÊN TRÁI (SIDEBAR) */}
+        {/* SIDEBAR BỘ LỌC BÊN TRÁI */}
         <aside className="sidebar">
           <div className="filter-title">Bộ lọc sản phẩm</div>
 
-          {/* Lọc theo Thương hiệu (ID: 1-Nike, 2-Adidas, 3-Puma, 4-CoolMate) */}
+          {/* Lọc theo Thương hiệu */}
           <div className="filter-box">
             <h3>Thương hiệu</h3>
             <label><input type="checkbox" onChange={() => handleBrandToggle(2)} /> Adidas</label>
@@ -93,7 +92,7 @@ export default function AoPage() {
           </div>
         </aside>
 
-        {/* NỘI DUNG SẢN PHẨM BÊN PHẢI */}
+        {/* KHU VỰC HIỂN THỊ SẢN PHẨM BÊN PHẢI */}
         <section className="product-content">
           <div className="top-bar">
             <h2>Bộ Sưu Tập Áo Thể Thao</h2>

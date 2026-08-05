@@ -1,80 +1,96 @@
-// src/pages/TuiPage.jsx
+import React, { useState, useEffect } from "react";
 import "./ProductPage.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
-import products from "../data/products";
+import { productService } from "../services/productService";
 
 export default function TuiPage() {
-  const tuiProducts = products.filter((p) => p.category === "Túi");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [priceFilter, setPriceFilter] = useState("all"); 
+  const [sortOption, setSortOption] = useState("default");
+
+  const handleBrandToggle = (brandId) => {
+    setSelectedBrands(prev => 
+      prev.includes(brandId) ? prev.filter(id => id !== brandId) : [...prev, brandId]
+    );
+  };
+
+  useEffect(() => {
+    const fetchFilteredProducts = async () => {
+      try {
+        setLoading(true);
+        // Đổi danh mục thành Túi
+        const filters = { category: "Túi", sort: sortOption };
+
+        if (selectedBrands.length > 0) filters.brand_ids = selectedBrands.join(',');
+        if (priceFilter === "under_1m") filters.max_price = 1000000;
+        else if (priceFilter === "1m_2m") { filters.min_price = 1000000; filters.max_price = 2000000; }
+        else if (priceFilter === "over_2m") filters.min_price = 2000000;
+
+        const data = await productService.getProducts(filters);
+        setProducts(data);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu lọc sản phẩm Túi:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFilteredProducts();
+  }, [selectedBrands, priceFilter, sortOption]);
 
   return (
     <>
       <Header />
-
       <div className="product-page">
         <aside className="sidebar">
-          <div className="filter-title">Bộ lọc</div>
-
+          <div className="filter-title">Bộ lọc sản phẩm</div>
           <div className="filter-box">
             <h3>Thương hiệu</h3>
-            <label><input type="checkbox" /> Adidas</label>
-            <label><input type="checkbox" /> CoolMate</label>
-            <label><input type="checkbox" /> H&M</label>
-            <label><input type="checkbox" /> Levi's</label>
-            <label><input type="checkbox" /> Nike</label>
-            <label><input type="checkbox" /> Owen</label>
-            <label><input type="checkbox" /> Puma</label>
+            <label><input type="checkbox" onChange={() => handleBrandToggle(2)} /> Adidas</label>
+            <label><input type="checkbox" onChange={() => handleBrandToggle(4)} /> CoolMate</label>
+            <label><input type="checkbox" onChange={() => handleBrandToggle(1)} /> Nike</label>
+            <label><input type="checkbox" onChange={() => handleBrandToggle(3)} /> Puma</label>
           </div>
-
           <div className="filter-box">
             <h3>Khoảng giá</h3>
-            <label><input type="checkbox" /> Tất cả</label>
-            <label><input type="checkbox" /> Dưới 1.000.000đ</label>
-            <label><input type="checkbox" /> 1.000.000đ - 2.000.000đ</label>
-            <label><input type="checkbox" /> 2.000.000đ - 3.000.000đ</label>
-            <label><input type="checkbox" /> Trên 3.000.000đ</label>
-          </div>
-
-          <div className="filter-box">
-            <h3>Giới tính</h3>
-            <label><input type="checkbox" /> Tất cả</label>
-            <label><input type="checkbox" /> Nam</label>
-            <label><input type="checkbox" /> Nữ</label>
-            <label><input type="checkbox" /> Trẻ em</label>
-            <label><input type="checkbox" /> Unisex</label>
+            <label><input type="radio" name="price" checked={priceFilter === "all"} onChange={() => setPriceFilter("all")} /> Tất cả</label>
+            <label><input type="radio" name="price" checked={priceFilter === "under_1m"} onChange={() => setPriceFilter("under_1m")} /> Dưới 1.000.000đ</label>
+            <label><input type="radio" name="price" checked={priceFilter === "1m_2m"} onChange={() => setPriceFilter("1m_2m")} /> 1.000.000đ - 2.000.000đ</label>
+            <label><input type="radio" name="price" checked={priceFilter === "over_2m"} onChange={() => setPriceFilter("over_2m")} /> Trên 2.000.000đ</label>
           </div>
         </aside>
 
         <section className="product-content">
           <div className="top-bar">
-            <h2>Túi</h2>
-            <select>
-              <option>Mặc định</option>
-              <option>Giá tăng dần</option>
-              <option>Giá giảm dần</option>
-              <option>Mới nhất</option>
+            <h2>Bộ Sưu Tập Túi & Phụ Kiện</h2>
+            <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+              <option value="default">Mặc định</option>
+              <option value="price_asc">Giá tăng dần</option>
+              <option value="price_desc">Giá giảm dần</option>
+              <option value="newest">Mới nhất</option>
             </select>
           </div>
-
           <div className="breadcrumb">
-            <span>Trang chủ</span>
-            <span className="arrow"> &gt; </span>
-            <span className="active">Túi</span>
+            <span>Trang chủ</span><span className="arrow"> &gt; </span><span className="active">Túi</span>
           </div>
 
-          <div className="shop-product-grid">
-            {tuiProducts.length > 0 ? (
-              tuiProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))
-            ) : (
-              <p>Không có sản phẩm nào thuộc danh mục Túi.</p>
-            )}
-          </div>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "50px" }}>Đang tải sản phẩm...</div>
+          ) : (
+            <div className="shop-product-grid">
+              {products.length > 0 ? (
+                products.map((product) => <ProductCard key={product.id} product={product} />)
+              ) : (
+                <p style={{ textAlign: "center", color: "#777", gridColumn: "1 / -1", padding: "40px" }}>Không tìm thấy sản phẩm túi phù hợp.</p>
+              )}
+            </div>
+          )}
         </section>
       </div>
-
       <Footer />
     </>
   );
