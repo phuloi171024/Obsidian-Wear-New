@@ -1836,3 +1836,408 @@ grid-template-columns:1fr;
     stroke-width:1.2;
     flex-shrink:0;
 }
+
+/* =========================================================
+   ADMIN - STATISTICS PAGE
+========================================================= */
+
+.statistics-page {
+  width: 100%;
+  padding: 22px;
+  box-sizing: border-box;
+  background: #f5f6fa;
+  min-height: 100vh;
+}
+
+/* =========================================================
+   4 THẺ THỐNG KÊ
+========================================================= */
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.stats-card {
+  position: relative;
+  min-height: 115px;
+  padding: 18px 18px;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.05);
+}
+
+.stats-info {
+  position: relative;
+  z-index: 2;
+}
+
+.stats-info p {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #3d4148;
+}
+
+.stats-info h2 {
+  margin: 0 0 5px;
+  font-size: 23px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.stats-info span {
+  display: inline-block;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.stats-info .green,
+.green {
+  color: #16a36a;
+}
+
+/* ICON MỜ PHÍA SAU */
+
+.stats-icon {
+  position: absolute;
+  right: 12px;
+  bottom: -5px;
+
+  width: 70px;
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 61px;
+
+  color: #cbd5e1;
+  opacity: 0.42;
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   HÀNG BIỂU ĐỒ
+========================================================= */
+
+.statistics-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr);
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+/* =========================================================
+   BIỂU ĐỒ DOANH THU
+========================================================= */
+
+.statistics-chart{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:18px;
+    height:420px;
+}
+
+.statistics-chart h3 {
+  margin: 0 0 15px;
+  padding: 0;
+
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 700;
+
+  color: #222222;
+}
+
+
+/* =========================================================
+   BIỂU ĐỒ TRÒN
+========================================================= */
+
+.statistics-pie {
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 9px;
+
+  padding: 16px 15px 8px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.04);
+}
+
+.statistics-pie h3 {
+  margin: 0 0 8px;
+  padding: 0;
+
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 700;
+
+  color: #222222;
+}
+
+/* =========================================================
+   RECHARTS
+========================================================= */
+
+.statistics-page .recharts-wrapper {
+  font-family: inherit;
+}
+
+.statistics-page .recharts-cartesian-axis-tick-value {
+  font-size: 11px;
+  fill: #555555;
+}
+
+.statistics-page .recharts-legend-item-text {
+  color: #333333 !important;
+  font-size: 12px;
+}
+
+.statistics-page .recharts-default-tooltip {
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================================
+   TOP 5 SẢN PHẨM
+========================================================= */
+
+.statistics-table {
+  width: calc((100% - 18px) * 0.6774);
+  background: #ffffff;
+
+  border: 1px solid #e2e6ec;
+  border-radius: 9px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.04);
+}
+
+.statistics-table h3 {
+  margin: 0;
+
+  padding: 13px 15px;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #222222;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* TABLE */
+
+.statistics-table table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  table-layout: fixed;
+
+  background: #ffffff;
+}
+
+.statistics-table thead {
+  background: #fafafa;
+}
+
+.statistics-table th {
+  padding: 10px 14px;
+
+  text-align: left;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #333333;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.statistics-table td {
+  padding: 8px 14px;
+
+  font-size: 13px;
+
+  color: #333333;
+
+  vertical-align: middle;
+
+  border-bottom: 1px solid #eeeeee;
+}
+
+.statistics-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================================================
+   ĐỘ RỘNG CỘT
+========================================================= */
+
+.statistics-table th:nth-child(1),
+.statistics-table td:nth-child(1) {
+  width: 70px;
+}
+
+.statistics-table th:nth-child(2),
+.statistics-table td:nth-child(2) {
+  width: 42%;
+}
+
+.statistics-table th:nth-child(3),
+.statistics-table td:nth-child(3) {
+  width: 100px;
+  text-align: center;
+}
+
+.statistics-table th:nth-child(4),
+.statistics-table td:nth-child(4) {
+  text-align: right;
+}
+
+/* =========================================================
+   ẢNH SẢN PHẨM
+========================================================= */
+
+.statistics-table td img {
+  display: block;
+
+  width: 42px;
+  height: 42px;
+
+  object-fit: contain;
+
+  background: #ffffff;
+
+  border-radius: 4px;
+}
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.statistics-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.statistics-table tbody tr:hover {
+  background: #fafafa;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1250px) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .statistics-table {
+    width: 100%;
+  }
+}
+
+@media (max-width: 950px) {
+  .statistics-row {
+    grid-template-columns: 1fr;
+  }
+
+  .statistics-table {
+    width: 100%;
+  }
+}
+
+@media (max-width: 650px) {
+  .statistics-page {
+    padding: 14px;
+  }
+
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-info h2 {
+    font-size: 20px;
+  }
+
+  .statistics-table {
+    overflow-x: auto;
+  }
+
+  .statistics-table table {
+    min-width: 650px;
+  }
+}
+
+.stats-change{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    margin-top:4px;
+
+    font-size:12px;
+    font-weight:500;
+    color:#444;
+}
+
+.stats-change .up{
+    color:#16a34a;
+    font-weight:600;
+}
+
+.stats-change span:last-child{
+    color:#444;
+}
+
+.statistics-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.statistics-filter{
+    width:120px;
+    height:34px;
+
+    padding:0 10px;
+
+    border:1px solid #d9d9d9;
+    border-radius:4px;
+
+    background:#fff;
+
+    font-size:13px;
+    color:#333;
+
+    cursor:pointer;
+}
+
+.statistics-filter:focus{
+    outline:none;
+    border-color:#2563eb;
+}
