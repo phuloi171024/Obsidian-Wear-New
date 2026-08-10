@@ -131,7 +131,6 @@ export default function ProfilePage() {
   return (
     <>
       <Toaster position="top-right" />
-      <Header />
 
       <div className="orders-page">
         <div className="account-layout">

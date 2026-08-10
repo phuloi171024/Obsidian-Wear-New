@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\ProductController as ClientProductController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CartController;
-
+use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\OrderController as ClientOrderController; 
@@ -47,8 +47,9 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 // Social Login bằng Google
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
-
-
+// API Áp dụng mã giảm giá
+Route::post('/coupons/apply', [CouponController::class, 'apply']);
+Route::get('/coupons', [CouponController::class, 'index']);
 /*
 |--------------------------------------------------------------------------
 | 2. CLIENT PROTECTED ROUTES (Cần đăng nhập - Sanctum Token)

@@ -20,12 +20,21 @@ class ProductController extends Controller
             ->take(8)
             ->get();
 
+        // [THÊM MỚI]: Lấy sản phẩm bán chạy (Tạm dùng inRandomOrder để giả lập)
+        $bestSellingProducts = Product::with(['category', 'brand', 'images', 'variants'])
+            ->where('status', true)
+            ->inRandomOrder()
+            ->take(8)
+            ->get();
+
         $featuredCategories = Category::where('status', true)->take(6)->get();
 
         return response()->json([
             'status' => true,
             'data' => [
                 'newest_products' => $newestProducts,
+                // [THÊM MỚI]: Gửi thêm dữ liệu bán chạy ra cho Frontend
+                'best_selling_products' => $bestSellingProducts,
                 'featured_categories' => $featuredCategories,
             ]
         ], 200);

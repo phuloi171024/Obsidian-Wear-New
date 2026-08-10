@@ -44,7 +44,7 @@ export default function TuiPage() {
 
   return (
     <>
-      <Header />
+     
       <div className="product-page">
         <aside className="sidebar">
           <div className="filter-title">Bộ lọc sản phẩm</div>

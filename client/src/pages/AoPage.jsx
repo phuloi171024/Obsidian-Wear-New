@@ -58,7 +58,7 @@ export default function AoPage() {
 
   return (
     <>
-      <Header />
+    
 
       <div className="product-page">
         {/* SIDEBAR BỘ LỌC BÊN TRÁI */}

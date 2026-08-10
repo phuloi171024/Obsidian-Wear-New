@@ -1,7 +1,7 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./CartPage.css";
-import { FiTrash2, FiShoppingCart, FiArrowRight } from "react-icons/fi";
+import { FiTrash2, FiShoppingCart, FiArrowRight, FiTag } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
@@ -15,6 +15,19 @@ export default function CartPage() {
   const [showModal, setShowModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
+  // --- STATE QUẢN LÝ MÃ GIẢM GIÁ (KẾT NỐI API) ---
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [voucherTab, setVoucherTab] = useState("product"); // "product" | "shipping"
+  const [inputVoucher, setInputVoucher] = useState("");
+  
+  // Lưu danh sách mã lấy từ Database
+  const [dbCoupons, setDbCoupons] = useState([]);
+  
+  // Lưu thông tin mã đã áp dụng
+  const [appliedProductVoucher, setAppliedProductVoucher] = useState(null);
+  const [appliedShippingVoucher, setAppliedShippingVoucher] = useState(null);
+  const [isApplying, setIsApplying] = useState(false);
+
   const getHeaders = () => {
     const token = localStorage.getItem("access_token");
     return {
@@ -24,6 +37,7 @@ export default function CartPage() {
     };
   };
 
+  // 1. LẤY GIỎ HÀNG
   const fetchCart = async () => {
     try {
       setLoading(true);
@@ -45,6 +59,19 @@ export default function CartPage() {
     fetchCart();
   }, [navigate]);
 
+  // 2. LẤY DANH SÁCH MÃ GIẢM GIÁ TỪ DATABASE
+  const fetchCoupons = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/api/coupons", { headers: getHeaders() });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setDbCoupons(data.data);
+      }
+    } catch (error) {
+      console.error("Không thể tải danh sách mã giảm giá");
+    }
+  };
+
   const updateQuantity = async (id, newQuantity) => {
     if (newQuantity < 1) return;
     try {
@@ -61,13 +88,11 @@ export default function CartPage() {
     }
   };
 
-  // Kích hoạt mở Popup khi bấm nút xóa
   const promptRemove = (id) => {
     setItemToDelete(id);
     setShowModal(true);
   };
 
-  // Xác nhận xóa thực sự trong Popup
   const confirmRemove = async () => {
     if (!itemToDelete) return;
     try {
@@ -78,6 +103,11 @@ export default function CartPage() {
       if (res.ok) {
         setCartItems(cartItems.filter(item => item.id !== itemToDelete));
         toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
+        
+        if (cartItems.length === 1) {
+            setAppliedProductVoucher(null);
+            setAppliedShippingVoucher(null);
+        }
       }
     } catch (error) {
       toast.error("Lỗi khi xóa sản phẩm");
@@ -87,17 +117,79 @@ export default function CartPage() {
     }
   };
 
+  // --- TÍNH TOÁN TIỀN TỰ ĐỘNG ---
   const subtotal = cartItems.reduce((sum, item) => {
     const price = item.product_variant?.product?.price || 0;
     return sum + (price * item.quantity);
   }, 0);
-  const shippingFee = cartItems.length > 0 ? 30000 : 0;
-  const total = subtotal + shippingFee;
+  
+  const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Phí vận chuyển: Mua >= 3 cái thì Freeship (0đ), ngược lại 30.000đ
+  const baseShippingFee = cartItems.length > 0 ? (totalQuantity >= 3 ? 0 : 30000) : 0;
+
+  // --- HÀM GỌI API KIỂM TRA MÃ KHI GÕ THỦ CÔNG ---
+  const handleApplyCoupon = async () => {
+    if (!inputVoucher.trim()) {
+      toast.error("Vui lòng nhập mã giảm giá!");
+      return;
+    }
+
+    try {
+      setIsApplying(true);
+      const res = await fetch("http://localhost:8000/api/coupons/apply", {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          code: inputVoucher,
+          order_value: subtotal 
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success(data.message);
+        const couponData = data.data;
+
+        if (couponData.type === "shipping") {
+          setAppliedShippingVoucher(couponData);
+        } else {
+          setAppliedProductVoucher(couponData);
+        }
+
+        setInputVoucher("");
+        setShowVoucherModal(false);
+      } else {
+        toast.error(data.message || "Mã giảm giá không hợp lệ!");
+      }
+    } catch (error) {
+      toast.error("Không thể kết nối đến máy chủ kiểm tra mã!");
+    } finally {
+      setIsApplying(false);
+    }
+  };
+  
+  // Tiền giảm giá sản phẩm
+  const productDiscount = appliedProductVoucher ? appliedProductVoucher.discount_value : 0;
+  
+  // Tiền giảm phí ship (không vượt quá phí ship thực tế)
+  const shippingDiscount = appliedShippingVoucher ? Math.min(appliedShippingVoucher.discount_value, baseShippingFee) : 0;
+
+  const finalShippingFee = baseShippingFee - shippingDiscount;
+  const total = Math.max(0, subtotal + finalShippingFee - productDiscount);
+
+  const handleProceedToCheckout = () => {
+      localStorage.setItem("applied_vouchers", JSON.stringify({
+        product: appliedProductVoucher,
+        shipping: appliedShippingVoucher
+      }));
+      navigate("/shipping-info");
+  };
 
   return (
     <>
       <Toaster position="top-right" />
-      <Header />
+    
 
       <div className="cart-page">
         <div className="breadcrumb">
@@ -158,14 +250,52 @@ export default function CartPage() {
           <div className="cart-right">
             <div className="summary-card">
               <h2>Tổng đơn hàng</h2>
+              
+              {/* Nút bấm chọn Mã Giảm Giá */}
+              {cartItems.length > 0 && (
+                <div 
+                  className="voucher-trigger"
+                  onClick={() => {
+                    setShowVoucherModal(true);
+                    fetchCoupons(); // Gọi API lấy mã giảm giá khi mở Modal
+                  }}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: '#f8faff', borderRadius: '8px', border: '1px dashed #c3d4ff', cursor: 'pointer', marginBottom: '20px', transition: '0.2s' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2563eb', fontWeight: '500', fontSize: '14px' }}>
+                    <FiTag /> Mã giảm giá / Ưu đãi
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#4b5563', fontWeight: '600' }}>
+                    {(appliedProductVoucher || appliedShippingVoucher) ? "Đã áp dụng mã" : "Chọn mã"}
+                  </div>
+                </div>
+              )}
+
               <div className="summary-row">
                 <span>Tạm tính</span>
                 <b>{new Intl.NumberFormat('vi-VN').format(subtotal)} đ</b>
               </div>
+              
               <div className="summary-row">
-                <span>Phí vận chuyển</span>
-                <b>{new Intl.NumberFormat('vi-VN').format(shippingFee)} đ</b>
+                <span>Phí vận chuyển {totalQuantity >= 3 && <span style={{ fontSize: '11px', color: '#16a34a', background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px' }}>Freeship</span>}</span>
+                <b>{baseShippingFee === 0 ? "Miễn phí" : `${new Intl.NumberFormat('vi-VN').format(baseShippingFee)} đ`}</b>
               </div>
+
+              {/* Dòng hiển thị giảm giá sản phẩm */}
+              {productDiscount > 0 && (
+                <div className="summary-row" style={{ color: '#16a34a' }}>
+                  <span>Giảm giá ({appliedProductVoucher?.code})</span>
+                  <b>- {new Intl.NumberFormat('vi-VN').format(productDiscount)} đ</b>
+                </div>
+              )}
+
+              {/* Dòng hiển thị giảm phí vận chuyển */}
+              {shippingDiscount > 0 && (
+                <div className="summary-row" style={{ color: '#16a34a' }}>
+                  <span>Giảm ship ({appliedShippingVoucher?.code})</span>
+                  <b>- {new Intl.NumberFormat('vi-VN').format(shippingDiscount)} đ</b>
+                </div>
+              )}
+
               <hr />
               <div className="summary-row total">
                 <span>Tổng cộng</span>
@@ -174,7 +304,7 @@ export default function CartPage() {
               
               <button
                 className="checkout-btn"
-                onClick={() => navigate("/shipping-info")}
+                onClick={handleProceedToCheckout}
                 disabled={cartItems.length === 0}
                 style={{ opacity: cartItems.length === 0 ? 0.5 : 1 }}
               >
@@ -188,6 +318,102 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* POPUP MODAL MÃ GIẢM GIÁ */}
+      {showVoucherModal && (
+        <div className="voucher-modal-overlay">
+          <div className="voucher-modal-box">
+            <div className="voucher-modal-header">
+              <h3>MÃ GIẢM GIÁ & ƯU ĐÃI</h3>
+              <button className="close-btn" onClick={() => setShowVoucherModal(false)}>✕</button>
+            </div>
+            
+            <div className="voucher-input-group">
+              <input 
+                type="text" 
+                placeholder="Nhập mã giảm giá của bạn (VD: ROHTO40)" 
+                value={inputVoucher}
+                onChange={(e) => setInputVoucher(e.target.value)}
+              />
+              <button onClick={handleApplyCoupon} disabled={isApplying}>
+                {isApplying ? "Đang ktra..." : "ÁP DỤNG"}
+              </button>
+            </div>
+
+            <div className="voucher-tabs">
+              <button className={voucherTab === "product" ? "active" : ""} onClick={() => setVoucherTab("product")}>
+                Ưu Đãi Cho Bạn
+              </button>
+              <button className={voucherTab === "shipping" ? "active" : ""} onClick={() => setVoucherTab("shipping")}>
+                Ưu Đãi Vận Chuyển
+              </button>
+            </div>
+
+            <div className="voucher-list-container">
+              {/* Render danh sách Coupon từ Database */}
+              {dbCoupons
+                .filter(coupon => {
+                  if (voucherTab === "shipping") return coupon.discount_type === "shipping";
+                  return coupon.discount_type !== "shipping";
+                })
+                .map(coupon => {
+                  const isSelected = voucherTab === "product" 
+                    ? appliedProductVoucher?.id === coupon.id 
+                    : appliedShippingVoucher?.id === coupon.id;
+                  
+                  return (
+                    <div key={coupon.id} className={`voucher-card ${isSelected ? 'selected' : ''}`}>
+                      <div className="voucher-icon">
+                         %
+                      </div>
+                      <div className="voucher-info">
+                        <h4>Mã: {coupon.code} - Giảm {Number(coupon.discount_value).toLocaleString('vi-VN')} {coupon.discount_type === 'percent' ? '%' : 'đ'}</h4>
+                        <p>Đơn tối thiểu: {Number(coupon.min_order_value).toLocaleString('vi-VN')} đ</p>
+                        <p>Hạn sử dụng: Đến {coupon.expires_at || "Không thời hạn"}</p>
+                      </div>
+                      <div className="voucher-action">
+                        <input 
+                          type="checkbox" 
+                          checked={isSelected}
+                          onChange={() => {
+                            const formattedCoupon = {
+                              id: coupon.id,
+                              code: coupon.code,
+                              discount_value: Number(coupon.discount_value),
+                              type: coupon.discount_type === "shipping" ? "shipping" : "product"
+                            };
+
+                            // Check min order value trực tiếp tại Frontend trước khi check
+                            if (!isSelected && subtotal < Number(coupon.min_order_value)) {
+                                toast.error(`Đơn hàng chưa đạt tối thiểu ${Number(coupon.min_order_value).toLocaleString('vi-VN')} đ`);
+                                return;
+                            }
+
+                            if (voucherTab === "product") {
+                              setAppliedProductVoucher(isSelected ? null : formattedCoupon);
+                            } else {
+                              setAppliedShippingVoucher(isSelected ? null : formattedCoupon);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              
+              {dbCoupons.length === 0 && (
+                <p style={{ textAlign: 'center', color: '#666', padding: '20px' }}>Đang tải danh sách ưu đãi...</p>
+              )}
+            </div>
+            
+            <div className="voucher-modal-footer">
+              <button className="confirm-voucher-btn" onClick={() => setShowVoucherModal(false)}>
+                XÁC NHẬN
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* POPUP XÁC NHẬN XÓA SẢN PHẨM */}
       {showModal && (
