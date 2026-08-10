@@ -2,29 +2,34 @@ import { NavLink, Outlet } from "react-router-dom";
 import {
   FiHome,
   FiShoppingCart,
-  FiBox,
   FiGrid,
   FiUsers,
   FiBarChart2,
   FiMessageCircle,
   FiSearch,
   FiBell,
-  FiChevronDown
+  FiChevronDown,
+  FiPackage
 } from "react-icons/fi";
 
 import "./Admin.css";
 
 export default function AdminLayout() {
   return (
-    <div className="admin-layout">
+    <div className="admin">
 
-      {/* Sidebar */}
+      {/* ================= SIDEBAR ================= */}
 
       <aside className="admin-sidebar">
 
+        {/* LOGO */}
+
         <div className="admin-logo">
 
-          <img src="/src/public/images/logo.png" alt="Obsidian Wear" />
+          <img
+            src="/src/public/images/logo.png"
+            alt="Obsidian Wear"
+          />
 
           <div className="admin-logo-text">
             <h2>OBSIDIAN WEAR</h2>
@@ -32,7 +37,11 @@ export default function AdminLayout() {
 
         </div>
 
+        {/* MENU */}
+
         <div className="admin-menu">
+
+          {/* BẢNG ĐIỀU KHIỂN */}
 
           <NavLink
             to="/admin"
@@ -45,6 +54,9 @@ export default function AdminLayout() {
             <span>Bảng điều khiển</span>
           </NavLink>
 
+
+          {/* QUẢN LÍ ĐƠN HÀNG */}
+
           <NavLink
             to="/admin/orders"
             className={({ isActive }) =>
@@ -55,15 +67,43 @@ export default function AdminLayout() {
             <span>Quản lí đơn hàng</span>
           </NavLink>
 
-          <NavLink
-            to="/admin/products"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            <FiBox />
-            <span>Quản lí sản phẩm</span>
-          </NavLink>
+
+          {/* =================
+              QUẢN LÍ SẢN PHẨM
+             ================= */}
+
+          <div className="admin-menu-dropdown">
+
+            <NavLink
+              to="/admin/products"
+              className={({ isActive }) =>
+                isActive ? "active admin-menu-item" : "admin-menu-item"
+              }
+            >
+              <FiPackage />
+              <span>Quản lí sản phẩm</span>
+            </NavLink>
+
+
+            {/* SUB MENU */}
+
+            <div className="admin-submenu">
+
+              <NavLink
+                to="/admin/products/variants"
+                className={({ isActive }) =>
+                  isActive ? "active admin-submenu-item" : "admin-submenu-item"
+                }
+              >
+                <span>Biến thể</span>
+              </NavLink>
+
+            </div>
+
+          </div>
+
+
+          {/* QUẢN LÍ DANH MỤC */}
 
           <NavLink
             to="/admin/categories"
@@ -75,6 +115,9 @@ export default function AdminLayout() {
             <span>Quản lí danh mục</span>
           </NavLink>
 
+
+          {/* QUẢN LÍ THÀNH VIÊN */}
+
           <NavLink
             to="/admin/users"
             className={({ isActive }) =>
@@ -85,6 +128,9 @@ export default function AdminLayout() {
             <span>Quản lí thành viên</span>
           </NavLink>
 
+
+          {/* THỐNG KÊ */}
+
           <NavLink
             to="/admin/statistics"
             className={({ isActive }) =>
@@ -94,6 +140,9 @@ export default function AdminLayout() {
             <FiBarChart2 />
             <span>Thống kê</span>
           </NavLink>
+
+
+          {/* QUẢN LÍ BÌNH LUẬN */}
 
           <NavLink
             to="/admin/comments"
@@ -109,11 +158,16 @@ export default function AdminLayout() {
 
       </aside>
 
-      {/* Main */}
+
+      {/* ================= MAIN ================= */}
 
       <div className="admin-main">
 
+        {/* TOPBAR */}
+
         <header className="admin-topbar">
+
+          {/* SEARCH */}
 
           <div className="admin-search-box">
 
@@ -126,7 +180,12 @@ export default function AdminLayout() {
 
           </div>
 
+
+          {/* RIGHT */}
+
           <div className="admin-right">
+
+            {/* NOTIFICATION */}
 
             <div className="admin-bell">
 
@@ -135,6 +194,9 @@ export default function AdminLayout() {
               <span>1</span>
 
             </div>
+
+
+            {/* ACCOUNT */}
 
             <div className="admin-account">
 
@@ -158,6 +220,9 @@ export default function AdminLayout() {
           </div>
 
         </header>
+
+
+        {/* PAGE CONTENT */}
 
         <main className="admin-page">
 
