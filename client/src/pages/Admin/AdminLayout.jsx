@@ -9,7 +9,8 @@ import {
   FiSearch,
   FiBell,
   FiChevronDown,
-  FiPackage
+  FiPackage,
+  FiTag
 } from "react-icons/fi";
 
 import "./Admin.css";
@@ -153,6 +154,19 @@ export default function AdminLayout() {
             <FiMessageCircle />
             <span>Quản lí bình luận</span>
           </NavLink>
+
+
+          {/* QUẢN LÍ MÃ GIẢM GIÁ */}
+
+<NavLink
+  to="/admin/discount-codes"
+  className={({ isActive }) =>
+    isActive ? "active" : ""
+  }
+>
+  <FiTag />
+  <span>Quản lí mã giảm giá</span>
+</NavLink>
 
         </div>
 

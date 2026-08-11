@@ -32,6 +32,7 @@ import Users from "./pages/Admin/Users";
 import Statistics from "./pages/Admin/Statistics";
 import Comments from "./pages/Admin/Comments";
 import Variants from "./pages/Admin/Variants";
+import DiscountCodes from "./pages/Admin/DiscountCodes";
 
 // ==========================================
 // 1. TRẠM KIỂM SOÁT BẢO MẬT (ROUTE GUARDS)
@@ -104,6 +105,7 @@ function App() {
           <Route path="statistics" element={<Statistics />} />
           <Route path="comments" element={<Comments />} />
           <Route path="products/variants" element={<Variants />} />
+          <Route path="discount-codes" element={<DiscountCodes />} />
         </Route>
       </Routes>
     </BrowserRouter>

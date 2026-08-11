@@ -3997,3 +3997,484 @@ grid-template-columns:1fr;
   }
 
 }
+
+/* =====================================================
+   QUẢN LÍ MÃ GIẢM GIÁ
+===================================================== */
+
+.discount-page {
+  width: 100%;
+}
+
+
+/* HEADER */
+
+.discount-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.discount-page-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #222;
+}
+
+
+/* BUTTON THÊM */
+
+.discount-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  height: 40px;
+  padding: 0 16px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: #1677ff;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.discount-add-btn:hover {
+  background: #095dcc;
+}
+
+
+/* THỐNG KÊ */
+
+.discount-statistics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  margin-bottom: 20px;
+}
+
+.discount-stat-card {
+  background: #fff;
+
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+
+  padding: 16px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.discount-stat-card > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.discount-stat-card span {
+  font-size: 13px;
+  color: #777;
+}
+
+.discount-stat-card strong {
+  font-size: 25px;
+  color: #222;
+}
+
+.discount-stat-icon {
+  width: 42px;
+  height: 42px;
+
+  padding: 9px;
+
+  border-radius: 7px;
+
+  color: #d3ae21;
+  background: #fff9df;
+}
+
+.active-icon {
+  color: #27a653;
+  background: #e9f8ed;
+}
+
+.expired-icon {
+  color: #777;
+  background: #eeeeee;
+}
+
+
+/* TOOLBAR */
+
+.discount-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 12px;
+}
+
+
+/* BỘ LỌC */
+
+.discount-filters {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.discount-filters button {
+  height: 36px;
+
+  padding: 0 13px;
+
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: #555;
+
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+.discount-filters button:hover {
+  background: #fff;
+}
+
+.discount-filters button.active {
+  background: #fff;
+  border-color: #ddd;
+
+  color: #222;
+  font-weight: 600;
+}
+
+
+/* TÌM KIẾM */
+
+.discount-search {
+  width: 245px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 10px;
+
+  background: #fff;
+
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.discount-search svg {
+  color: #999;
+  font-size: 16px;
+}
+
+.discount-search input {
+  width: 100%;
+
+  margin-left: 7px;
+
+  border: none;
+  outline: none;
+
+  font-size: 13px;
+
+  background: transparent;
+}
+
+
+/* BẢNG */
+
+.discount-table-wrapper {
+  width: 100%;
+
+  background: #fff;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  overflow-x: auto;
+}
+
+.discount-table {
+  width: 100%;
+  min-width: 1050px;
+
+  border-collapse: collapse;
+}
+
+.discount-table thead {
+  background: #fafafa;
+}
+
+.discount-table th {
+  height: 44px;
+
+  padding: 8px;
+
+  border-bottom: 1px solid #ddd;
+
+  color: #333;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  text-align: left;
+}
+
+.discount-table td {
+  height: 55px;
+
+  padding: 8px;
+
+  border-bottom: 1px solid #eee;
+
+  color: #444;
+
+  font-size: 13px;
+}
+
+.discount-table tbody tr:hover {
+  background: #fafcff;
+}
+
+
+/* CHECKBOX */
+
+.discount-table th:first-child,
+.discount-table td:first-child {
+  width: 40px;
+  text-align: center;
+}
+
+.discount-table input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+}
+
+
+/* CODE */
+
+.discount-table td strong {
+  color: #222;
+  font-weight: 600;
+}
+
+
+/* TRẠNG THÁI */
+
+.discount-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 26px;
+
+  padding: 3px 9px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.status-active {
+  color: #21863d;
+  background: #dff5e4;
+}
+
+.status-coming {
+  color: #bd7010;
+  background: #ffe7bd;
+}
+
+.status-used {
+  color: #fff;
+  background: #e45757;
+}
+
+.status-expired {
+  color: #fff;
+  background: #888;
+}
+
+
+/* NÚT THAO TÁC */
+
+.discount-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.discount-actions button {
+  width: 29px;
+  height: 29px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #ddd;
+  border-radius: 5px;
+
+  background: #fff;
+
+  color: #666;
+
+  cursor: pointer;
+}
+
+.discount-actions button:hover {
+  color: #1677ff;
+  border-color: #b9ccef;
+  background: #f5f8ff;
+}
+
+.discount-actions button.delete:hover {
+  color: #e53935;
+  border-color: #efb4b4;
+  background: #fff4f4;
+}
+
+/* ================= PHÂN TRANG ================= */
+
+.discount-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 16px 0 8px;
+}
+
+
+/* ================= NÚT < > ================= */
+
+.discount-pagination > button {
+  width: 35px;
+  height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  background: #fff;
+  color: #aaa;
+
+  font-size: 15px;
+
+  cursor: pointer;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+/* ================= KHI RÊ CHUỘT VÀO < > ================= */
+
+.discount-pagination > button:not(.active):hover {
+  background: #fff;
+
+  border-color: #c8c8c8;
+
+  color: #555 !important;
+
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+
+/* ================= SỐ 1 ================= */
+
+.discount-pagination > button.active {
+  background: #1554a6;
+
+  border-color: #1554a6;
+
+  color: #fff;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  box-shadow: 0 3px 8px rgba(21, 84, 166, 0.25);
+
+  cursor: default;
+}
+
+
+/* ================= HOVER SỐ 1 ================= */
+
+.discount-pagination > button.active:hover {
+  background: #1554a6;
+
+  border-color: #1554a6;
+
+  color: #fff;
+}
+
+
+/* ================= NÚT BỊ DISABLED ================= */
+
+/* Vẫn giữ màu nhạt bình thường */
+.discount-pagination > button:disabled {
+  background: #fff;
+
+  border-color: #ddd;
+
+  color: #aaa;
+
+  cursor: pointer;
+
+  opacity: 1;
+}
+
+
+/* QUAN TRỌNG:
+   disabled vẫn đổi màu khi rê chuột */
+
+.discount-pagination > button:disabled:hover {
+  background: #fff;
+
+  border-color: #c8c8c8;
+
+  color: #555 !important;
+
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+
+/* Icon < > */
+
+.discount-pagination > button svg {
+  width: 15px;
+  height: 15px;
+
+  stroke-width: 2;
+}
