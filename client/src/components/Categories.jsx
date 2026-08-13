@@ -1,9 +1,9 @@
 import "./Categories.css";
 
-import aoPhongCotton from "../public/images/aophongcotton.png";
-import quanJeans from "../public/images/quanjeans.png";
-import aoKhoacBomberNu from "../public/images/aokhoacbombernu.png";
-import aoSoMi from "../public/images/aosomi.png";
+import aoPhongCotton from "../public/images/aophongcotton1.png";
+import quanJeans from "../public/images/quanjeans1.png";
+import aoKhoacBomberNu from "../public/images/aokhoacbombernu1.png";
+import aoSoMi from "../public/images/aosomi1.png";
 
 const categories = [
   {
