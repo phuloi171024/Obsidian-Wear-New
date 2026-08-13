@@ -186,41 +186,93 @@
 }
 
 /* =========================
-   Cart
+   Cart / Action Buttons
 ========================= */
 
-.cart-action{
-    display:flex;
-    gap:10px;
-    margin-top:30px;
+.cart-action {
+    display: grid;
+    grid-template-columns: 270px 1fr 38px 38px;
+    gap: 14px;
+    width: 100%;
+    margin-top: 30px;
+    align-items: center;
+}
+/* Thêm vào giỏ hàng */
+.add-cart {
+    width: 250px;
+    height: 50px;
+    flex: none;
+
+    border: none;
+    border-radius: 6px;
+    background: #2453d4;
+    color: #fff;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    cursor: pointer;
+    transition: background 0.2s ease;
 }
 
-.add-cart{
-    flex:1;
-    height:50px;
-    border:none;
-    background:#3563ff;
-    color:#fff;
-    font-size:16px;
-    border-radius:6px;
-    cursor:pointer;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:12px;
+.add-cart:hover {
+    background: #1e40af;
 }
 
-.add-cart:hover{
-    background:#234fe8;
+/* Mua ngay */
+.buy-now-btn {
+    width: 100%;
+    height: 50px;
+
+    border: none;
+    border-radius: 6px;
+    background: #2453d4;
+    color: #fff;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    transition: background 0.2s ease;
 }
 
-.share-btn{
-    width:50px;
-    border:1px solid #ddd;
-    background:#fff;
-    border-radius:6px;
-    cursor:pointer;
+.buy-now-btn:hover {
+    background: #1e40af;
+}
+
+/* Icon yêu thích + chia sẻ */
+.share-btn {
+    width: 38px;
+    height: 38px;
+
+    padding: 0;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+
+    background: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 18px;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.share-btn:hover {
+    background: #f8fafc;
 }
 
 /* =========================

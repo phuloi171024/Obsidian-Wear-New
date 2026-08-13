@@ -487,7 +487,7 @@ export default function ProductPage() {
                         onClick={(e) => openVariantModal(e, product, false)}
                         title="Thêm giỏ hàng"
                       >
-                        🛒 Thêm giỏ
+                         Thêm giỏ
                       </button>
 
                       <button
@@ -495,7 +495,7 @@ export default function ProductPage() {
                         onClick={(e) => openVariantModal(e, product, true)}
                         title="Mua ngay"
                       >
-                        ⚡ Mua ngay
+                         Mua ngay
                       </button>
                     </div>
                   </div>

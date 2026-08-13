@@ -258,10 +258,11 @@
 }
 
 .product-price {
-    color: #000;
+    color: #2563eb;
     font-size: 18px;
     font-weight: 800;
     margin-bottom: 5px;
+    text-align: left;
 }
 
 /* ===========================
@@ -274,39 +275,45 @@
     padding: 0 16px 16px 16px;
 }
 
+/* NÚT THÊM GIỎ - MÀU TRẮNG */
 .card-add-cart-btn {
     flex: 1;
-    background: #f5f5f5;
+    background: #fff;
     color: #000;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #2563eb;
     padding: 10px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .card-add-cart-btn:hover {
-    background: #e5e5e5;
+    background: #f5f9ff;
+    color: #000;
+    border-color: #2563eb;
 }
 
+/* NÚT MUA NGAY - XANH NƯỚC BIỂN */
 .card-buy-now-btn {
     flex: 1;
-    background: #000;
+    background: #2563eb;
     color: #fff;
-    border: 1px solid #000;
+    border: 1px solid #2563eb;
     padding: 10px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .card-buy-now-btn:hover {
-    background: #333;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    background: #1d4ed8;
+    color: #fff;
+    border-color: #1d4ed8;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
 }
 
 /* ===========================

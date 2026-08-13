@@ -689,6 +689,7 @@ const handleToggleWishlist = async () => {
                   "pointer",
                 transition:
                   "background 0.2s",
+                flex: 1,
               }}
               onMouseOver={(e) =>
                 (e.target.style.background =
