@@ -21,12 +21,30 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreePolicy, setAgreePolicy] = useState(false);
 
-  const handleGoogleLogin = () => {
-    window.location.href = "http://127.0.0.1:8000/api/auth/google";
-  };
+  // THÊM STATE NÀY ĐỂ LƯU LỖI TỪ API TRẢ VỀ
+  const [apiErrors, setApiErrors] = useState({});
+
+const handleGoogleLogin = async () => {
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/auth/google");
+    const data = await response.json();
+
+    if (response.ok && data.status === true) {
+      // Chuyển hướng sang link của Google (data.url) chứ không phải link API
+      window.location.href = data.url;
+    } else {
+      toast.error("Không thể tải trang đăng nhập Google!");
+    }
+  } catch (error) {
+    toast.error("Lỗi kết nối đến máy chủ!");
+  }
+};
 
   // Hàm gọi API Đăng ký tài khoản
   const handleRegister = async () => {
+    // Reset mảng lỗi mỗi lần bấm nút đăng ký
+    setApiErrors({});
+
     if (!name || !email || !password || !confirmPassword) {
       toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
       return;
@@ -72,8 +90,10 @@ export default function Register() {
         toast.success("Đăng ký thành công!");
         setTimeout(() => navigate("/"), 1500);
       } else {
-        // Hiển thị lỗi do Backend gửi về (ví dụ: Trùng email)
+        // Hiển thị lỗi do Backend gửi về
         if (data.errors) {
+          // Lưu toàn bộ lỗi vào State để hiển thị xuống dưới ô input
+          setApiErrors(data.errors);
           const firstError = Object.values(data.errors)[0][0];
           toast.error(firstError);
         } else {
@@ -106,9 +126,15 @@ export default function Register() {
               type="text" 
               placeholder="Nguyễn Văn A" 
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                // Xóa lỗi khi người dùng bắt đầu gõ lại
+                if (apiErrors.name) setApiErrors({ ...apiErrors, name: null });
+              }}
             />
           </div>
+          {/* Hiển thị lỗi Họ Tên */}
+          {apiErrors.name && <p style={{ color: "#ef4444", fontSize: "13px", marginTop: "4px", marginBottom: "0", textAlign: "left" }}>{apiErrors.name[0]}</p>}
         </div>
 
         <div className="form-group">
@@ -119,9 +145,15 @@ export default function Register() {
               type="email" 
               placeholder="email@cuaban.com" 
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                // Xóa lỗi khi người dùng bắt đầu gõ lại
+                if (apiErrors.email) setApiErrors({ ...apiErrors, email: null });
+              }}
             />
           </div>
+          {/* Hiển thị lỗi Email (Ví dụ: Email đã tồn tại) */}
+          {apiErrors.email && <p style={{ color: "#ef4444", fontSize: "13px", marginTop: "4px", marginBottom: "0", textAlign: "left" }}>{apiErrors.email[0]}</p>}
         </div>
 
         <div className="form-group">
@@ -132,9 +164,14 @@ export default function Register() {
               type="tel" 
               placeholder="0123456789" 
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                if (apiErrors.phone) setApiErrors({ ...apiErrors, phone: null });
+              }}
             />
           </div>
+          {/* Hiển thị lỗi SĐT */}
+          {apiErrors.phone && <p style={{ color: "#ef4444", fontSize: "13px", marginTop: "4px", marginBottom: "0", textAlign: "left" }}>{apiErrors.phone[0]}</p>}
         </div>
 
         <div className="form-group">
@@ -145,7 +182,10 @@ export default function Register() {
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (apiErrors.password) setApiErrors({ ...apiErrors, password: null });
+              }}
             />
             {showPassword ? (
               <FiEyeOff className="eye-icon" onClick={() => setShowPassword(false)} />
@@ -153,6 +193,8 @@ export default function Register() {
               <FiEye className="eye-icon" onClick={() => setShowPassword(true)} />
             )}
           </div>
+          {/* Hiển thị lỗi Mật khẩu */}
+          {apiErrors.password && <p style={{ color: "#ef4444", fontSize: "13px", marginTop: "4px", marginBottom: "0", textAlign: "left" }}>{apiErrors.password[0]}</p>}
         </div>
 
         <div className="form-group">

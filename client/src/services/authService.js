@@ -9,33 +9,50 @@ export const authService = {
       email,
       password,
     });
+
     return response.data;
   },
 
   // Đăng ký
   register: async (userData) => {
     const response = await axios.post(`${API_BASE_URL}/register`, userData);
+
     return response.data;
   },
 
   // Lấy URL đăng nhập Google
   getGoogleLoginUrl: async () => {
-    const response = await axios.get(`${API_BASE_URL}/auth/google/url`);
+    const response = await axios.get(`${API_BASE_URL}/auth/google`);
+
     return response.data;
   },
 
-  // Đăng xuất (Có truyền Token)
+  // Đăng xuất
   logout: async () => {
-    const token = localStorage.getItem("auth_token");
-    const response = await axios.post(
-      `${API_BASE_URL}/logout`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
-    // Xóa token ở local
-    localStorage.removeItem("auth_token");
-    return response.data;
+    const token = localStorage.getItem("access_token");
+
+    try {
+      // Nếu không có token thì không gọi API logout
+      if (!token) {
+        return null;
+      }
+
+      const response = await axios.post(
+        `${API_BASE_URL}/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        },
+      );
+
+      return response.data;
+    } finally {
+      // Luôn xóa token local dù API logout thành công hay thất bại
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_info");
+    }
   },
 };

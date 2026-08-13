@@ -16,9 +16,9 @@ export default function PaymentPage() {
     method: 'Thanh toán khi nhận hàng (COD)',
   };
 
-  // API ĐẶT HÀNG
+  // API ĐẶT HÀNG VÀ THANH TOÁN
   const handleConfirmOrder = async () => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token") || localStorage.getItem("token");
     if (!token) {
       toast.error("Vui lòng đăng nhập để đặt hàng!");
       return navigate("/login");
@@ -26,26 +26,61 @@ export default function PaymentPage() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": `Bearer ${token.trim()}`
-        },
-        body: JSON.stringify({
-          payment_method: activeTab
-        })
-      });
+      
+      // ==========================================
+      // 1. NẾU CHỌN THANH TOÁN SEPAY (CHUYỂN SANG VNPAY)
+      // ==========================================
+      if (activeTab === 'sepay' || activeTab === 'vnpay') {
+        const res = await fetch("http://localhost:8000/api/vnpay/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token.trim()}`
+          },
+          body: JSON.stringify({
+            // Chuyển đổi chuỗi "1.920.000" thành số 1920000 để gửi cho VNPay
+            amount: parseInt(order.total.replace(/\./g, '')) 
+          })
+        });
 
-      const data = await res.json();
-      if (res.ok && data.status) {
-        toast.success("Đặt hàng thành công!");
-        navigate('/order-success', { state: { order } });
-      } else {
-        toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        const data = await res.json();
+        if (res.ok && data.status) {
+          // Bẻ lái trình duyệt sang trang thanh toán VNPay Sandbox
+          window.location.href = data.url;
+          return; // Dừng lại ở đây vì trình duyệt đã chuyển trang
+        } else {
+          toast.error("Không thể tạo liên kết thanh toán VNPay!");
+        }
+      } 
+      // ==========================================
+      // 2. NẾU CHỌN THANH TOÁN TIỀN MẶT (COD)
+      // ==========================================
+      else {
+        const res = await fetch("http://localhost:8000/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token.trim()}`
+          },
+          body: JSON.stringify({
+            payment_method: 'cod'
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && (data.status || data.success)) {
+          toast.success("Đặt hàng thành công!");
+          setTimeout(() => {
+            navigate('/order-success', { state: { order } });
+          }, 1000);
+        } else {
+          toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
       }
     } catch (error) {
+      console.error("Lỗi:", error);
       toast.error("Không thể kết nối tới máy chủ.");
     } finally {
       setLoading(false);
@@ -136,42 +171,56 @@ export default function PaymentPage() {
               onClick={() => setActiveTab('sepay')}
               className={`flex items-center space-x-2 pb-3 px-6 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${activeTab === 'sepay' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
             >
-              <span>💳 Sepay</span>
+              <span>VNPay</span>
             </button>
           </div>
 
-          {/* Chi tiết phương thức COD */}
+          {/* Chi tiết phương thức (Hiển thị động theo Tab) */}
           <div className="space-y-6">
             <div className="flex items-center space-x-2 text-lg font-bold text-gray-900">
               <span>$</span>
-              <h3>Thanh toán khi nhận hàng (COD)</h3>
+              <h3>{activeTab === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán trực tuyến (VNPay)'}</h3>
             </div>
 
             <div className="space-y-2.5 text-sm">
               <p className="text-gray-600"><span className="font-semibold text-gray-800">Mã đơn hàng:</span> {order.code}</p>
               <p className="text-gray-600"><span className="font-semibold text-gray-800">Tổng tiền cần thanh toán:</span> <span className="text-red-500 font-bold text-base">{order.total} đ</span></p>
-              <p className="text-gray-600"><span className="font-semibold text-gray-800">Phương thức:</span> Thanh toán khi nhận hàng</p>
+              <p className="text-gray-600"><span className="font-semibold text-gray-800">Phương thức:</span> {activeTab === 'cod' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản / Quét mã VNPay'}</p>
             </div>
 
-            <div className="bg-amber-50/60 border-l-4 border-amber-500 rounded-r-xl p-4 text-xs text-amber-800 space-y-1.5">
-              <div className="flex items-center space-x-1.5 font-bold text-amber-900 mb-1">
-                <span>⚠️ Lưu ý quan trọng:</span>
-              </div>
-              <p>• Vui lòng chuẩn bị đúng số tiền khi nhận hàng</p>
-              <p>• Kiểm tra kỹ sản phẩm trước khi thanh toán</p>
-              <p>• Đơn hàng sẽ được giao trong vòng 2-3 ngày làm việc</p>
-              <p>• Phí giao hàng đã được tính trong tổng số tiền</p>
-            </div>
+            {/* Đổi nội dung hướng dẫn tùy theo Tab */}
+            {activeTab === 'cod' ? (
+              <>
+                <div className="bg-amber-50/60 border-l-4 border-amber-500 rounded-r-xl p-4 text-xs text-amber-800 space-y-1.5">
+                  <div className="flex items-center space-x-1.5 font-bold text-amber-900 mb-1">
+                    <span>⚠️ Lưu ý quan trọng:</span>
+                  </div>
+                  <p>• Vui lòng chuẩn bị đúng số tiền khi nhận hàng</p>
+                  <p>• Kiểm tra kỹ sản phẩm trước khi thanh toán</p>
+                  <p>• Đơn hàng sẽ được giao trong vòng 2-3 ngày làm việc</p>
+                  <p>• Phí giao hàng đã được tính trong tổng số tiền</p>
+                </div>
 
-            <div className="bg-blue-50/60 border-l-4 border-blue-500 rounded-r-xl p-4 text-xs text-blue-800 space-y-1.5">
-              <div className="flex items-center space-x-1.5 font-bold text-blue-900 mb-1">
-                <span>ℹ️ Quy trình giao hàng COD:</span>
+                <div className="bg-blue-50/60 border-l-4 border-blue-500 rounded-r-xl p-4 text-xs text-blue-800 space-y-1.5">
+                  <div className="flex items-center space-x-1.5 font-bold text-blue-900 mb-1">
+                    <span>Quy trình giao hàng COD:</span>
+                  </div>
+                  <p>1. Nhân viên giao hàng sẽ liên hệ trước khi giao</p>
+                  <p>2. Bạn kiểm tra sản phẩm khi nhận hàng</p>
+                  <p>3. Thanh toán trực tiếp cho nhân viên giao hàng</p>
+                  <p>4. Nhận biên lai xác nhận thanh toán</p>
+                </div>
+              </>
+            ) : (
+              <div className="bg-blue-50/60 border-l-4 border-blue-500 rounded-r-xl p-4 text-xs text-blue-800 space-y-1.5">
+                <div className="flex items-center space-x-1.5 font-bold text-blue-900 mb-1">
+                  <span> Thông tin thanh toán trực tuyến:</span>
+                </div>
+                <p>• Bạn sẽ được chuyển hướng sang cổng thanh toán bảo mật của VNPay.</p>
+                <p>• Hỗ trợ thanh toán qua thẻ ATM nội địa, thẻ Visa/Mastercard hoặc quét mã QR ứng dụng ngân hàng.</p>
+                <p>• Hệ thống sẽ tự động xác nhận đơn hàng sau khi bạn thanh toán thành công.</p>
               </div>
-              <p>1. Nhân viên giao hàng sẽ liên hệ trước khi giao</p>
-              <p>2. Bạn kiểm tra sản phẩm khi nhận hàng</p>
-              <p>3. Thanh toán trực tiếp cho nhân viên giao hàng</p>
-              <p>4. Nhận biên lai xác nhận thanh toán</p>
-            </div>
+            )}
 
             {/* Nút hành động */}
             <div className="pt-4 space-y-3">
@@ -180,7 +229,7 @@ export default function PaymentPage() {
                 disabled={loading}
                 className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm cursor-pointer"
               >
-                <span>{loading ? "Đang xử lý..." : "✓ Xác nhận thanh toán COD"}</span>
+                <span>{loading ? "Đang xử lý..." : activeTab === 'cod' ? "✓ Xác nhận thanh toán COD" : "✓ Thanh toán qua VNPay"}</span>
               </button>
 
               <button

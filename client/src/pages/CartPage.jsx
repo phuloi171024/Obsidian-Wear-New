@@ -72,21 +72,43 @@ export default function CartPage() {
     }
   };
 
-  const updateQuantity = async (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    try {
-      const res = await fetch(`http://localhost:8000/api/cart/update/${id}`, {
+ const updateQuantity = async (id, newQuantity) => {
+  if (newQuantity < 1) return;
+
+  try {
+    const res = await fetch(
+      `http://localhost:8000/api/cart/update/${id}`,
+      {
         method: "PUT",
         headers: getHeaders(),
-        body: JSON.stringify({ quantity: newQuantity })
-      });
-      if (res.ok) {
-        setCartItems(cartItems.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
-      }
-    } catch (error) {
-      toast.error("Không thể cập nhật số lượng");
+        body: JSON.stringify({
+          quantity: newQuantity,
+        }),
+      },
+    );
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? data.data
+            : item,
+        ),
+      );
+
+      toast.success(data.message);
+      return;
     }
-  };
+
+    toast.error(
+      data.message || "Không thể cập nhật số lượng",
+    );
+  } catch (error) {
+    toast.error("Không thể kết nối đến máy chủ");
+  }
+};
 
   const promptRemove = (id) => {
     setItemToDelete(id);

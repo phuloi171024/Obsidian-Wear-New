@@ -28,87 +28,63 @@ class AddressController extends Controller
     /**
      * 2. Thêm một địa chỉ mới
      */
-    public function store(Request $request)
+   public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'address_line' => 'required|string|max:255',
-            'is_default'   => 'boolean'
+        // 1. Cập nhật lại tên các trường cần kiểm tra
+        $request->validate([
+            'type' => 'required|string',
+            'phone' => 'required|string',
+            'address' => 'required|string', // Đã đổi từ address_line thành address
+            'is_default' => 'boolean'
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()
-            ], 400);
-        }
-
-        $user = $request->user();
-        $isDefault = $request->is_default ?? false;
-
-        // Nếu khách hàng chọn đây là địa chỉ mặc định, ta phải tắt mặc định của các địa chỉ cũ đi
-        if ($isDefault) {
-            Address::where('user_id', $user->id)->update(['is_default' => false]);
-        }
-
-        // Tạo địa chỉ mới
         $address = Address::create([
-            'user_id'      => $user->id,
-            'address_line' => $request->address_line,
-            'is_default'   => $isDefault,
+            'user_id' => $request->user()->id,
+            'type' => $request->type,
+            'phone' => $request->phone,
+            'address' => $request->address, // Đã đổi từ address_line thành address
+            'is_default' => $request->is_default ?? false,
         ]);
 
         return response()->json([
-            'status'  => true,
-            'message' => 'Thêm địa chỉ thành công!',
-            'data'    => $address
+            'status' => true,
+            'message' => 'Thêm địa chỉ thành công',
+            'data' => $address
         ], 201);
     }
 
     /**
      * 3. Cập nhật địa chỉ
      */
-    public function update(Request $request, int $id)
+    public function update(Request $request, $id)
     {
-        $user = $request->user();
-        
-        // Tìm địa chỉ theo ID và phải đảm bảo nó thuộc về user đang đăng nhập
-        $address = Address::where('id', $id)->where('user_id', $user->id)->first();
+        $address = Address::where('id', $id)
+                          ->where('user_id', $request->user()->id)
+                          ->first();
 
         if (!$address) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Không tìm thấy địa chỉ!'
-            ], 404);
+            return response()->json(['status' => false, 'message' => 'Không tìm thấy địa chỉ'], 404);
         }
 
-        $validator = Validator::make($request->all(), [
-            'address_line' => 'sometimes|required|string|max:255',
-            'is_default'   => 'boolean'
+        // 2. Cập nhật lại tên các trường cần kiểm tra
+        $request->validate([
+            'type' => 'required|string',
+            'phone' => 'required|string',
+            'address' => 'required|string', // Đã đổi từ address_line thành address
+            'is_default' => 'boolean'
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()
-            ], 400);
-        }
-
-        // Nếu cập nhật thành địa chỉ mặc định
-        if ($request->has('is_default') && $request->is_default) {
-            Address::where('user_id', $user->id)->update(['is_default' => false]);
-            $address->is_default = true;
-        }
-
-        if ($request->has('address_line')) {
-            $address->address_line = $request->address_line;
-        }
-
-        $address->save();
+        $address->update([
+            'type' => $request->type,
+            'phone' => $request->phone,
+            'address' => $request->address, // Đã đổi từ address_line thành address
+            'is_default' => $request->is_default ?? $address->is_default,
+        ]);
 
         return response()->json([
-            'status'  => true,
-            'message' => 'Cập nhật địa chỉ thành công!',
-            'data'    => $address
+            'status' => true,
+            'message' => 'Cập nhật địa chỉ thành công',
+            'data' => $address
         ], 200);
     }
 

@@ -15,13 +15,18 @@ class CartItem extends Model
         'quantity',
     ];
 
-    // Một dòng trong giỏ hàng thuộc về 1 Khách hàng (User)
+    protected function casts(): array
+    {
+        return [
+            'quantity' => 'integer',
+        ];
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Tham chiếu đến đúng 1 Biến thể sản phẩm (Size/Màu)
     public function productVariant()
     {
         return $this->belongsTo(ProductVariant::class);

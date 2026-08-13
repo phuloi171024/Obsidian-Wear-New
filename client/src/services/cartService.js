@@ -6,7 +6,7 @@ const API_URL = "http://127.0.0.1:8000/api";
 
 // Hàm cấu hình Header chứa Token đăng nhập
 const getAuthHeader = () => {
-  const token = localStorage.getItem("token"); // Đảm bảo lúc đăng nhập em đã lưu token vào đây
+  const token = localStorage.getItem("access_token"); // Đảm bảo lúc đăng nhập em đã lưu token vào đây
   return {
     headers: {
       Authorization: `Bearer ${token}`,

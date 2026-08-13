@@ -10,19 +10,24 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-       Schema::create('users', function (Blueprint $table) {
-    $table->id();
-    $table->string('name');
-    $table->string('email')->unique();
-    $table->string('phone')->nullable()->index();
-    $table->string('password');
-    $table->enum('role', ['admin', 'user'])->default('user');
-    $table->boolean('status')->default(true);
-    $table->rememberToken();
-    $table->timestamps();
-    $table->softDeletes();
-});
+   {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('email')->unique();
+        
+        // --- BỔ SUNG CÁC CỘT CÒN THIẾU TẠI ĐÂY ---
+        $table->string('phone')->nullable();
+        $table->string('google_id')->nullable(); // Cột lưu ID của Google
+        $table->string('password')->nullable();  // Cho phép null vì đăng nhập Google không có mật khẩu
+        $table->enum('role', ['admin', 'user'])->default('user');
+        $table->boolean('status')->default(1);
+        // ----------------------------------------
+        
+        $table->rememberToken();
+        $table->timestamps();
+        $table->softDeletes(); // Cột deleted_at
+    });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

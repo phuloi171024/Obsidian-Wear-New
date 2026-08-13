@@ -25,6 +25,16 @@ class AuthController extends Controller
             'email'    => 'required|string|email|max:255|unique:users',
             'phone'    => 'nullable|string|max:15|unique:users',
             'password' => 'required|string|min:8',
+        ],
+        [
+          
+            'email.unique'      => 'Địa chỉ email này đã được đăng ký.',
+            'email.required'    => 'Vui lòng nhập địa chỉ email.',
+            'email.email'       => 'Định dạng email không hợp lệ.',
+            'phone.unique'      => 'Số điện thoại này đã được sử dụng.',
+            'name.required'     => 'Vui lòng nhập họ và tên.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.min'      => 'Mật khẩu phải có ít nhất 8 ký tự.'
         ]);
 
         if ($validator->fails()) {
@@ -214,11 +224,21 @@ class AuthController extends Controller
      * 6. Chuyển hướng trực tiếp đến trang Đăng nhập Google
      */
   public function redirectToGoogle()
-    {
+  {
+    
         /** @var \Laravel\Socialite\Two\GoogleProvider $provider */
         $provider = Socialite::driver('google');
         
-        return $provider->stateless()->redirect();
+        // 2. Gọi các hàm stateless() và with() trên biến đã được khai báo
+        $url = $provider->stateless()
+            ->with(['prompt' => 'select_account'])
+            ->redirect()
+            ->getTargetUrl();
+        
+        return response()->json([
+            'status' => true,
+            'url'    => $url
+        ], 200);
     }
     /**
      * 7. Xử lý dữ liệu Google trả về và cấp Token
@@ -244,9 +264,20 @@ class AuthController extends Controller
                     'status'    => true,
                 ]);
             } else {
-                // Nếu đã có tài khoản, cập nhật google_id nếu chưa có
-                $user->update(['google_id' => $googleUser->getId()]);
+    // Kiểm tra tài khoản có đang bị khóa không
+    if (!$user->status) {
+        return redirect()->away(
+            'http://localhost:5173/login?error=account_disabled'
+        );
+    }
+    // Cập nhật google_id nếu chưa có
+    if (!$user->google_id) {
+        $user->update([
+            'google_id' => $googleUser->getId(),
+        ]);
+    }
             }
+
 
             // Tạo Token đăng nhập Sanctum
             $token = $user->createToken('auth_token')->plainTextToken;
@@ -255,8 +286,15 @@ class AuthController extends Controller
             return redirect()->away('http://localhost:5173/login?token=' . $token);
 
         } catch (\Exception $e) {
-            // Nếu có lỗi, trả về trang login kèm thông báo lỗi
-           dd($e->getMessage());
-        }
+    \Log::error('Google OAuth Error', [
+        'message' => $e->getMessage(),
+        'file'    => $e->getFile(),
+        'line'    => $e->getLine(),
+    ]);
+
+    return redirect()->away(
+        'http://localhost:5173/login?error=google_login_failed'
+    );
+}
     }
 }

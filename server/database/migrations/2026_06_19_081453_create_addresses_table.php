@@ -9,16 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+public function up()
 {
-Schema::create('addresses', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('user_id')->constrained('users', 'id', 'fk_addresses_user_id')->onDelete('cascade');
-    $table->string('address_line');
-    $table->boolean('is_default')->default(false);
-    $table->timestamps();
-    $table->softDeletes();
-});
+    Schema::create('addresses', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        $table->string('type')->default('Nhà'); // Thêm cột Loại địa chỉ
+        $table->string('phone')->nullable(); // Thêm cột Số điện thoại
+        $table->string('address'); // Đổi address_line thành address cho dễ nhớ
+        $table->boolean('is_default')->default(false);
+        $table->timestamps();
+        $table->softDeletes();
+    });
 }
 
     /**

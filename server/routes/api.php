@@ -17,6 +17,9 @@ use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\OrderController as ClientOrderController; 
+use App\Http\Controllers\Api\VNPayController;
+
+
 
 // 2. Phân hệ Quản trị viên (Admin API)
 use App\Http\Controllers\Admin\DashboardController;
@@ -38,6 +41,8 @@ Route::get('/home', [ClientProductController::class, 'home']);
 Route::get('/products', [ClientProductController::class, 'index']);
 Route::get('/products/{id}', [ClientProductController::class, 'show']);
 
+
+
 // Xác thực tài khoản & Quên mật khẩu
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -50,13 +55,15 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 // API Áp dụng mã giảm giá
 Route::post('/coupons/apply', [CouponController::class, 'apply']);
 Route::get('/coupons', [CouponController::class, 'index']);
+
+Route::get('/vnpay/return', [VNPayController::class, 'vnpayReturn']);
 /*
 |--------------------------------------------------------------------------
 | 2. CLIENT PROTECTED ROUTES (Cần đăng nhập - Sanctum Token)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
-    
+    Route::post('/vnpay/create', [VNPayController::class, 'createPayment']);
     // Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout']);
 

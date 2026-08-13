@@ -16,7 +16,7 @@ return array(
     'App\\Http\\Controllers\\Admin\\UserController' => $baseDir . '/app/Http/Controllers/Admin/UserController.php',
     'App\\Http\\Controllers\\Api\\AuthController' => $baseDir . '/app/Http/Controllers/Api/AuthController.php',
     'App\\Http\\Controllers\\Api\\ProductController' => $baseDir . '/app/Http/Controllers/Api/ProductController.php',
-    'App\\Http\\Controllers\\Api\\WishlistController' => $baseDir . '/app/Http/Controllers/Api/WishlistController.php',
+    'App\\Http\\Controllers\\Api\\WishlistController' => $baseDir . '/app/Http/Controllers/Api//WishlistController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Models\\Address' => $baseDir . '/app/Models/Address.php',
     'App\\Models\\Brand' => $baseDir . '/app/Models/Brand.php',
