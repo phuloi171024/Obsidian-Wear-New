@@ -53,7 +53,6 @@
 /* ========================== */
 
 .cart-item{
-
     background:#fff;
 
     border-radius:12px;
@@ -68,6 +67,7 @@
 
     padding:20px 25px;
 
+    margin-bottom:18px;
 }
 
 /* ========================== */
