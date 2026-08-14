@@ -1,18 +1,44 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 import Header from '../components/Header';
 
 export default function OrderSuccessPage() {
-  const order = {
-    code: 'ORD21751592',
-    total: '1.920.000',
-    method: 'Thanh toán khi nhận hàng (COD)',
-  };
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  // State động để lưu thông tin đơn hàng
+  const [order, setOrder] = useState({
+    code: 'Đang tải...',
+    total: 'Đang cập nhật...',
+    method: 'Đang xác định...',
+  });
+
+  useEffect(() => {
+    // 1. Lấy thông tin từ state (Nếu đi từ luồng thanh toán COD)
+    const stateOrder = location.state?.order;
+    
+    // 2. Lấy mã đơn hàng từ thanh URL (Nếu đi từ luồng VNPay redirect về)
+    const urlOrderId = searchParams.get('order_id');
+
+    if (stateOrder) {
+      setOrder({
+        code: stateOrder.code,
+        total: stateOrder.total + ' đ',
+        method: 'Thanh toán khi nhận hàng (COD)',
+      });
+    } else if (urlOrderId) {
+      setOrder({
+        code: urlOrderId,
+        total: 'Đã thanh toán (VNPay)', // Nếu có API getOrderById, bạn có thể gọi ở đây để lấy số tiền chính xác
+        method: 'Thanh toán trực tuyến (VNPay)',
+      });
+    }
+  }, [location.state, searchParams]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] flex flex-col font-sans">
-      <Header />
+
 
       <main className="grow max-w-2xl w-full mx-auto px-4 py-16 flex flex-col items-center text-center">
         <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
@@ -35,7 +61,7 @@ export default function OrderSuccessPage() {
           </div>
           <div className="flex justify-between text-sm pt-3 border-t border-gray-100">
             <span className="text-gray-700 font-semibold">Tổng cộng</span>
-            <span className="text-indigo-600 font-bold text-base">{order.total} đ</span>
+            <span className="text-indigo-600 font-bold text-base">{order.total}</span>
           </div>
         </div>
 

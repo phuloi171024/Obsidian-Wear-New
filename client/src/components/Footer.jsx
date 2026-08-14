@@ -17,7 +17,6 @@ import {
 export default function Footer() {
   return (
     <footer className="footer">
-
       <div className="footer-container">
 
         {/* Cột 1 */}
@@ -47,37 +46,50 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Cột 2 */}
+        {/* Cột 2: Đã gắn Link chuyển trang */}
         <div className="footer-col">
           <h3>Danh Mục</h3>
 
           <ul>
-            <li>Áo nam</li>
-            <li>Áo nữ</li>
-            <li>Quần thể thao</li>
-            <li>Giày thể thao</li>
-            <li>Khuyến mãi</li>
+            <li>
+              <Link to="/products/ao" className="footer-link">Áo thể thao</Link>
+            </li>
+            <li>
+              <Link to="/products/pants" className="footer-link">Quần thể thao</Link>
+            </li>
+            <li>
+              <Link to="/products/giay" className="footer-link">Giày thể thao</Link>
+            </li>
+            <li>
+              <Link to="/products/phu-kien" className="footer-link">Túi & Phụ kiện</Link>
+            </li>
+            <li>
+              <Link to="/products" className="footer-link">Tất cả sản phẩm</Link>
+            </li>
           </ul>
         </div>
 
-        {/* Cột 3 */}
+        {/* Cột 3: Đã gắn Link chuyển trang */}
         <div className="footer-col">
           <h3>Hỗ Trợ</h3>
 
           <ul>
-            <li>Câu hỏi thường gặp</li>
-            <li>Chính sách vận chuyển</li>
-            <li>Chính sách đổi trả</li>
             <li>
-  <Link to="/size-guide" className="footer-link">
-    Hướng dẫn chọn size
-  </Link>
-</li>
+              <Link to="/size-guide" className="footer-link">Hướng dẫn chọn size</Link>
+            </li>
             <li>
-  <Link to="/contact" className="footer-link">
-    Liên hệ
-  </Link>
-</li>
+              <Link to="/contact" className="footer-link">Liên hệ với chúng tôi</Link>
+            </li>
+            <li>
+              {/* Nếu sau này em làm trang Chính sách, hãy sửa to="/" thành to="/chinh-sach" nhé */}
+              <Link to="/" className="footer-link">Câu hỏi thường gặp</Link>
+            </li>
+            <li>
+              <Link to="/" className="footer-link">Chính sách vận chuyển</Link>
+            </li>
+            <li>
+              <Link to="/" className="footer-link">Chính sách đổi trả</Link>
+            </li>
           </ul>
         </div>
 
@@ -99,7 +111,6 @@ export default function Footer() {
             <FiMail />
             hello@obsidianwear.vn
           </p>
-
         </div>
 
       </div>
@@ -109,7 +120,6 @@ export default function Footer() {
           © 2026 OBSIDIAN WEAR. All rights reserved.
         </div>
       </div>
-
     </footer>
   );
 }

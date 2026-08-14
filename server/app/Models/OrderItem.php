@@ -4,28 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class OrderItem extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
-        'order_id', 
-        'product_variant_id', 
-        'quantity', 
-        'price'
-    ]; 
+        'order_id',
+        'product_variant_id',
+        'quantity',
+        'price',
+    ];
 
-    // Thuộc về đơn hàng nào
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    // Liên kết tới biến thể sản phẩm được mua
-    public function variant()
+    public function productVariant()
     {
-        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        return $this->belongsTo(ProductVariant::class);
     }
 }

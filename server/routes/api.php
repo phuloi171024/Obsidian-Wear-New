@@ -64,9 +64,11 @@ Route::get('/vnpay/return', [VNPayController::class, 'vnpayReturn']);
 */
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vnpay/create', [VNPayController::class, 'createPayment']);
+    // Route để VNPay gửi IPN ngầm (Server to Server)
+Route::get('/vnpay/ipn', [VNPayController::class, 'vnpayIpn']);
     // Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout']);
-
+Route::put('/user/password', [UserController::class, 'updatePassword']);
     // Quản lý thông tin cá nhân
     Route::get('/user/profile', [UserController::class, 'getProfile']);
     Route::put('/user/profile', [UserController::class, 'updateProfile']);

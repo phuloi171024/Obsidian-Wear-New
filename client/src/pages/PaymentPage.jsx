@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaMapMarkerAlt, FaCheck } from 'react-icons/fa';
 import Header from '../components/Header';
@@ -8,15 +8,57 @@ import toast, { Toaster } from "react-hot-toast";
 export default function PaymentPage() {
   const [activeTab, setActiveTab] = useState('cod');
   const [loading, setLoading] = useState(false);
+  const [order, setOrder] = useState({
+    code: 'ORD' + Math.floor(10000000 + Math.random() * 90000000),
+    total: '0',
+    rawTotal: 0,
+    method: 'Thanh toán khi nhận hàng (COD)',
+  });
   const navigate = useNavigate();
 
-  const order = {
-    code: 'ORD21751592',
-    total: '1.920.000',
-    method: 'Thanh toán khi nhận hàng (COD)',
-  };
+  // SỬA LẠI ĐOẠN NÀY ĐỂ ĐỌC ĐÚNG MẢNG GIỎ HÀNG TỪ CartController.php
+  useEffect(() => {
+    const fetchCartAndOrderInfo = async () => {
+      const token = localStorage.getItem("access_token") || localStorage.getItem("token");
+      if (!token) return;
 
-  // API ĐẶT HÀNG VÀ THANH TOÁN
+      try {
+        const res = await fetch("http://localhost:8000/api/cart", {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token.trim()}`
+          }
+        });
+        const data = await res.json();
+        
+        // Kiểm tra đúng cấu trúc phản hồi từ CartController.php (data.success và data.data là mảng)
+        if (res.ok && data.success && Array.isArray(data.data)) {
+          // Tính tổng tiền dựa trên giá sản phẩm và số lượng trong giỏ hàng thực tế
+          const calculatedTotal = data.data.reduce((sum, item) => {
+            const price = item.product_variant?.product?.price || item.product_variant?.price || 0;
+            return sum + (price * item.quantity);
+          }, 0);
+
+          const finalTotal = calculatedTotal > 0 ? calculatedTotal : 0;
+          const formattedTotal = Number(finalTotal).toLocaleString('vi-VN');
+
+          setOrder(prev => ({
+            ...prev,
+            total: formattedTotal,
+            rawTotal: Number(finalTotal),
+          }));
+        }
+      } catch (error) {
+        console.error("Lỗi lấy thông tin giỏ hàng:", error);
+      }
+    };
+
+    fetchCartAndOrderInfo();
+  }, []);
+
+
+// API ĐẶT HÀNG VÀ THANH TOÁN
   const handleConfirmOrder = async () => {
     const token = localStorage.getItem("access_token") || localStorage.getItem("token");
     if (!token) {
@@ -24,61 +66,74 @@ export default function PaymentPage() {
       return navigate("/login");
     }
 
+    if (order.rawTotal <= 0) {
+      toast.error("Giỏ hàng của bạn đang trống hoặc tổng tiền không hợp lệ!");
+      return;
+    }
+
     try {
       setLoading(true);
       
-      // ==========================================
-      // 1. NẾU CHỌN THANH TOÁN SEPAY (CHUYỂN SANG VNPAY)
-      // ==========================================
-      if (activeTab === 'sepay' || activeTab === 'vnpay') {
-        const res = await fetch("http://localhost:8000/api/vnpay/create", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": `Bearer ${token.trim()}`
-          },
-          body: JSON.stringify({
-            // Chuyển đổi chuỗi "1.920.000" thành số 1920000 để gửi cho VNPay
-            amount: parseInt(order.total.replace(/\./g, '')) 
-          })
-        });
+      // 1. LUÔN LUÔN LƯU ĐƠN HÀNG VÀO DATABASE TRƯỚC (CHO DÙ LÀ COD HAY VNPAY)
+      const orderRes = await fetch("http://localhost:8000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token.trim()}`
+        },
+        body: JSON.stringify({
+          payment_method: activeTab,
+          total_price: order.rawTotal
+        })
+      });
 
-        const data = await res.json();
-        if (res.ok && data.status) {
-          // Bẻ lái trình duyệt sang trang thanh toán VNPay Sandbox
-          window.location.href = data.url;
-          return; // Dừng lại ở đây vì trình duyệt đã chuyển trang
-        } else {
-          toast.error("Không thể tạo liên kết thanh toán VNPay!");
-        }
-      } 
-      // ==========================================
-      // 2. NẾU CHỌN THANH TOÁN TIỀN MẶT (COD)
-      // ==========================================
-      else {
-        const res = await fetch("http://localhost:8000/api/orders", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": `Bearer ${token.trim()}`
-          },
-          body: JSON.stringify({
-            payment_method: 'cod'
-          })
-        });
+      const orderData = await orderRes.json();
 
-        const data = await res.json();
-        if (res.ok && (data.status || data.success)) {
-          toast.success("Đặt hàng thành công!");
-          setTimeout(() => {
-            navigate('/order-success', { state: { order } });
-          }, 1000);
-        } else {
-          toast.error("Có lỗi xảy ra, vui lòng thử lại!");
-        }
+      if (!orderRes.ok || !orderData.status) {
+        toast.error(orderData.message || "Có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại!");
+        setLoading(false);
+        return;
       }
+
+      // Lấy được ID đơn hàng thật từ Database
+      const realOrderId = orderData.order_id;
+
+      // 2. XỬ LÝ THEO PHƯƠNG THỨC THANH TOÁN
+      if (activeTab === 'sepay' || activeTab === 'vnpay') {
+        // GỌI API TẠO LINK VNPAY VỚI ID ĐƠN HÀNG THẬT
+        const vnpayRes = await fetch("http://localhost:8000/api/vnpay/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token.trim()}`
+          },
+          body: JSON.stringify({
+            amount: order.rawTotal,
+            order_id: realOrderId // Truyền ID thật vào VNPay
+          })
+        });
+
+        const vnpayData = await vnpayRes.json();
+        
+        if (vnpayRes.ok && (vnpayData.success || vnpayData.status)) {
+          const redirectUrl = vnpayData.data || vnpayData.url;
+          if (redirectUrl) {
+            window.location.href = redirectUrl;
+            return;
+          }
+        }
+        toast.error("Không thể tạo liên kết thanh toán VNPay!");
+        
+      } else {
+        // NẾU LÀ COD -> CHUYỂN HƯỚNG SANG TRANG THÀNH CÔNG LUÔN
+        toast.success("Đặt hàng thành công!");
+        setTimeout(() => {
+          navigate(`/order-success?order_id=${realOrderId}`, { state: { order: { ...order, code: realOrderId } } });
+        }, 1000);
+      }
+
     } catch (error) {
       console.error("Lỗi:", error);
       toast.error("Không thể kết nối tới máy chủ.");
@@ -96,7 +151,7 @@ export default function PaymentPage() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] flex flex-col font-sans">
       <Toaster position="top-right" />
-      <Header />
+      
 
       {/* ================= MAIN CONTENT SECTION ================= */}
       <main className="flex-grow max-w-4xl w-full mx-auto px-4 py-12">

@@ -92,6 +92,7 @@ function App() {
         <Route path="/shipping-info" element={<ProtectedRoute><ShippingInfoPage /></ProtectedRoute>} />
         <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
         <Route path="/order-success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
+        <Route path="/checkout/success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
 
         {/* NHÓM 4: ADMIN */}

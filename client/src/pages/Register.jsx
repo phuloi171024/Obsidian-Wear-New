@@ -29,10 +29,10 @@ const handleGoogleLogin = async () => {
     const response = await fetch("http://127.0.0.1:8000/api/auth/google");
     const data = await response.json();
 
-    if (response.ok && data.status === true) {
-      // Chuyển hướng sang link của Google (data.url) chứ không phải link API
-      window.location.href = data.url;
-    } else {
+   if (response.ok && data.status === true) {
+        toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
+        setTimeout(() => navigate("/login"), 1500); 
+      } else {
       toast.error("Không thể tải trang đăng nhập Google!");
     }
   } catch (error) {

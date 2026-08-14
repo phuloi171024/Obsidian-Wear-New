@@ -56,7 +56,7 @@ class AddressController extends Controller
     /**
      * 3. Cập nhật địa chỉ
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $address = Address::where('id', $id)
                           ->where('user_id', $request->user()->id)

@@ -121,7 +121,7 @@ class VNPayController extends Controller
 
         // --- ĐƯỜNG DẪN TRANG WEB REACTJS CỦA BẠN ---
         // (Nếu code frontend chạy ở cổng khác thì bạn đổi lại chỗ này)
-        $frontendUrl = 'http://localhost:3000'; 
+        $frontendUrl = 'http://localhost:5173'; 
 
         if ($secureHash === $vnp_SecureHash) {
             // ✅ Chữ ký hợp lệ (Dữ liệu không bị giả mạo)
@@ -148,5 +148,74 @@ class VNPayController extends Controller
             Log::warning('Cảnh báo: Sai chữ ký VNPay Return từ IP - ' . $request->ip());
             return redirect()->away($frontendUrl . '/checkout/failed?reason=invalid_signature');
         }
+    }
+    public function vnpayIpn(Request $request)
+    {
+        $vnp_HashSecret = config('vnpay.hash_secret');
+        $inputData = [];
+
+        // Lấy tất cả tham số vnp_ do VNPay gửi đến
+        foreach ($request->all() as $key => $value) {
+            if (substr($key, 0, 4) == "vnp_") {
+                $inputData[$key] = $value;
+            }
+        }
+
+        $vnp_SecureHash = $inputData['vnp_SecureHash'] ?? '';
+        unset($inputData['vnp_SecureHash']);
+        ksort($inputData);
+
+        $i = 0;
+        $hashData = "";
+        foreach ($inputData as $key => $value) {
+            if ($i == 1) {
+                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
+            } else {
+                $hashData .= urlencode($key) . "=" . urlencode($value);
+                $i = 1;
+            }
+        }
+
+        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+
+        // 1. Kiểm tra chữ ký hợp lệ hay không
+        if ($secureHash === $vnp_SecureHash) {
+            $orderId = $request->vnp_TxnRef; // Mã đơn hàng
+            $vnp_Amount = $request->vnp_Amount / 100; // Số tiền thanh toán
+            $vnp_ResponseCode = $request->vnp_ResponseCode; // Mã phản hồi (00 là thành công)
+
+            // TODO: Tìm đơn hàng trong Database của bạn
+            /*
+            $order = Order::where('id', $orderId)->first();
+            if (!$order) {
+                return response()->json(['RspCode' => '01', 'Message' => 'Order not found']);
+            }
+
+            // Kiểm tra số tiền thanh toán có khớp với đơn hàng không
+            if ($order->total_price != $vnp_Amount) {
+                return response()->json(['RspCode' => '04', 'Message' => 'Amount invalid']);
+            }
+
+            // Kiểm tra xem đơn hàng đã được cập nhật trước đó chưa (tránh ghi đè nhiều lần)
+            if ($order->status == 'paid') {
+                return response()->json(['RspCode' => '02', 'Message' => 'Order already confirmed']);
+            }
+
+            // Cập nhật trạng thái đơn hàng
+            if ($vnp_ResponseCode == "00") {
+                $order->status = 'paid'; // Hoặc trạng thái hoàn thành đơn của bạn
+                $order->save();
+            } else {
+                $order->status = 'failed';
+                $order->save();
+            }
+            */
+
+            // Phản hồi lại cho VNPay biết server của bạn đã nhận được tín hiệu thành công
+            return response()->json(['RspCode' => '00', 'Message' => 'Confirm Success']);
+        }
+
+        // Trường hợp sai chữ ký
+        return response()->json(['RspCode' => '97', 'Message' => 'Invalid signature']);
     }
 }

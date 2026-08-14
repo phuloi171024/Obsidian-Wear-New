@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash; // Thêm thư viện Hash để dùng cho Đổi mật khẩu
 use App\Models\User;
 use App\Models\Address;
 
@@ -27,8 +28,37 @@ class UserController extends Controller
                 'name'    => $user->name,
                 'email'   => $user->email,
                 'phone'   => $user->phone ?? '',
-                'address' => $addressRecord ? $addressRecord->address_line : '',
+                'address' => $addressRecord ? $addressRecord->address : '', // Đã sửa thành address
             ]
+        ], 200);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        // 1. Kiểm tra dữ liệu Frontend gửi lên
+        $request->validate([
+            'current_password' => 'required',
+            // Đảm bảo mật khẩu mới phải >= 6 ký tự (có thể tùy chỉnh)
+            'new_password' => 'required|min:6' 
+        ]);
+
+        $user = $request->user();
+
+        // 2. Kiểm tra mật khẩu hiện tại có đúng không
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => false, 
+                'message' => 'Mật khẩu hiện tại không chính xác!'
+            ], 400);
+        }
+
+        // 3. Nếu đúng, tiến hành mã hóa và lưu mật khẩu mới
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'status' => true, 
+            'message' => 'Cập nhật mật khẩu thành công!'
         ], 200);
     }
 
@@ -71,14 +101,14 @@ class UserController extends Controller
 
             if ($addressRecord) {
                 // Nếu đã có thì cập nhật lại nội dung
-                $addressRecord->address_line = $addressText;
+                $addressRecord->address = $addressText; // Đã sửa thành address
                 $addressRecord->save();
             } else if (!empty($addressText)) {
                 // Nếu chưa có dòng địa chỉ nào thì tạo mới và set là mặc định
                 Address::create([
-                    'user_id'      => $user->id,
-                    'address_line' => $addressText,
-                    'is_default'   => 1
+                    'user_id'    => $user->id,
+                    'address'    => $addressText, // Đã sửa thành address
+                    'is_default' => 1
                 ]);
             }
         }
@@ -94,7 +124,7 @@ class UserController extends Controller
                 'name'    => $user->name,
                 'email'   => $user->email,
                 'phone'   => $user->phone ?? '',
-                'address' => $updatedAddress ? $updatedAddress->address_line : '',
+                'address' => $updatedAddress ? $updatedAddress->address : '', // Đã sửa thành address
             ]
         ], 200);
     }
