@@ -1,52 +1,72 @@
 /* =========================================================
-   ORDER SUCCESS PAGE
-   Giao diện lấy cảm hứng từ mẫu bạn gửi
+   TRANG ĐẶT HÀNG THÀNH CÔNG
    ========================================================= */
 
-/* Khung chính của trang */
+
+/* =========================================================
+   KHUNG NGOÀI
+   VÙNG MÀU ĐỎ TRONG HÌNH
+   -> CHUYỂN THÀNH TRẮNG VÀ DÃN THEO CHIỀU NGANG
+   ========================================================= */
+
 main.max-w-2xl {
     width: 100% !important;
-    max-width: 390px !important;
+
+    /* BỎ giới hạn 390px */
+    max-width: 100% !important;
 
     min-height: calc(100vh - 80px);
 
     margin: 0 auto !important;
 
-    padding: 32px 18px 40px !important;
+    padding: 40px 50px 60px !important;
 
     display: flex !important;
+
     flex-direction: column !important;
+
     align-items: center !important;
 
-    background: #ffffff;
+    background: #ffffff !important;
 
     text-align: center;
+
+    box-sizing: border-box;
 }
 
 
 /* =========================================================
-   ICON ĐẶT HÀNG THÀNH CÔNG
+   ICON CHECK
    ========================================================= */
 
 main.max-w-2xl > div:first-child {
     width: 68px !important;
+
     height: 68px !important;
 
-    margin-bottom: 14px !important;
+    flex: 0 0 68px !important;
+
+    margin: 0 0 16px !important;
+
+    padding: 0 !important;
 
     border-radius: 50% !important;
 
     background: #efffe8 !important;
 
     display: flex !important;
+
     align-items: center !important;
+
     justify-content: center !important;
 
     box-shadow: none !important;
 }
 
+
 main.max-w-2xl > div:first-child svg {
     width: 58px !important;
+
     height: 58px !important;
 
     color: #55c91a !important;
@@ -54,28 +74,38 @@ main.max-w-2xl > div:first-child svg {
 
 
 /* =========================================================
-   TIÊU ĐỀ
+   KHUNG NỘI DUNG ĐẶT HÀNG THÀNH CÔNG
+   VÙNG MÀU XANH TRONG HÌNH
    ========================================================= */
 
-main.max-w-2xl h1 {
-    width: 100%;
 
-    margin-bottom: 12px !important;
+/* Tiêu đề */
+main.max-w-2xl > h1 {
+    width: 700px !important;
 
-    padding: 14px 10px !important;
+    max-width: 100% !important;
+
+    margin: 0 0 14px !important;
+
+    padding: 15px 20px !important;
+
+    box-sizing: border-box;
 
     background: #dff3e3 !important;
 
     color: #245b32 !important;
 
     font-size: 18px !important;
+
     line-height: 1.35 !important;
 
     font-weight: 700 !important;
 
     text-transform: uppercase;
 
-    border: 1px solid #c9e9d0;
+    text-align: center;
+
+    border: 1px solid #c9e9d0 !important;
 
     border-radius: 0 !important;
 }
@@ -86,22 +116,27 @@ main.max-w-2xl h1 {
    ========================================================= */
 
 main.max-w-2xl > p {
-    width: 100%;
+    width: 700px !important;
 
-    margin-bottom: 14px !important;
+    max-width: 100% !important;
 
-    padding: 12px !important;
+    margin: 0 0 16px !important;
 
-    background: #fffdfd;
+    padding: 14px 16px !important;
 
-    border: 1px solid #efcaca;
+    box-sizing: border-box;
+
+    background: #ffffff !important;
+
+    border: 1px solid #e2e2e2 !important;
 
     border-radius: 6px !important;
 
     color: #777 !important;
 
-    font-size: 12px !important;
-    line-height: 1.65 !important;
+    font-size: 13px !important;
+
+    line-height: 1.6 !important;
 
     text-align: left;
 }
@@ -112,15 +147,19 @@ main.max-w-2xl > p {
    ========================================================= */
 
 main.max-w-2xl > div.bg-white {
-    width: 100% !important;
+    width: 700px !important;
 
-    margin-top: 0 !important;
+    max-width: 100% !important;
 
-    padding: 15px !important;
+    margin: 0 !important;
+
+    padding: 16px 18px !important;
+
+    box-sizing: border-box;
 
     background: #ffffff !important;
 
-    border: 1px solid #e7e7e7 !important;
+    border: 1px solid #e3e3e3 !important;
 
     border-radius: 6px !important;
 
@@ -130,130 +169,177 @@ main.max-w-2xl > div.bg-white {
 }
 
 
-/* Các dòng thông tin */
+/* =========================================================
+   TỪNG DÒNG THÔNG TIN
+   ========================================================= */
+
 main.max-w-2xl > div.bg-white > div {
+    width: 100% !important;
+
+    min-height: 38px;
+
     display: flex !important;
 
-    align-items: flex-start !important;
+    align-items: center !important;
 
     justify-content: space-between !important;
 
-    gap: 15px;
+    gap: 25px;
 
-    padding: 7px 0;
+    padding: 8px 0 !important;
 
-    font-size: 12px !important;
+    box-sizing: border-box;
 
-    line-height: 1.5;
+    font-size: 13px !important;
+
+    line-height: 1.5 !important;
 }
 
 
-/* Nhãn */
+/* =========================================================
+   NHÃN BÊN TRÁI
+   ========================================================= */
+
 main.max-w-2xl > div.bg-white span.text-gray-500,
 main.max-w-2xl > div.bg-white span.text-gray-700 {
     color: #777 !important;
 
     font-weight: 400 !important;
+
+    white-space: nowrap;
 }
 
 
-/* Giá trị */
+/* =========================================================
+   GIÁ TRỊ BÊN PHẢI
+   ========================================================= */
+
 main.max-w-2xl > div.bg-white span.font-semibold {
     color: #333 !important;
 
     font-weight: 600 !important;
 
     text-align: right;
+
+    margin-left: auto;
 }
 
 
-/* Tổng cộng */
-main.max-w-2xl > div.bg-white > div:last-child {
-    margin-top: 5px;
+/* =========================================================
+   DÒNG TỔNG CỘNG
+   ========================================================= */
 
-    padding-top: 10px !important;
+main.max-w-2xl > div.bg-white > div:last-child {
+    margin-top: 5px !important;
+
+    padding-top: 12px !important;
 
     border-top: 1px solid #eeeeee !important;
 }
 
+
+/* =========================================================
+   GIÁ TỔNG CỘNG
+   ========================================================= */
+
 main.max-w-2xl > div.bg-white span.text-indigo-600 {
     color: #2563eb !important;
 
-    font-size: 15px !important;
+    font-size: 16px !important;
 
     font-weight: 700 !important;
 }
 
 
 /* =========================================================
-   KHU VỰC NÚT
+   KHU VỰC 2 NÚT
    ========================================================= */
 
 main.max-w-2xl > div.flex.flex-col {
-    width: 100% !important;
+    width: 700px !important;
 
-    margin-top: 16px !important;
+    max-width: 100% !important;
+
+    margin: 18px 0 0 !important;
 
     display: flex !important;
 
-    flex-direction: column !important;
+    /* QUAN TRỌNG: CHO 2 NÚT NẰM NGANG */
+    flex-direction: row !important;
 
-    gap: 8px !important;
+    align-items: center !important;
+
+    gap: 12px !important;
+
+    box-sizing: border-box;
 }
 
 
-/* Nút tiếp tục mua sắm */
-main.max-w-2xl > div.flex.flex-col a:first-child {
-    width: 100% !important;
+/* =========================================================
+   CẢ 2 NÚT
+   ========================================================= */
 
-    padding: 11px 15px !important;
+main.max-w-2xl > div.flex.flex-col a {
+    flex: 1 1 0 !important;
 
-    background: #2563eb !important;
+    width: auto !important;
 
-    color: #ffffff !important;
+    min-width: 0 !important;
 
-    border-radius: 18px !important;
+    min-height: 42px;
 
-    font-size: 12px !important;
+    display: flex !important;
 
-    font-weight: 600 !important;
+    align-items: center !important;
 
-    text-align: center;
-
-    text-decoration: none;
-
-    transition: all 0.2s ease;
-}
-
-
-/* Hover */
-main.max-w-2xl > div.flex.flex-col a:first-child:hover {
-    background: #302d78 !important;
-}
-
-
-/* Nút về trang chủ */
-main.max-w-2xl > div.flex.flex-col a:last-child {
-    width: 100% !important;
+    justify-content: center !important;
 
     padding: 10px 15px !important;
 
-    background: #f1f1f1 !important;
+    box-sizing: border-box;
 
-    color: #555 !important;
+    border-radius: 20px !important;
 
-    border-radius: 18px !important;
+    font-size: 13px !important;
 
-    font-size: 12px !important;
+    font-weight: 600 !important;
 
-    font-weight: 500 !important;
+    line-height: 20px !important;
 
     text-align: center;
 
     text-decoration: none;
 
-    transition: all 0.2s ease;
+    transition: background 0.2s ease;
 }
+
+
+/* =========================================================
+   NÚT TIẾP TỤC MUA SẮM
+   ========================================================= */
+
+main.max-w-2xl > div.flex.flex-col a:first-child {
+    background: #2563eb !important;
+
+    color: #ffffff !important;
+}
+
+
+main.max-w-2xl > div.flex.flex-col a:first-child:hover {
+    background: #1d4ed8 !important;
+}
+
+
+/* =========================================================
+   NÚT VỀ TRANG CHỦ
+   ========================================================= */
+
+main.max-w-2xl > div.flex.flex-col a:last-child {
+    background: #f1f1f1 !important;
+
+    color: #555 !important;
+}
+
 
 main.max-w-2xl > div.flex.flex-col a:last-child:hover {
     background: #e5e5e5 !important;
@@ -261,42 +347,164 @@ main.max-w-2xl > div.flex.flex-col a:last-child:hover {
 
 
 /* =========================================================
-   MOBILE
+   RESPONSIVE - TABLET
    ========================================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 800px) {
 
     main.max-w-2xl {
+        padding: 35px 25px 50px !important;
+    }
+
+
+    main.max-w-2xl > h1,
+    main.max-w-2xl > p,
+    main.max-w-2xl > div.bg-white,
+    main.max-w-2xl > div.flex.flex-col {
+        width: 100% !important;
+
+        max-width: 700px !important;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - ĐIỆN THOẠI
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    main.max-w-2xl {
+        width: 100% !important;
+
         max-width: 100% !important;
 
-        padding: 25px 16px 35px !important;
+        min-height: calc(100vh - 60px);
+
+        padding: 28px 16px 40px !important;
     }
 
+
+    /* Icon */
     main.max-w-2xl > div:first-child {
         width: 62px !important;
+
         height: 62px !important;
+
+        flex-basis: 62px !important;
     }
+
 
     main.max-w-2xl > div:first-child svg {
         width: 52px !important;
+
         height: 52px !important;
     }
 
-    main.max-w-2xl h1 {
+
+    /* Tiêu đề */
+    main.max-w-2xl > h1 {
+        width: 100% !important;
+
         font-size: 16px !important;
 
-        padding: 12px 8px !important;
+        padding: 13px 10px !important;
     }
 
+
+    /* Lời cảm ơn */
     main.max-w-2xl > p {
-        font-size: 11px !important;
-    }
+        width: 100% !important;
 
-    main.max-w-2xl > div.bg-white {
+        font-size: 11px !important;
+
         padding: 12px !important;
     }
 
+
+    /* Thông tin */
+    main.max-w-2xl > div.bg-white {
+        width: 100% !important;
+
+        padding: 12px !important;
+    }
+
+
     main.max-w-2xl > div.bg-white > div {
         font-size: 11px !important;
+
+        gap: 10px;
     }
+
+
+    /* =====================================================
+       MOBILE: 2 NÚT CHUYỂN VỀ DỌC
+       ===================================================== */
+
+    main.max-w-2xl > div.flex.flex-col {
+        width: 100% !important;
+
+        flex-direction: column !important;
+
+        gap: 8px !important;
+    }
+
+
+    main.max-w-2xl > div.flex.flex-col a {
+        width: 100% !important;
+
+        flex: none !important;
+
+        min-height: 40px;
+    }
+}
+
+/* =========================================================
+   DÒNG TỔNG CỘNG - CANH THẲNG VỚI CÁC DÒNG PHÍA TRÊN
+   ========================================================= */
+
+main.max-w-2xl > div.bg-white > div:last-child {
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    align-items: center !important;
+
+    justify-content: space-between !important;
+
+    width: 100% !important;
+
+    margin-top: 5px !important;
+
+    padding-top: 12px !important;
+
+    border-top: 1px solid #eeeeee !important;
+
+    box-sizing: border-box;
+}
+
+
+/* Chữ "Tổng cộng" bên trái */
+main.max-w-2xl > div.bg-white > div:last-child > span:first-child {
+    margin-left: 0 !important;
+
+    text-align: left !important;
+
+    color: #333 !important;
+
+    font-weight: 600 !important;
+}
+
+
+/* Giá trị bên phải */
+main.max-w-2xl > div.bg-white > div:last-child > span:last-child {
+    margin-left: auto !important;
+
+    text-align: right !important;
+
+    color: #2563eb !important;
+
+    font-size: 16px !important;
+
+    font-weight: 700 !important;
 }
