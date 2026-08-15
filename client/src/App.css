@@ -85,3 +85,2456 @@ nav a {
 .footer {
   background: #fafafa;
 }
+
+/* =========================================================
+   TRANG THÔNG TIN ĐẶT HÀNG
+   SHIPPING INFO PAGE
+   CHỈ CSS - KHÔNG ĐỤNG JSX / API / LOGIC
+   ========================================================= */
+
+
+/* =========================================================
+   1. NỀN TRANG + KHUNG CHÍNH
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"]) {
+  background: #ffffff !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"]) .min-h-screen {
+  background: #ffffff !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"]) .max-w-6xl {
+  width: 100% !important;
+  max-width: 930px !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+
+  padding-top: 18px !important;
+  padding-bottom: 45px !important;
+}
+
+
+/* =========================================================
+   2. BREADCRUMB
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.text-sm.text-gray-400.mb-2 {
+  margin-bottom: 25px !important;
+
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+
+  color: #64748b !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.text-sm.text-gray-400.mb-2 a {
+  color: #64748b !important;
+  text-decoration: underline !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.text-sm.text-gray-400.mb-2 span {
+  color: #475569 !important;
+}
+
+
+/* =========================================================
+   3. TIÊU ĐỀ
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"]) h1 {
+  margin-bottom: 20px !important;
+
+  font-size: 23px !important;
+  line-height: 1.3 !important;
+
+  font-weight: 700 !important;
+
+  color: #1e293b !important;
+}
+
+
+/* =========================================================
+   4. THANH TIẾN TRÌNH
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl {
+  width: 100% !important;
+  max-width: 650px !important;
+
+  margin-left: 0 !important;
+  margin-right: auto !important;
+
+  margin-bottom: 60px !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl > div {
+  align-items: center !important;
+}
+
+/* Vòng tròn */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl .w-9.h-9 {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+
+  border-radius: 50% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: #3568d4 !important;
+
+  color: #ffffff !important;
+
+  font-size: 13px !important;
+}
+
+/* Icon */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl .w-9.h-9 svg {
+  font-size: 13px !important;
+}
+
+/* Chữ */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl span {
+  font-size: 11px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl .text-gray-900 {
+  color: #3568d4 !important;
+  font-weight: 600 !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl .text-gray-400 {
+  color: #64748b !important;
+}
+
+/* Đường nối */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl .h-0\.5 {
+  height: 3px !important;
+
+  margin-left: 12px !important;
+  margin-right: 12px !important;
+
+  background: #d7dce4 !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-xl .bg-indigo-600 {
+  background: #3568d4 !important;
+}
+
+
+/* =========================================================
+   5. GRID FORM + ĐƠN HÀNG
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 {
+  position: relative !important;
+
+  display: grid !important;
+
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) !important;
+
+  gap: 24px !important;
+
+  align-items: start !important;
+
+  margin-top: 0 !important;
+}
+
+
+/* =========================================================
+   6. CARD THÔNG TIN GIAO HÀNG
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child {
+  width: 100% !important;
+
+  height: 365px !important;
+  min-height: 365px !important;
+
+  padding: 24px 30px !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #edf0f3 !important;
+
+  border-radius: 6px !important;
+
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.08) !important;
+
+  position: relative !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Tiêu đề form */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child h2 {
+  margin-bottom: 14px !important;
+
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+
+  font-weight: 700 !important;
+
+  color: #1f2937 !important;
+}
+
+
+/* =========================================================
+   7. FORM
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child .space-y-5 {
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 10px !important;
+
+  margin: 0 !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child .space-y-5 > div {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* Label */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child label {
+  display: block !important;
+
+  margin-bottom: 5px !important;
+
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+
+  color: #475569 !important;
+}
+
+
+/* Input */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child input {
+  display: block !important;
+
+  width: 100% !important;
+  height: 34px !important;
+
+  padding: 7px 13px !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #d7dce4 !important;
+
+  border-radius: 5px !important;
+
+  outline: none !important;
+
+  color: #334155 !important;
+
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+
+  box-shadow: none !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Placeholder */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child input::placeholder {
+  color: #a5afbd !important;
+  opacity: 1 !important;
+}
+
+
+/* Focus */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child input:focus {
+  border-color: #3568d4 !important;
+
+  box-shadow:
+    0 0 0 1px rgba(53, 104, 212, 0.08) !important;
+}
+
+
+/* Lỗi validation */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:first-child
+.text-red-500 {
+  font-size: 9px !important;
+  margin-top: 3px !important;
+}
+
+
+/* =========================================================
+   8. CARD ĐƠN HÀNG
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child {
+  width: 100% !important;
+
+  min-height: 230px !important;
+  height: auto !important;
+
+  padding: 20px 24px !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #edf0f3 !important;
+
+  border-radius: 6px !important;
+
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.08) !important;
+
+  position: relative !important;
+
+  box-sizing: border-box !important;
+
+  overflow: hidden !important;
+}
+
+
+/* Tiêu đề giỏ hàng */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child > h2 {
+  margin-bottom: 12px !important;
+
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+
+  font-weight: 700 !important;
+
+  color: #1f2937 !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child > h2 span {
+  color: #6b7280 !important;
+  font-weight: 400 !important;
+}
+
+
+/* =========================================================
+   9. DANH SÁCH SẢN PHẨM
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child .max-h-60 {
+  max-height: 82px !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  padding-right: 2px !important;
+
+  margin-bottom: 10px !important;
+
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+
+/* Thanh scroll */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-h-60::-webkit-scrollbar {
+  width: 3px !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-h-60::-webkit-scrollbar-thumb {
+  background: #d1d5db !important;
+  border-radius: 5px !important;
+}
+
+
+/* Một sản phẩm */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+.max-h-60 > div {
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 8px !important;
+
+  padding-bottom: 7px !important;
+  margin-bottom: 7px !important;
+
+  border-bottom: 1px solid #f0f1f3 !important;
+}
+
+
+/* Ảnh */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+.max-h-60 .w-14.h-14 {
+  width: 44px !important;
+  height: 44px !important;
+
+  min-width: 44px !important;
+
+  border-radius: 4px !important;
+
+  background: #f3f4f6 !important;
+
+  overflow: hidden !important;
+}
+
+
+/* Ảnh thật */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+.max-h-60 img {
+  width: 100% !important;
+  height: 100% !important;
+
+  display: block !important;
+
+  object-fit: cover !important;
+}
+
+
+/* Thông tin sản phẩm */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+.max-h-60 .flex-1 {
+  min-width: 0 !important;
+}
+
+
+/* Tên */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+.max-h-60 p {
+  font-size: 9px !important;
+  line-height: 1.35 !important;
+
+  margin: 0 !important;
+}
+
+
+/* Size */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+.max-h-60 p.text-xs {
+  font-size: 8px !important;
+
+  color: #64748b !important;
+}
+
+
+/* Giá */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+.max-h-60 p.font-semibold {
+  margin-top: 2px !important;
+
+  font-size: 9px !important;
+
+  color: #111827 !important;
+}
+
+
+/* =========================================================
+   10. TỔNG TIỀN TRƯỚC GIẢM GIÁ
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .flex.justify-between.items-center.mb-6 {
+  margin-bottom: 8px !important;
+
+  padding: 0 !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .flex.justify-between.items-center.mb-6 span {
+  font-size: 9px !important;
+}
+
+
+/* =========================================================
+   11. ẨN KHUNG VOUCHER
+   Hình mẫu không có phần này
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .bg-gray-50 {
+  display: none !important;
+}
+
+
+/* =========================================================
+   12. ĐƠN HÀNG CỦA BẠN
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> h3 {
+  margin-top: 4px !important;
+  margin-bottom: 7px !important;
+
+  font-size: 10px !important;
+  line-height: 1.3 !important;
+
+  font-weight: 700 !important;
+
+  color: #111827 !important;
+}
+
+
+/* Các dòng tiền */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .space-y-2 {
+  margin-bottom: 8px !important;
+
+  padding-bottom: 8px !important;
+
+  font-size: 9px !important;
+}
+
+
+/* Ẩn dòng tổng số sản phẩm */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .space-y-2 > div:first-child {
+  display: none !important;
+}
+
+
+/* Dòng */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .space-y-2 > div {
+  margin-bottom: 3px !important;
+}
+
+
+/* Chữ */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .space-y-2 span {
+  font-size: 9px !important;
+  line-height: 1.25 !important;
+}
+
+
+/* Standard delivery */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .space-y-2 .text-xs {
+  font-size: 7px !important;
+
+  color: #94a3b8 !important;
+}
+
+
+/* =========================================================
+   13. TỔNG THANH TOÁN
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .flex.justify-between.items-center.mb-6:last-of-type {
+  margin-bottom: 0 !important;
+
+  padding: 0 !important;
+}
+
+
+/* Tổng thanh toán */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .flex.justify-between.items-center.mb-6:last-of-type
+.text-sm {
+  font-size: 9px !important;
+}
+
+
+/* VAT */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .flex.justify-between.items-center.mb-6:last-of-type
+.text-\[10px\] {
+  font-size: 7px !important;
+}
+
+
+/* Giá cuối */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+> .flex.justify-between.items-center.mb-6:last-of-type
+.text-xl {
+  font-size: 14px !important;
+
+  color: #3568d4 !important;
+
+  font-weight: 700 !important;
+}
+
+/* =========================================================
+   NÚT TIẾN HÀNH THANH TOÁN
+   KHÔNG ĐÈ LÊN FORM KHI CÓ THÔNG BÁO LỖI
+   ========================================================= */
+
+/* Cho card thông tin giao hàng đủ chiều cao */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3
+> div:first-child {
+  height: auto !important;
+  min-height: 410px !important;
+  overflow: visible !important;
+}
+
+/* Giữ grid làm mốc */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3 {
+  position: relative !important;
+}
+
+/* Card bên phải không làm mốc */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3
+> div:last-child {
+  position: static !important;
+}
+
+/* Nút */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3
+> div:last-child
+> button {
+  position: absolute !important;
+
+  top: 365px !important;
+  left: 30% !important;
+
+  transform: translateX(-30%) !important;
+
+  width: 177px !important;
+  height: 31px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: block !important;
+
+  border: none !important;
+  border-radius: 5px !important;
+
+  background: #3568d4 !important;
+
+  color: #ffffff !important;
+
+  font-size: 10px !important;
+  font-weight: 600 !important;
+
+  line-height: 31px !important;
+
+  z-index: 20 !important;
+}
+
+/* Hover */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.grid.grid-cols-1.lg\:grid-cols-3
+> div:last-child
+> button:hover {
+  background: #2857bc !important;
+}
+
+/* =========================================================
+   15. FOOTER
+   Không làm footer bị sát nội dung
+   ========================================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+footer {
+  margin-top: 0 !important;
+}
+
+
+/* =========================================================
+   16. RESPONSIVE - TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-6xl {
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl {
+    width: 100% !important;
+    max-width: 650px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+
+    gap: 20px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3
+  > div:first-child {
+    height: auto !important;
+    min-height: 365px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3
+  > div:last-child {
+    height: auto !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3
+  > div:last-child
+  > button {
+    position: static !important;
+
+    transform: none !important;
+
+    width: 177px !important;
+
+    display: block !important;
+
+    margin: 20px auto 0 !important;
+  }
+}
+
+
+/* =========================================================
+   17. RESPONSIVE - MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-6xl {
+    width: calc(100% - 24px) !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  h1 {
+    font-size: 20px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl {
+    margin-bottom: 35px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl .w-9.h-9 {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl span {
+    font-size: 9px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3
+  > div:first-child {
+    height: auto !important;
+
+    min-height: 0 !important;
+
+    padding: 20px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3
+  > div:last-child {
+    padding: 18px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3
+  > div:last-child
+  > button {
+    width: 100% !important;
+  }
+}
+
+/* ==============================
+   STEP - THÔNG TIN ĐẶT HÀNG
+   ============================== */
+
+/* Tiêu đề Thông tin đặt hàng */
+.max-w-6xl > .text-2xl {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #273244 !important;
+  margin-bottom: 14px !important;
+}
+
+/* Khung 3 bước */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl {
+  width: 460px !important;
+  max-width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  margin-bottom: 40px !important;
+}
+
+/* Vòng tròn icon */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.w-9.h-9 {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 50% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  font-size: 13px !important;
+}
+
+/* Icon bên trong */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.w-9.h-9 svg {
+  width: 13px !important;
+  height: 13px !important;
+}
+
+/* Bước đã hoàn thành + bước hiện tại */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.bg-indigo-600 {
+  background-color: #3568d4 !important;
+}
+
+/* Chữ Giỏ hàng + Thông tin giao hàng */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.text-gray-900 {
+  color: #3568d4 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+}
+
+/* Chữ Thanh toán */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.text-gray-400 {
+  color: #6b7280 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+}
+
+/* Vòng tròn Thanh toán */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.bg-gray-200 {
+  background-color: #d9dde3 !important;
+  color: #9ba3af !important;
+}
+
+/* Đường nối */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.h-0\.5 {
+  height: 3px !important;
+  border-radius: 10px !important;
+  margin-left: 10px !important;
+  margin-right: 10px !important;
+}
+
+/* Đường nối xanh */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.bg-indigo-600.h-0\.5 {
+  background-color: #3568d4 !important;
+}
+
+/* Đường nối xám */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.bg-gray-200.h-0\.5 {
+  background-color: #d9dde3 !important;
+}
+
+/* Căn vị trí giống hình */
+@media (min-width: 1024px) {
+  .max-w-6xl > .flex.items-center.mb-10.max-w-xl {
+    margin-left: 82px !important;
+  }
+}
+
+/* ==============================
+   2 ĐƯỜNG NỐI DÀI BẰNG NHAU
+   ============================== */
+
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.h-0\.5 {
+  flex: none !important;
+  width: 55px !important;
+  height: 3px !important;
+
+  margin-left: 12px !important;
+  margin-right: 12px !important;
+
+  border-radius: 10px !important;
+}
+
+/* Khoảng cách icon và chữ */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.flex.items-center.gap-2 {
+  gap: 10px !important;
+}
+
+/* Không ảnh hưởng đường nối */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.flex.items-center.gap-2 span {
+  margin-left: 0 !important;
+}
+
+/* Bỏ gạch chân Giỏ hàng */
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl a {
+  text-decoration: none !important;
+}
+
+/* =========================================================
+   TRANG THANH TOÁN
+   Chỉ định dạng CSS - không sửa JSX
+   ========================================================= */
+
+/* Nền trang */
+body:has(main.max-w-4xl) {
+  background: #f5f6f8 !important;
+}
+
+/* Khung chính */
+main.max-w-4xl {
+  max-width: 628px !important;
+  width: 100% !important;
+
+  padding-top: 32px !important;
+  padding-bottom: 32px !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* =========================================================
+   ẨN BREADCRUMB + TIÊU ĐỀ + STEP
+   ========================================================= */
+
+/* Breadcrumb */
+main.max-w-4xl > .text-sm.text-gray-400.mb-2 {
+  display: none !important;
+}
+
+/* Tiêu đề "Thông tin đặt hàng" */
+main.max-w-4xl > h1 {
+  display: none !important;
+}
+
+/* Thanh 3 bước */
+main.max-w-4xl > .flex.items-center.mb-8.max-w-xl {
+  display: none !important;
+}
+
+
+/* =========================================================
+   CARD PHƯƠNG THỨC THANH TOÁN
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl {
+  width: 100% !important;
+
+  margin: 0 auto !important;
+
+  padding: 16px !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #e5e7eb !important;
+
+  border-radius: 5px !important;
+
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.10) !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   TIÊU ĐỀ "PHƯƠNG THỨC THANH TOÁN"
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl > h2 {
+  margin: 0 0 14px 0 !important;
+
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+
+  font-weight: 700 !important;
+
+  color: #273244 !important;
+}
+
+
+/* =========================================================
+   TAB THANH TOÁN
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b {
+  width: 100% !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  margin-bottom: 20px !important;
+
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+/* Button tab */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b button {
+  height: 30px !important;
+
+  padding-top: 0 !important;
+  padding-bottom: 7px !important;
+
+  font-size: 9px !important;
+
+  font-weight: 500 !important;
+
+  color: #6b7280 !important;
+
+  border-bottom-width: 2px !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  white-space: nowrap !important;
+}
+
+/* Tab đang chọn */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b button.border-blue-600 {
+  color: #4f46e5 !important;
+
+  border-color: #6366f1 !important;
+}
+
+/* Tab chưa chọn */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b button.border-transparent {
+  color: #6b7280 !important;
+
+  border-color: transparent !important;
+}
+
+
+/* =========================================================
+   NỘI DUNG THANH TOÁN
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 {
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  gap: 14px !important;
+}
+
+
+/* =========================================================
+   TIÊU ĐỀ COD
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .flex.items-center.space-x-2 {
+  padding-bottom: 10px !important;
+
+  border-bottom: 1px solid #eeeeee !important;
+
+  margin: 0 !important;
+
+  gap: 10px !important;
+}
+
+/* Dấu $ */
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .flex.items-center.space-x-2 > span {
+  font-size: 20px !important;
+
+  font-weight: 400 !important;
+
+  color: #374151 !important;
+}
+
+/* Tiêu đề COD */
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .flex.items-center.space-x-2 h3 {
+  font-size: 17px !important;
+
+  line-height: 1.3 !important;
+
+  font-weight: 700 !important;
+
+  color: #273244 !important;
+
+  margin: 0 !important;
+}
+
+
+/* =========================================================
+   THÔNG TIN ĐƠN HÀNG
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .space-y-2\.5 {
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  gap: 7px !important;
+
+  margin: 0 !important;
+}
+
+/* Các dòng thông tin */
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .space-y-2\.5 p {
+  margin: 0 !important;
+
+  font-size: 10px !important;
+
+  line-height: 1.4 !important;
+
+  color: #475569 !important;
+}
+
+/* Label */
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .space-y-2\.5 p span.font-semibold {
+  color: #334155 !important;
+
+  font-weight: 700 !important;
+}
+
+/* Tổng tiền */
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .space-y-2\.5
+.text-red-500 {
+  color: #ef2929 !important;
+
+  font-size: 11px !important;
+
+  font-weight: 700 !important;
+}
+
+
+/* =========================================================
+   KHỐI LƯU Ý QUAN TRỌNG
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.bg-amber-50\/60 {
+  margin: 0 !important;
+
+  padding: 11px 12px !important;
+
+  background: #fff9e8 !important;
+
+  border-left: 3px solid #f59e0b !important;
+
+  border-radius: 0 !important;
+
+  font-size: 9px !important;
+
+  line-height: 1.4 !important;
+
+  color: #b45309 !important;
+}
+
+/* Tiêu đề lưu ý */
+main.max-w-4xl > .bg-white.rounded-2xl
+.bg-amber-50\/60 > div {
+  margin-bottom: 4px !important;
+
+  font-size: 10px !important;
+
+  font-weight: 700 !important;
+
+  color: #b45309 !important;
+}
+
+/* Nội dung */
+main.max-w-4xl > .bg-white.rounded-2xl
+.bg-amber-50\/60 p {
+  margin: 0 !important;
+
+  font-size: 8px !important;
+
+  line-height: 1.5 !important;
+}
+
+
+/* =========================================================
+   QUY TRÌNH GIAO HÀNG COD
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.bg-blue-50\/60 {
+  margin: 0 !important;
+
+  padding: 11px 12px !important;
+
+  background: #eef5ff !important;
+
+  border-left: 3px solid #3b82f6 !important;
+
+  border-radius: 0 !important;
+
+  font-size: 9px !important;
+
+  line-height: 1.4 !important;
+
+  color: #2563eb !important;
+}
+
+/* Tiêu đề quy trình */
+main.max-w-4xl > .bg-white.rounded-2xl
+.bg-blue-50\/60 > div {
+  margin-bottom: 4px !important;
+
+  font-size: 10px !important;
+
+  font-weight: 700 !important;
+
+  color: #2563eb !important;
+}
+
+/* Nội dung */
+main.max-w-4xl > .bg-white.rounded-2xl
+.bg-blue-50\/60 p {
+  margin: 0 !important;
+
+  font-size: 8px !important;
+
+  line-height: 1.5 !important;
+}
+
+
+/* =========================================================
+   KHU VỰC NÚT
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .pt-4 {
+  padding-top: 0 !important;
+
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  gap: 7px !important;
+}
+
+/* Nút xác nhận */
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .pt-4 > button:first-child {
+  width: 100% !important;
+
+  height: 30px !important;
+
+  margin: 0 !important;
+
+  padding: 0 !important;
+
+  background: #16a34a !important;
+
+  border: none !important;
+
+  border-radius: 5px !important;
+
+  color: #ffffff !important;
+
+  font-size: 9px !important;
+
+  font-weight: 600 !important;
+
+  box-shadow: none !important;
+}
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .pt-4 > button:first-child:hover {
+  background: #159447 !important;
+}
+
+
+/* =========================================================
+   NÚT QUAY LẠI
+   ========================================================= */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .pt-4 > button:last-child {
+  width: 100% !important;
+
+  height: 26px !important;
+
+  margin: 0 !important;
+
+  padding: 0 !important;
+
+  background: #f1f2f4 !important;
+
+  border: none !important;
+
+  border-radius: 5px !important;
+
+  color: #4b5563 !important;
+
+  font-size: 9px !important;
+
+  font-weight: 500 !important;
+}
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .pt-4 > button:last-child:hover {
+  background: #e5e7eb !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  main.max-w-4xl {
+    width: calc(100% - 24px) !important;
+
+    padding-top: 20px !important;
+  }
+
+  main.max-w-4xl > .bg-white.rounded-2xl {
+    padding: 14px !important;
+  }
+
+  main.max-w-4xl > .bg-white.rounded-2xl
+  .space-y-6 > .flex.items-center.space-x-2 h3 {
+    font-size: 15px !important;
+  }
+}
+
+/* =========================================
+   TAB PHƯƠNG THỨC THANH TOÁN
+   ========================================= */
+
+/* Khung tab */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 0 !important;
+  height: 32px !important;
+
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+/* Các nút tab */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b button {
+  height: 32px !important;
+
+  padding: 0 12px 8px !important;
+
+  margin: 0 !important;
+
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+
+  font-size: 9px !important;
+  font-weight: 500 !important;
+
+  color: #6b7280 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Tab đang chọn */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b button.border-blue-600 {
+  color: #4f46e5 !important;
+
+  border-bottom: 2px solid #6366f1 !important;
+
+  background: transparent !important;
+}
+
+/* Tab SePay */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b button.border-transparent {
+  color: #6b7280 !important;
+
+  border-bottom: 2px solid transparent !important;
+
+  background: transparent !important;
+}
+
+/* Bỏ viền xanh khi click */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Icon trong tab */
+main.max-w-4xl > .bg-white.rounded-2xl
+.flex.border-b button svg {
+  width: 11px !important;
+  height: 11px !important;
+}
+
+/* =========================================================
+   SHIPPING INFO - CHỈNH LẠI GIAO DIỆN
+   KHÔNG ĐỤNG JSX
+   ========================================================= */
+
+
+/* ===== KHUNG 2 CỘT ===== */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6 {
+  display: grid !important;
+  grid-template-columns: minmax(0, 2fr) minmax(350px, 1fr) !important;
+  gap: 30px !important;
+  align-items: start !important;
+}
+
+
+/* ===== FORM THÔNG TIN GIAO HÀNG ===== */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+.lg\:col-span-2 {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  padding: 32px 38px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* ===== CARD BÊN PHẢI ===== */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  box-sizing: border-box !important;
+
+  padding: 24px !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #e2e6eb !important;
+  border-radius: 10px !important;
+
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+
+  overflow: visible !important;
+}
+
+
+/* =========================================================
+   GIỎ HÀNG
+   ========================================================= */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+h2 {
+  margin: 0 0 18px !important;
+
+  color: #111827 !important;
+
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+h2 span {
+  color: #6b7280 !important;
+
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+
+/* =========================================================
+   DANH SÁCH SẢN PHẨM
+   ========================================================= */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.max-h-60 {
+  max-height: 220px !important;
+
+  margin-bottom: 16px !important;
+
+  padding-right: 5px !important;
+
+  overflow-y: auto !important;
+}
+
+
+/* từng sản phẩm */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.max-h-60 > div {
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 12px !important;
+
+  min-height: 70px !important;
+
+  padding-bottom: 10px !important;
+  margin-bottom: 10px !important;
+}
+
+
+/* ảnh */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.max-h-60 > div > div:first-child {
+  width: 65px !important;
+  height: 65px !important;
+
+  min-width: 65px !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #eeeeee !important;
+  border-radius: 6px !important;
+
+  overflow: hidden !important;
+}
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.max-h-60 img {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain !important;
+}
+
+
+/* tên sản phẩm */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.max-h-60
+.text-sm.font-medium.text-gray-900 {
+  color: #222222 !important;
+
+  font-size: 12px !important;
+  font-weight: 600 !important;
+
+  line-height: 1.4 !important;
+}
+
+
+/* size + số lượng */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.max-h-60
+.text-xs.text-gray-400 {
+  color: #7b8190 !important;
+
+  font-size: 10px !important;
+}
+
+
+/* giá sản phẩm */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.max-h-60
+.text-sm.font-semibold.text-gray-900 {
+  color: #222222 !important;
+
+  font-size: 12px !important;
+}
+
+
+/* =========================================================
+   TỔNG TIỀN
+   ========================================================= */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .flex.justify-between.items-center.mb-6 {
+  margin: 15px 0 18px !important;
+}
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .flex.justify-between.items-center.mb-6
+.text-gray-600 {
+  color: #555555 !important;
+
+  font-size: 12px !important;
+}
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .flex.justify-between.items-center.mb-6
+.font-bold.text-gray-900 {
+  color: #222222 !important;
+
+  font-size: 13px !important;
+}
+
+
+/* =========================================================
+   ÁP DỤNG GIẢM GIÁ
+   ========================================================= */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.bg-gray-50.rounded-lg.p-4.mb-6 {
+  display: block !important;
+
+  width: 100% !important;
+
+  box-sizing: border-box !important;
+
+  margin: 18px 0 !important;
+  padding: 16px !important;
+
+  background: #f8f9fb !important;
+
+  border: 1px solid #e3e6eb !important;
+  border-radius: 8px !important;
+}
+
+
+/* tiêu đề */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.bg-gray-50.rounded-lg.p-4.mb-6 h3 {
+  margin: 0 !important;
+
+  color: #222222 !important;
+
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+
+/* dòng tiêu đề */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.bg-gray-50.rounded-lg.p-4.mb-6
+.flex.justify-between.items-center.mb-3 {
+  margin-bottom: 12px !important;
+
+  gap: 8px !important;
+}
+
+
+/* link mã giảm giá */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.bg-gray-50.rounded-lg.p-4.mb-6
+button.text-xs.font-semibold.text-blue-600 {
+  padding: 0 !important;
+
+  border: none !important;
+  background: transparent !important;
+
+  color: #2563eb !important;
+
+  font-size: 10px !important;
+  font-weight: 600 !important;
+
+  white-space: nowrap !important;
+
+  cursor: pointer !important;
+}
+
+
+/* input + nút */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.bg-gray-50.rounded-lg.p-4.mb-6
+> .flex.gap-2 {
+  display: flex !important;
+
+  width: 100% !important;
+
+  gap: 8px !important;
+}
+
+
+/* ô nhập mã */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.bg-gray-50.rounded-lg.p-4.mb-6
+input {
+  flex: 1 !important;
+
+  min-width: 0 !important;
+
+  width: auto !important;
+
+  height: 38px !important;
+
+  padding: 0 12px !important;
+
+  box-sizing: border-box !important;
+
+  border: 1px solid #d8dde5 !important;
+  border-radius: 6px !important;
+
+  background: #ffffff !important;
+
+  color: #222222 !important;
+
+  font-size: 11px !important;
+
+  outline: none !important;
+}
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.bg-gray-50.rounded-lg.p-4.mb-6
+input:focus {
+  border-color: #3568d4 !important;
+  box-shadow: 0 0 0 2px rgba(53, 104, 212, 0.08) !important;
+}
+
+
+/* NÚT ÁP DỤNG */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+.bg-gray-50.rounded-lg.p-4.mb-6
+button.bg-gray-900 {
+  flex: 0 0 82px !important;
+
+  width: 82px !important;
+  min-width: 82px !important;
+
+  height: 38px !important;
+
+  padding: 0 !important;
+
+  border: none !important;
+  border-radius: 6px !important;
+
+  background: #111827 !important;
+
+  color: #ffffff !important;
+
+  font-size: 10px !important;
+  font-weight: 700 !important;
+
+  cursor: pointer !important;
+}
+
+
+/* =========================================================
+   ĐƠN HÀNG CỦA BẠN
+   ========================================================= */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> h3.text-sm.font-bold.text-gray-900 {
+  margin: 4px 0 12px !important;
+
+  color: #111827 !important;
+
+  font-size: 15px !important;
+}
+
+
+/* các dòng tiền */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .space-y-2.text-sm.mb-4 {
+  margin-bottom: 14px !important;
+
+  padding-bottom: 14px !important;
+}
+
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .space-y-2.text-sm.mb-4
+.text-gray-500 {
+  color: #666666 !important;
+
+  font-size: 12px !important;
+}
+
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .space-y-2.text-sm.mb-4
+.font-semibold.text-gray-900 {
+  color: #222222 !important;
+
+  font-size: 12px !important;
+}
+
+
+/* giảm giá */
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .space-y-2.text-sm.mb-4
+.text-green-600 {
+  color: #16a34a !important;
+}
+
+
+/* =========================================================
+   TỔNG THANH TOÁN
+   ========================================================= */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .flex.justify-between.items-center.mb-6
+.text-xl.font-bold.text-red-500 {
+  color: #3568d4 !important;
+
+  font-size: 21px !important;
+  font-weight: 800 !important;
+}
+
+
+/* =========================================================
+   NÚT TIẾN HÀNH THANH TOÁN
+   CHỈ TÁC ĐỘNG ĐẾN NÚT TRONG CARD BÊN PHẢI
+   ========================================================= */
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> button.w-full {
+  display: block !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+
+  height: 48px !important;
+
+  margin: 4px 0 0 !important;
+
+  padding: 0 !important;
+
+  box-sizing: border-box !important;
+
+  border: none !important;
+  border-radius: 7px !important;
+
+  background: #3568d4 !important;
+
+  color: #ffffff !important;
+
+  font-size: 12px !important;
+  font-weight: 700 !important;
+
+  cursor: pointer !important;
+}
+
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> button.w-full:hover {
+  background: #285bc5 !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991px) {
+  .grid.grid-cols-1.lg\:grid-cols-3.gap-6 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+  > .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+  .bg-gray-50.rounded-lg.p-4.mb-6
+  .flex.justify-between.items-center.mb-3 {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+  > .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+  .bg-gray-50.rounded-lg.p-4.mb-6
+  button.text-xs.font-semibold.text-blue-600 {
+    white-space: normal !important;
+  }
+}
+
+/* =========================================================
+   FIX CUỐI - TRANG THÔNG TIN ĐẶT HÀNG
+   CHỈ CSS - KHÔNG SỬA JSX
+   ========================================================= */
+
+
+/* =========================================================
+   KHUNG CHÍNH 2 CỘT
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6 {
+  display: grid !important;
+
+  grid-template-columns: minmax(0, 2fr) minmax(360px, 1fr) !important;
+
+  gap: 30px !important;
+
+  align-items: start !important;
+
+  width: 100% !important;
+}
+
+
+/* =========================================================
+   CARD THÔNG TIN GIAO HÀNG
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2 {
+  width: 100% !important;
+
+  box-sizing: border-box !important;
+
+  min-width: 0 !important;
+}
+
+
+/* =========================================================
+   CARD GIỎ HÀNG BÊN PHẢI
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit {
+
+  width: 100% !important;
+
+  min-width: 0 !important;
+
+  max-width: 100% !important;
+
+  box-sizing: border-box !important;
+
+  padding: 24px !important;
+
+  position: relative !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #e5e7eb !important;
+
+  border-radius: 10px !important;
+
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06) !important;
+
+  overflow: visible !important;
+}
+
+
+/* =========================================================
+   TIÊU ĐỀ GIỎ HÀNG
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> h2 {
+  margin: 0 0 16px !important;
+
+  font-size: 17px !important;
+
+  line-height: 1.4 !important;
+
+  color: #111827 !important;
+}
+
+
+/* =========================================================
+   DANH SÁCH SẢN PHẨM
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .max-h-60 {
+
+  max-height: 180px !important;
+
+  overflow-y: auto !important;
+
+  overflow-x: hidden !important;
+
+  padding-right: 5px !important;
+
+  margin-bottom: 15px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* từng sản phẩm */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .max-h-60
+> div {
+
+  min-width: 0 !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* ảnh sản phẩm */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .max-h-60
+> div
+> div:first-child {
+
+  width: 64px !important;
+
+  height: 64px !important;
+
+  min-width: 64px !important;
+
+  flex-shrink: 0 !important;
+
+  overflow: hidden !important;
+
+  border-radius: 6px !important;
+
+  background: #ffffff !important;
+}
+
+
+/* =========================================================
+   TỔNG TIỀN
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .flex.justify-between.items-center.mb-6 {
+
+  margin-bottom: 18px !important;
+
+  padding-bottom: 15px !important;
+
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+
+/* =========================================================
+   ÁP DỤNG GIẢM GIÁ
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .bg-gray-50.rounded-lg.p-4.mb-6 {
+
+  width: 100% !important;
+
+  max-width: 100% !important;
+
+  min-width: 0 !important;
+
+  box-sizing: border-box !important;
+
+  margin: 16px 0 20px !important;
+
+  padding: 15px !important;
+
+  background: #f8f9fb !important;
+
+  border: 1px solid #e2e6eb !important;
+
+  border-radius: 8px !important;
+
+  overflow: hidden !important;
+}
+
+
+/* dòng tiêu đề voucher */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .bg-gray-50.rounded-lg.p-4.mb-6
+> .flex.justify-between.items-center.mb-3 {
+
+  display: flex !important;
+
+  align-items: center !important;
+
+  justify-content: space-between !important;
+
+  gap: 8px !important;
+
+  margin-bottom: 12px !important;
+}
+
+
+/* tiêu đề */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .bg-gray-50.rounded-lg.p-4.mb-6 h3 {
+
+  margin: 0 !important;
+
+  color: #222222 !important;
+
+  font-size: 14px !important;
+
+  font-weight: 700 !important;
+}
+
+
+/* link mã giảm giá */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .bg-gray-50.rounded-lg.p-4.mb-6
+button.text-xs.font-semibold.text-blue-600 {
+
+  width: auto !important;
+
+  min-width: 0 !important;
+
+  height: auto !important;
+
+  margin: 0 !important;
+
+  padding: 0 !important;
+
+  background: transparent !important;
+
+  border: none !important;
+
+  color: #2563eb !important;
+
+  font-size: 10px !important;
+
+  white-space: nowrap !important;
+
+  position: static !important;
+}
+
+
+/* hàng input voucher */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .bg-gray-50.rounded-lg.p-4.mb-6
+> .flex.gap-2 {
+
+  display: flex !important;
+
+  width: 100% !important;
+
+  max-width: 100% !important;
+
+  gap: 8px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* input voucher */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .bg-gray-50.rounded-lg.p-4.mb-6
+input {
+
+  flex: 1 1 auto !important;
+
+  width: auto !important;
+
+  min-width: 0 !important;
+
+  max-width: none !important;
+
+  height: 38px !important;
+
+  box-sizing: border-box !important;
+
+  padding: 0 12px !important;
+
+  border: 1px solid #d9dee7 !important;
+
+  border-radius: 6px !important;
+
+  background: #ffffff !important;
+
+  font-size: 11px !important;
+
+  position: static !important;
+}
+
+
+/* nút ÁP DỤNG */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .bg-gray-50.rounded-lg.p-4.mb-6
+> .flex.gap-2
+button.bg-gray-900 {
+
+  flex: 0 0 80px !important;
+
+  width: 80px !important;
+
+  min-width: 80px !important;
+
+  max-width: 80px !important;
+
+  height: 38px !important;
+
+  margin: 0 !important;
+
+  padding: 0 !important;
+
+  position: static !important;
+
+  border: none !important;
+
+  border-radius: 6px !important;
+
+  background: #111827 !important;
+
+  color: #ffffff !important;
+
+  font-size: 10px !important;
+}
+
+
+/* =========================================================
+   ĐƠN HÀNG CỦA BẠN
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> h3.text-sm.font-bold.text-gray-900 {
+
+  margin: 0 0 12px !important;
+
+  font-size: 15px !important;
+
+  color: #111827 !important;
+}
+
+
+/* =========================================================
+   TỔNG THANH TOÁN
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> .flex.justify-between.items-center.mb-6
+.text-xl.font-bold.text-red-500 {
+
+  color: #3568d4 !important;
+
+  font-size: 21px !important;
+
+  font-weight: 800 !important;
+}
+
+
+/* =========================================================
+   QUAN TRỌNG NHẤT:
+   FIX NÚT TIẾN HÀNH THANH TOÁN
+   ========================================================= */
+
+/* bắt đúng nút có class w-full + màu cam */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> button[class~="w-full"][class~="bg-[#f26522]"] {
+
+  /* HỦY mọi position gây tràn */
+  position: static !important;
+
+  /* không fixed / absolute */
+  inset: auto !important;
+
+  left: auto !important;
+
+  right: auto !important;
+
+  top: auto !important;
+
+  bottom: auto !important;
+
+  transform: none !important;
+
+  float: none !important;
+
+  clear: both !important;
+
+  /* kích thước */
+  display: block !important;
+
+  width: 100% !important;
+
+  min-width: 0 !important;
+
+  max-width: 100% !important;
+
+  height: 48px !important;
+
+  box-sizing: border-box !important;
+
+  /* khoảng cách */
+  margin: 8px 0 0 !important;
+
+  padding: 0 !important;
+
+  /* giao diện */
+  border: none !important;
+
+  border-radius: 7px !important;
+
+  background: #3568d4 !important;
+
+  color: #ffffff !important;
+
+  font-size: 12px !important;
+
+  font-weight: 700 !important;
+
+  line-height: 48px !important;
+
+  text-align: center !important;
+
+  cursor: pointer !important;
+
+  z-index: 1 !important;
+}
+
+
+/* hover */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+> button[class~="w-full"][class~="bg-[#f26522]"]:hover {
+
+  background: #285bc5 !important;
+}
+
+
+/* =========================================================
+   ĐẢM BẢO CARD KHÔNG BỊ ĐẨY / OVERFLOW
+   ========================================================= */
+
+.max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+* {
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991px) {
+
+  .max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6 {
+
+    grid-template-columns: 1fr !important;
+
+    gap: 20px !important;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .max-w-6xl .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+  > .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
+  .bg-gray-50.rounded-lg.p-4.mb-6
+  > .flex.justify-between.items-center.mb-3 {
+
+    flex-direction: column !important;
+
+    align-items: flex-start !important;
+  }
+
+}
+
+/* Thu gọn khoảng trắng phía dưới form thông tin giao hàng */
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2 {
+  min-height: auto !important;
+  height: fit-content !important;
+  padding-bottom: 25px !important;
+}
+
