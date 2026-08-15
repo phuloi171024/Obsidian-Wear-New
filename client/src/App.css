@@ -85,3 +85,39 @@ nav a {
 .footer {
   background: #fafafa;
 }
+
+/* ================================
+   NÚT XEM CHI TIẾT - TRANG CHỦ
+   ================================ */
+
+.product-card-item .card-actions a.card-add-cart-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    min-height: 40px !important;
+    padding: 10px 15px !important;
+
+    background: #2563eb !important;
+    color: #ffffff !important;
+
+    border: 1px solid #2563eb !important;
+    border-radius: 6px !important;
+
+    font-size: 14px !important;
+    font-weight: 600 !important;
+
+    text-align: center !important;
+    text-decoration: none !important;
+
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+}
+
+.product-card-item .card-actions a.card-add-cart-btn:hover {
+    background: #1d4ed8 !important;
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
+    text-decoration: none !important;
+}
