@@ -13,6 +13,8 @@ class Order extends Model
     protected $fillable = [
         'user_id', 
         'coupon_id', 
+        'address_id', // Thêm dòng này
+        'note',
         'total_amount', 
         'status'
     ];

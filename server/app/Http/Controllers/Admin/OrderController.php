@@ -9,22 +9,21 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-    // Thứ tự trạng thái đơn hàng hợp lệ
+    // Cập nhật lại chuỗi trạng thái cho đúng khớp 100% với ENUM trong Database của em
     const STATUS_FLOW = [
-        'pending'    => ['processing', 'cancelled'],
-        'processing' => ['shipped', 'cancelled'],
-        'shipped'    => ['delivered'],
-        'delivered'  => [],
-        'cancelled'  => [],
+        'pending'   => ['shipped', 'cancelled'],
+        'shipped'   => ['completed', 'cancelled'],
+        'completed' => [],
+        'cancelled' => [],
     ];
 
     /**
      * Danh sách TẤT CẢ đơn hàng (của mọi user)
-     * GET /admin/orders
      */
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'items.variant.product.images', 'coupon'])
+        // SỬA LỖI: Đổi 'items.variant' thành 'items.productVariant'
+        $query = Order::with(['user', 'items.productVariant.product.images', 'coupon'])
             ->latest();
 
         if ($request->filled('status')) {
@@ -57,13 +56,13 @@ class OrderController extends Controller
 
     /**
      * Chi tiết 1 đơn hàng
-     * GET /admin/orders/{id}
      */
-    public function show($id)
+    public function show( int $id)
     {
+        // SỬA LỖI: Đổi 'items.variant' thành 'items.productVariant'
         $order = Order::with([
             'user',
-            'items.variant.product.images',
+            'items.productVariant.product.images',
             'coupon',
         ])->findOrFail($id);
 
@@ -72,14 +71,14 @@ class OrderController extends Controller
 
     /**
      * Cập nhật trạng thái đơn hàng
-     * PUT /admin/orders/{id}/status
      */
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, int $id)
     {
         $order = Order::findOrFail($id);
 
+        // Cập nhật validate cho đúng với Enum Database
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'status' => 'required|in:pending,shipped,completed,cancelled',
         ]);
 
         if ($validator->fails()) {
@@ -99,7 +98,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Cập nhật trạng thái đơn hàng thành công!',
-            'order'   => $order->load(['user', 'items.variant.product', 'coupon']),
+            'order'   => $order->load(['user', 'items.productVariant.product', 'coupon']),
         ]);
     }
 }

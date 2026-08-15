@@ -16,6 +16,9 @@ export default function PaymentPage() {
   });
   const navigate = useNavigate();
 
+  // THÊM: State quản lý Ghi chú đơn hàng
+  const [note, setNote] = useState("");
+
   // SỬA LẠI ĐOẠN NÀY ĐỂ ĐỌC ĐÚNG MẢNG GIỎ HÀNG TỪ CartController.php
   useEffect(() => {
     const fetchCartAndOrderInfo = async () => {
@@ -71,11 +74,17 @@ export default function PaymentPage() {
       return;
     }
 
+    //  Lấy ID địa chỉ từ LocalStorage 
+    const addressId = localStorage.getItem("selected_address_id");
+    const appliedVouchers = JSON.parse(localStorage.getItem("applied_vouchers") || "{}");
+    // Lấy ID của voucher sản phẩm 
+    const couponId = appliedVouchers.product?.id || appliedVouchers.shipping?.id || null;
+
     try {
       setLoading(true);
       
-      // 1. LUÔN LUÔN LƯU ĐƠN HÀNG VÀO DATABASE TRƯỚC (CHO DÙ LÀ COD HAY VNPAY)
-      const orderRes = await fetch("http://localhost:8000/api/orders", {
+      // 1. LUÔN LUÔN LƯU ĐƠN HÀNG VÀO DATABASE TRƯỚC
+     const orderRes = await fetch("http://localhost:8000/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,21 +93,32 @@ export default function PaymentPage() {
         },
         body: JSON.stringify({
           payment_method: activeTab,
-          total_price: order.rawTotal
+          total_price: order.rawTotal,
+          address_id: addressId || null, 
+          note: note                     
         })
       });
 
       const orderData = await orderRes.json();
 
+      // =========== THAY THẾ ĐOẠN BẮT LỖI NÀY ===========
       if (!orderRes.ok || !orderData.status) {
+        // Bắt riêng lỗi 400 (Giỏ hàng trống do đã bấm tạo đơn trước đó)
+        if (orderRes.status === 400) {
+          toast.error("Đơn hàng đã được ghi nhận trước đó hoặc giỏ hàng rỗng!");
+          toast.success("Đang đưa bạn đến danh sách đơn hàng...", { duration: 3000 });
+          setLoading(false);
+          setTimeout(() => {
+            navigate("/orders"); // Chuyển khách về trang Lịch sử đơn hàng
+          }, 1500);
+          return;
+        }
+
         toast.error(orderData.message || "Có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại!");
         setLoading(false);
         return;
       }
-
-      // Lấy được ID đơn hàng thật từ Database
       const realOrderId = orderData.order_id;
-
       // 2. XỬ LÝ THEO PHƯƠNG THỨC THANH TOÁN
       if (activeTab === 'sepay' || activeTab === 'vnpay') {
         // GỌI API TẠO LINK VNPAY VỚI ID ĐƠN HÀNG THẬT
@@ -152,7 +172,6 @@ export default function PaymentPage() {
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] flex flex-col font-sans">
       <Toaster position="top-right" />
       
-
       {/* ================= MAIN CONTENT SECTION ================= */}
       <main className="flex-grow max-w-4xl w-full mx-auto px-4 py-12">
 
@@ -276,6 +295,18 @@ export default function PaymentPage() {
                 <p>• Hệ thống sẽ tự động xác nhận đơn hàng sau khi bạn thanh toán thành công.</p>
               </div>
             )}
+
+            {/* THÊM MỚI: FORM NHẬP GHI CHÚ ĐƠN HÀNG GIỮA HƯỚNG DẪN VÀ NÚT BẤM */}
+            <div className="mt-6">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">Ghi chú đơn hàng (Không bắt buộc)</label>
+              <textarea
+                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                rows="3"
+                placeholder="Ví dụ: Giao hàng vào giờ hành chính, gọi trước khi giao..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              ></textarea>
+            </div>
 
             {/* Nút hành động */}
             <div className="pt-4 space-y-3">

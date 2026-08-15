@@ -28,21 +28,37 @@ class AddressController extends Controller
     /**
      * 2. Thêm một địa chỉ mới
      */
-   public function store(Request $request)
+    public function store(Request $request)
     {
-        // 1. Cập nhật lại tên các trường cần kiểm tra
+        $user = $request->user();
+
+        // Xác thực dữ liệu với các trường chi tiết mới
         $request->validate([
             'type' => 'required|string',
+            'receiver_name' => 'required|string',
             'phone' => 'required|string',
-            'address' => 'required|string', // Đã đổi từ address_line thành address
+            'province' => 'required|string',
+            'district' => 'required|string',
+            'ward' => 'required|string',
+            'street' => 'required|string',
             'is_default' => 'boolean'
         ]);
 
+        // Nếu người dùng chọn đặt làm mặc định, gỡ mặc định của tất cả địa chỉ cũ
+        if ($request->input('is_default')) {
+            Address::where('user_id', $user->id)->update(['is_default' => false]);
+        }
+
+        // Tạo địa chỉ mới
         $address = Address::create([
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'type' => $request->type,
+            'receiver_name' => $request->receiver_name,
             'phone' => $request->phone,
-            'address' => $request->address, // Đã đổi từ address_line thành address
+            'province' => $request->province,
+            'district' => $request->district,
+            'ward' => $request->ward,
+            'street' => $request->street,
             'is_default' => $request->is_default ?? false,
         ]);
 
@@ -58,26 +74,42 @@ class AddressController extends Controller
      */
     public function update(Request $request, int $id)
     {
+        $user = $request->user();
+
         $address = Address::where('id', $id)
-                          ->where('user_id', $request->user()->id)
+                          ->where('user_id', $user->id)
                           ->first();
 
         if (!$address) {
             return response()->json(['status' => false, 'message' => 'Không tìm thấy địa chỉ'], 404);
         }
 
-        // 2. Cập nhật lại tên các trường cần kiểm tra
+        // Xác thực dữ liệu với các trường chi tiết mới
         $request->validate([
             'type' => 'required|string',
+            'receiver_name' => 'required|string',
             'phone' => 'required|string',
-            'address' => 'required|string', // Đã đổi từ address_line thành address
+            'province' => 'required|string',
+            'district' => 'required|string',
+            'ward' => 'required|string',
+            'street' => 'required|string',
             'is_default' => 'boolean'
         ]);
 
+        // Nếu người dùng tick chọn "Đặt làm mặc định" khi sửa, gỡ mặc định các địa chỉ cũ
+        if ($request->input('is_default')) {
+            Address::where('user_id', $user->id)->update(['is_default' => false]);
+        }
+
+        // Cập nhật thông tin vào DB
         $address->update([
             'type' => $request->type,
+            'receiver_name' => $request->receiver_name,
             'phone' => $request->phone,
-            'address' => $request->address, // Đã đổi từ address_line thành address
+            'province' => $request->province,
+            'district' => $request->district,
+            'ward' => $request->ward,
+            'street' => $request->street,
             'is_default' => $request->is_default ?? $address->is_default,
         ]);
 

@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 class ReviewController extends Controller
 {
     /**
-     * Danh sách tất cả đánh giá
-     * GET /admin/reviews
+     * Danh sách tất cả đánh giá cho trang Admin
+     * GET /api/admin/reviews
      */
     public function index(Request $request)
     {
@@ -35,16 +35,16 @@ class ReviewController extends Controller
             });
         }
 
-        $perPage = min((int) $request->get('per_page', 20), 100);
+        $perPage = min((int) $request->get('per_page', 50), 100);
 
         return response()->json($query->paginate($perPage));
     }
 
     /**
-     * Duyệt đánh giá (chuyển sang approved)
-     * PUT /admin/reviews/{id}/approve
+     * Duyệt đánh giá
+     * PUT /api/admin/reviews/{id}/approve
      */
-    public function approve($id)
+    public function approve(int $id)
     {
         $review = Review::findOrFail($id);
         $review->update(['status' => 'approved']);
@@ -56,25 +56,34 @@ class ReviewController extends Controller
     }
 
     /**
-     * Ẩn đánh giá (chuyển sang hidden)
-     * PUT /admin/reviews/{id}/hide
+     * Ẩn đánh giá
+     * PUT /api/admin/reviews/{id}/hide
      */
-    public function hide($id)
+    public function hide(int $id)
     {
         $review = Review::findOrFail($id);
-        $review->update(['status' => 'hidden']);
+
+        // Nếu bình luận đang bị ẩn -> Chuyển về trạng thái chờ duyệt (pending)
+        if ($review->status === 'hidden') {
+            $review->update(['status' => 'pending']);
+            $message = 'Đã khôi phục bình luận về trạng thái chờ duyệt!';
+        } 
+        // Nếu bình luận đang bình thường -> Chuyển sang ẩn (hidden)
+        else {
+            $review->update(['status' => 'hidden']);
+            $message = 'Đã ẩn bình luận thành công!';
+        }
 
         return response()->json([
-            'message' => 'Đã ẩn đánh giá thành công!',
+            'message' => $message,
             'review'  => $review,
         ]);
     }
-
     /**
-     * Xoá đánh giá (soft delete)
-     * DELETE /admin/reviews/{id}
+     * Xoá đánh giá
+     * DELETE /api/admin/reviews/{id}
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $review = Review::findOrFail($id);
         $review->delete();

@@ -42,11 +42,11 @@ class UserController extends Controller
      * Chi tiết người dùng kèm lịch sử đơn hàng
      * GET /admin/users/{id}
      */
-    public function show($id)
+    public function show( int $id)
     {
         $user = User::with([
             'orders' => fn($q) => $q->latest()->limit(10),
-            'orders.items.variant.product',
+            'orders.items.productVariant.product', // Đã sửa 'variant' thành 'productVariant' ở đây
             'addresses',
         ])->withCount('orders')->findOrFail($id);
 
@@ -57,7 +57,7 @@ class UserController extends Controller
      * Khoá / Mở khoá tài khoản
      * PUT /admin/users/{id}/status
      */
-    public function toggleStatus($id)
+    public function toggleStatus( int $id)
     {
         $user = User::findOrFail($id);
 
@@ -82,7 +82,7 @@ class UserController extends Controller
      * Cập nhật thông tin người dùng (chỉ admin mới làm được)
      * PUT /admin/users/{id}
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $user = User::findOrFail($id);
 

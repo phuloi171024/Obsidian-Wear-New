@@ -11,13 +11,9 @@ class Address extends Model
     use HasFactory, SoftDeletes;
 
     // Sửa lại danh sách $fillable khớp chính xác 100% với bảng addresses trong DB
-    protected $fillable = [
-    'user_id', 
-    'type', 
-    'phone', 
-    'address', 
-    'is_default'
-    ];
+protected $fillable = [
+    'user_id', 'receiver_name', 'phone', 'province', 'district', 'ward', 'street', 'type', 'is_default'
+];
 
     // Địa chỉ thuộc về một người dùng
     public function user()

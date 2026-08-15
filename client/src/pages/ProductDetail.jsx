@@ -6,23 +6,6 @@ import "./ProductDetail.css";
 import { productService } from "../services/productService";
 import toast, { Toaster } from "react-hot-toast";
 
-const initialReviews = [
-  {
-    id: 1,
-    name: "Minh Anh",
-    rating: 5,
-    comment: "Chất lượng rất tốt, đúng như mô tả.",
-    date: "20/07/2026",
-  },
-  {
-    id: 2,
-    name: "Quốc Huy",
-    rating: 4,
-    comment: "Sản phẩm ổn, giao hàng nhanh.",
-    date: "18/07/2026",
-  },
-];
-
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -38,15 +21,15 @@ export default function ProductDetail() {
   const [availableColors, setAvailableColors] = useState([]);
 
   const [activeTab, setActiveTab] = useState("description");
-  const [reviews, setReviews] = useState(initialReviews);
+  const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({
-    name: "",
     rating: 5,
     comment: "",
   });
+  const [submittingReview, setSubmittingReview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   // Fetch chi tiết sản phẩm và sản phẩm liên quan từ Database qua API
   useEffect(() => {
@@ -59,59 +42,47 @@ const [favoriteLoading, setFavoriteLoading] = useState(false);
 
         // 1. Lấy chi tiết sản phẩm hiện tại
         const data = await productService.getProductById(id);
+        
         // Kiểm tra sản phẩm hiện tại có nằm trong danh sách yêu thích không
-const token = localStorage.getItem("access_token");
+        const token = localStorage.getItem("access_token");
 
-if (token) {
-  try {
-    const wishlistRes = await fetch(
-      "http://localhost:8000/api/user/wishlist",
-      {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+        if (token) {
+          try {
+            const wishlistRes = await fetch(
+              "http://localhost:8000/api/user/wishlist",
+              {
+                headers: {
+                  Accept: "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
 
-    const wishlistData = await wishlistRes.json();
+            const wishlistData = await wishlistRes.json();
 
-    if (
-      wishlistRes.ok &&
-      wishlistData.status &&
-      Array.isArray(wishlistData.data)
-    ) {
-      const exists = wishlistData.data.some(
-        (item) => item.product_id === data.id
-      );
-
-      setIsFavorite(exists);
-    }
-  } catch (error) {
-    console.error(
-      "Không thể kiểm tra danh sách yêu thích:",
-      error
-    );
-  }
-}
+            if (
+              wishlistRes.ok &&
+              wishlistData.status &&
+              Array.isArray(wishlistData.data)
+            ) {
+              const exists = wishlistData.data.some(
+                (item) => item.product_id === data.id
+              );
+              setIsFavorite(exists);
+            }
+          } catch (error) {
+            console.error("Không thể kiểm tra danh sách yêu thích:", error);
+          }
+        }
         setProduct(data);
 
         // Xử lý trích xuất Size và Màu từ variants của database
         if (data.variants && data.variants.length > 0) {
           const sizes = [
-            ...new Set(
-              data.variants
-                .map((v) => v.size)
-                .filter(Boolean)
-            ),
+            ...new Set(data.variants.map((v) => v.size).filter(Boolean)),
           ];
-
           const colors = [
-            ...new Set(
-              data.variants
-                .map((v) => v.color)
-                .filter(Boolean)
-            ),
+            ...new Set(data.variants.map((v) => v.color).filter(Boolean)),
           ];
 
           setAvailableSizes(sizes);
@@ -120,14 +91,28 @@ if (token) {
           if (sizes.length > 0) {
             setSize(sizes[0]);
           }
-
           if (colors.length > 0) {
             setColor(colors[0]);
           }
         }
 
-        // 2. Lấy sản phẩm liên quan dựa vào thương hiệu (brand_id)
-        // hoặc danh mục (category_id) của sản phẩm hiện tại
+        // === GỌI API LẤY DANH SÁCH ĐÁNH GIÁ TỪ DATABASE ===
+        try {
+          const reviewRes = await fetch(`http://localhost:8000/api/products/${id}/reviews`, {
+            method: "GET",
+            headers: {
+              "Accept": "application/json" // Báo cho Laravel biết đây là gọi API
+            }
+          });
+          const reviewData = await reviewRes.json();
+          if (reviewRes.ok && reviewData.status) {
+            setReviews(reviewData.data);
+          }
+        } catch (e) {
+          console.error("Lỗi lấy đánh giá", e);
+        }
+
+        // 2. Lấy sản phẩm liên quan dựa vào thương hiệu (brand_id) hoặc danh mục
         const allProducts = await productService.getProducts();
 
         if (Array.isArray(allProducts)) {
@@ -140,36 +125,24 @@ if (token) {
             )
             .slice(0, 4);
 
-          // Nếu không đủ sản phẩm cùng thương hiệu/danh mục,
-          // lấy bù các sản phẩm khác
+          // Nếu không đủ sản phẩm cùng thương hiệu/danh mục, lấy bù các sản phẩm khác
           if (filtered.length < 4) {
             const extra = allProducts
               .filter(
                 (item) =>
                   item.id !== data.id &&
-                  !filtered.some(
-                    (f) => f.id === item.id
-                  )
+                  !filtered.some((f) => f.id === item.id)
               )
               .slice(0, 4 - filtered.length);
 
-            setRelatedProducts([
-              ...filtered,
-              ...extra,
-            ]);
+            setRelatedProducts([...filtered, ...extra]);
           } else {
             setRelatedProducts(filtered);
           }
         }
       } catch (error) {
-        console.error(
-          "Lỗi khi tải chi tiết sản phẩm:",
-          error
-        );
-
-        toast.error(
-          "Không thể tải thông tin sản phẩm từ máy chủ!"
-        );
+        console.error("Lỗi khi tải chi tiết sản phẩm:", error);
+        toast.error("Không thể tải thông tin sản phẩm từ máy chủ!");
       } finally {
         setLoading(false);
       }
@@ -179,82 +152,84 @@ if (token) {
       fetchProductDetailAndRelated();
     }
   }, [id]);
-const handleToggleWishlist = async () => {
-  const token =
-    localStorage.getItem("access_token");
 
-  if (!token) {
-    toast.error(
-      "Vui lòng đăng nhập để thêm vào yêu thích!"
-    );
+  const handleToggleWishlist = async () => {
+    const token =
+      localStorage.getItem("access_token");
 
-    navigate("/login");
-    return;
-  }
-
-  try {
-    setFavoriteLoading(true);
-
-    const res = await fetch(
-      "http://localhost:8000/api/user/wishlist/toggle",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          product_id: product.id,
-        }),
-      }
-    );
-
-    const data = await res.json();
-
-    if (res.ok && data.status) {
-      setIsFavorite(data.is_favorite);
-
-      toast.success(
-        data.message ||
-          (data.is_favorite
-            ? "Đã thêm vào danh sách yêu thích!"
-            : "Đã bỏ khỏi danh sách yêu thích!")
-      );
-
-      return;
-    }
-
-    if (res.status === 401) {
-      localStorage.removeItem(
-        "access_token"
-      );
-
+    if (!token) {
       toast.error(
-        "Phiên đăng nhập đã hết hạn!"
+        "Vui lòng đăng nhập để thêm vào yêu thích!"
       );
 
       navigate("/login");
       return;
     }
 
-    toast.error(
-      data.message ||
-        "Không thể cập nhật danh sách yêu thích"
-    );
-  } catch (error) {
-    console.error(
-      "Lỗi Wishlist:",
-      error
-    );
+    try {
+      setFavoriteLoading(true);
 
-    toast.error(
-      "Không thể kết nối đến máy chủ"
-    );
-  } finally {
-    setFavoriteLoading(false);
-  }
-};
+      const res = await fetch(
+        "http://localhost:8000/api/user/wishlist/toggle",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            product_id: product.id,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok && data.status) {
+        setIsFavorite(data.is_favorite);
+
+        toast.success(
+          data.message ||
+            (data.is_favorite
+              ? "Đã thêm vào danh sách yêu thích!"
+              : "Đã bỏ khỏi danh sách yêu thích!")
+        );
+
+        return;
+      }
+
+      if (res.status === 401) {
+        localStorage.removeItem(
+          "access_token"
+        );
+
+        toast.error(
+          "Phiên đăng nhập đã hết hạn!"
+        );
+
+        navigate("/login");
+        return;
+      }
+
+      toast.error(
+        data.message ||
+          "Không thể cập nhật danh sách yêu thích"
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi Wishlist:",
+        error
+      );
+
+      toast.error(
+        "Không thể kết nối đến máy chủ"
+      );
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
   // Xử lý thêm vào giỏ hàng
   // CHỈ SỬA PHẦN API, KHÔNG ĐỔI GIAO DIỆN
   const handleAddToCart = async () => {
@@ -417,45 +392,77 @@ const handleToggleWishlist = async () => {
     }
   };
 
-  const handleReviewSubmit = (e) => {
+  const handleReviewSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !newReview.name ||
-      !newReview.comment
-    ) {
-      toast.error(
-        "Vui lòng điền đầy đủ họ tên và nội dung đánh giá!"
-      );
+    if (!newReview.comment.trim()) {
+      toast.error("Vui lòng điền nội dung đánh giá!");
       return;
     }
 
-    const reviewObj = {
-      id: Date.now(),
-      name: newReview.name,
-      rating: Number(
-        newReview.rating
-      ),
-      comment: newReview.comment,
-      date: new Date().toLocaleDateString(
-        "vi-VN"
-      ),
-    };
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      toast.error("Vui lòng đăng nhập để đánh giá sản phẩm!");
+      navigate("/login");
+      return;
+    }
 
-    setReviews([
-      reviewObj,
-      ...reviews,
-    ]);
+    try {
+      setSubmittingReview(true);
+      const res = await fetch(`http://localhost:8000/api/products/${product.id}/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: Number(newReview.rating),
+          comment: newReview.comment,
+        }),
+      });
 
-    setNewReview({
-      name: "",
-      rating: 5,
-      comment: "",
-    });
+      const data = await res.json();
 
-    toast.success(
-      "Cảm ơn bạn đã gửi đánh giá!"
-    );
+      if (res.ok && data.status) {
+        toast.success(data.message || "Cảm ơn bạn đã gửi đánh giá!");
+        setReviews([data.review, ...reviews]);
+        setNewReview({ rating: 5, comment: "" });
+      } else {
+        toast.error(data.message || "Không thể gửi đánh giá!");
+      }
+    } catch (error) {
+      toast.error("Lỗi kết nối máy chủ!");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  // ================= TÍNH NĂNG MỚI: BÁO CÁO BÌNH LUẬN RÁC =================
+  const handleReportReview = async (reviewId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn báo cáo bình luận này là vi phạm/rác không?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:8000/api/reviews/${reviewId}/report`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          // Bỏ comment dòng Authorization dưới đây nếu em bắt buộc khách phải đăng nhập mới được bấm báo cáo
+          // 'Authorization': `Bearer ${localStorage.getItem('access_token')}` 
+        }
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(data.message || "Đã gửi báo cáo thành công!");
+      } else {
+        toast.error("Không thể báo cáo bình luận này.");
+      }
+    } catch (error) {
+      toast.error("Lỗi kết nối máy chủ!");
+    }
   };
 
   if (loading)
@@ -603,44 +610,74 @@ const handleToggleWishlist = async () => {
           )}
 
           {/* Số lượng */}
-          <div className="option quantity-section">
-            <h4>Số lượng</h4>
+          {(() => {
+            // 1. Tìm biến thể đang được chọn (dựa theo Size và Màu) để lấy số tồn kho
+            let currentStock = 0;
+            if (product && product.variants) {
+              const matchedVariant = product.variants.find(
+                (v) => v.size === size && v.color === color
+              );
+              if (matchedVariant) {
+                currentStock = Number(matchedVariant.stock || 0);
+              }
+            }
 
-            <div className="quantity-box">
-              <button
-                className="qty-btn"
-                onClick={() =>
-                  setQuantity(
-                    (prev) =>
-                      Math.max(
-                        1,
-                        prev - 1
-                      )
-                  )
-                }
-              >
-                -
-              </button>
+            return (
+              <div className="option quantity-section">
+                
+                {/* Số lượng */}
+          {(() => {
+            let currentStock = 0;
+            if (product && product.variants) {
+              const matchedVariant = product.variants.find(
+                (v) => v.size === size && v.color === color
+              );
+              if (matchedVariant) {
+                currentStock = Number(matchedVariant.stock || 0);
+              }
+            }
 
-              <input
-                type="text"
-                value={quantity}
-                readOnly
-              />
+            return (
+              <div className="option quantity-section" style={{ marginBottom: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <h4 style={{ margin: 0 }}>Số lượng</h4>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: currentStock > 0 ? "#10b981" : "#ef4444" }}>
+                    {currentStock > 0 ? `Còn ${currentStock} sản phẩm trong kho` : "Tạm thời hết hàng"}
+                  </span>
+                </div>
 
-              <button
-                className="qty-btn"
-                onClick={() =>
-                  setQuantity(
-                    (prev) =>
-                      prev + 1
-                  )
-                }
-              >
-                +
-              </button>
-            </div>
-          </div>
+                
+              </div>
+            );
+          })()}
+
+                <div className="quantity-box">
+                  <button
+                    className="qty-btn"
+                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                  >
+                    -
+                  </button>
+
+                  <input type="text" value={quantity} readOnly />
+
+                  <button
+                    className="qty-btn"
+                    onClick={() => {
+                      // 3. Logic ngoại lệ: Chặn bấm (+) nếu số lượng mua vượt tồn kho
+                      if (quantity < currentStock) {
+                        setQuantity((prev) => prev + 1);
+                      } else {
+                        toast.error(`Chỉ còn ${currentStock} sản phẩm trong kho!`);
+                      }
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Nút hành động */}
           <div
@@ -704,36 +741,36 @@ const handleToggleWishlist = async () => {
             </button>
 
            <button
-  className="share-btn wishlist-detail-btn"
-  onClick={handleToggleWishlist}
-  disabled={favoriteLoading}
-  title={
-    isFavorite
-      ? "Bỏ khỏi yêu thích"
-      : "Thêm vào yêu thích"
-  }
-  style={{
-    color: isFavorite
-      ? "#e11d48"
-      : "#64748b",
-    transition: "all 0.2s",
-    opacity: favoriteLoading
-      ? 0.6
-      : 1,
-  }}
->
-  <i
-    className={
-      isFavorite
-        ? "fa-solid fa-heart"
-        : "fa-regular fa-heart"
-    }
-  ></i>
-</button>
+            className="share-btn wishlist-detail-btn"
+            onClick={handleToggleWishlist}
+            disabled={favoriteLoading}
+            title={
+              isFavorite
+                ? "Bỏ khỏi yêu thích"
+                : "Thêm vào yêu thích"
+            }
+            style={{
+              color: isFavorite
+                ? "#e11d48"
+                : "#64748b",
+              transition: "all 0.2s",
+              opacity: favoriteLoading
+                ? 0.6
+                : 1,
+            }}
+          >
+            <i
+              className={
+                isFavorite
+                  ? "fa-solid fa-heart"
+                  : "fa-regular fa-heart"
+              }
+            ></i>
+          </button>
 
-<button className="share-btn">
-  <i className="fa-solid fa-share-nodes"></i>
-</button>
+          <button className="share-btn">
+            <i className="fa-solid fa-share-nodes"></i>
+          </button>
           </div>
 
           <div className="product-meta">
@@ -825,21 +862,6 @@ const handleToggleWishlist = async () => {
                 Viết đánh giá của bạn
               </h4>
 
-              <input
-                type="text"
-                placeholder="Tên của bạn"
-                value={
-                  newReview.name
-                }
-                onChange={(e) =>
-                  setNewReview({
-                    ...newReview,
-                    name:
-                      e.target.value,
-                  })
-                }
-              />
-
               <div className="rating-select">
                 <label>
                   Số sao:{" "}
@@ -892,56 +914,76 @@ const handleToggleWishlist = async () => {
               <button
                 type="submit"
                 className="submit-review-btn"
+                disabled={submittingReview}
+                style={{ opacity: submittingReview ? 0.7 : 1 }}
               >
-                Gửi đánh giá
+                {submittingReview ? "Đang gửi..." : "Gửi đánh giá"}
               </button>
             </form>
 
             <div className="review-list">
-              {reviews.map(
-                (r) => (
-                  <div
-                    className="review-item"
-                    key={r.id}
-                  >
-                    <div className="review-header">
-                      <span className="review-name">
-                        {r.name}
-                      </span>
+              {reviews.length > 0 ? (
+                reviews.map(
+                  (r) => (
+                    <div
+                      className="review-item"
+                      key={r.id}
+                    >
+                      {/* ĐÃ SỬA: Thêm nút báo cáo vào phần Header của bình luận */}
+                      <div className="review-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <span className="review-name" style={{ marginRight: '10px' }}>
+                            {r.name}
+                          </span>
 
-                      <span className="review-date">
-                        {r.date}
-                      </span>
+                          <span className="review-date">
+                            {r.date}
+                          </span>
+                        </div>
+                        
+                        <button 
+                          onClick={() => handleReportReview(r.id)}
+                          className="report-btn"
+                          title="Báo cáo bình luận này nếu có vi phạm"
+                          style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <i className="fa-solid fa-flag"></i> Báo cáo
+                        </button>
+                      </div>
+
+                      <div className="review-stars review-rating">
+                        {Array.from({
+                          length: 5,
+                        }).map(
+                          (
+                            _,
+                            index
+                          ) => (
+                            <i
+                              key={
+                                index
+                              }
+                              className={
+                                index <
+                                r.rating
+                                  ? "fa-solid fa-star"
+                                  : "fa-regular fa-star"
+                              }
+                            ></i>
+                          )
+                        )}
+                      </div>
+
+                      <p className="review-comment">
+                        {r.comment}
+                      </p>
                     </div>
-
-                    <div className="review-stars review-rating">
-                      {Array.from({
-                        length: 5,
-                      }).map(
-                        (
-                          _,
-                          index
-                        ) => (
-                          <i
-                            key={
-                              index
-                            }
-                            className={
-                              index <
-                              r.rating
-                                ? "fa-solid fa-star"
-                                : "fa-regular fa-star"
-                            }
-                          ></i>
-                        )
-                      )}
-                    </div>
-
-                    <p className="review-comment">
-                      {r.comment}
-                    </p>
-                  </div>
+                  )
                 )
+              ) : (
+                <p style={{ textAlign: "center", color: "#666", fontStyle: "italic", marginTop: "20px" }}>
+                  Chưa có đánh giá nào.
+                </p>
               )}
             </div>
           </div>

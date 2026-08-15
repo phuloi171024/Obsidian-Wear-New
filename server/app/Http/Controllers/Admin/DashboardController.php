@@ -6,59 +6,83 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     /**
-     * Trả về thống kê tổng hợp cho Dashboard admin
-     * GET /admin/dashboard
+     * Trả về thống kê tổng hợp cho Dashboard và Statistics admin
+     * GET /admin/dashboard?filter=month|week|year
      */
-    public function index()
+    public function index(Request $request)
     {
-        $now   = Carbon::now();
-        $month = $now->month;
-        $year  = $now->year;
+        $filter = $request->get('filter', 'month'); // Mặc định là tháng này
+        $now = Carbon::now();
 
-        // Chỉ tính doanh thu từ đơn hàng đã giao thành công
-        $revenueThisMonth = Order::where('status', 'delivered')
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
+        // Xác định khoảng thời gian dựa vào tiêu chí lựa chọn
+        if ($filter === 'week') {
+            $startDate = $now->copy()->startOfWeek();
+            $endDate = $now->copy()->endOfWeek();
+            $lastStartDate = $now->copy()->subWeek()->startOfWeek();
+            $lastEndDate = $now->copy()->subWeek()->endOfWeek();
+        } elseif ($filter === 'year') {
+            $startDate = $now->copy()->startOfYear();
+            $endDate = $now->copy()->endOfYear();
+            $lastStartDate = $now->copy()->subYear()->startOfYear();
+            $lastEndDate = $now->copy()->subYear()->endOfYear();
+        } else { // 'month'
+            $startDate = $now->copy()->startOfMonth();
+            $endDate = $now->copy()->endOfMonth();
+            $lastStartDate = $now->copy()->subMonth()->startOfMonth();
+            $lastEndDate = $now->copy()->subMonth()->endOfMonth();
+        }
+
+        // ── Doanh thu ──────────────────────────────────────────────────────────
+        $revenueThisPeriod = Order::where('status', 'completed')
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total_amount');
 
-        $revenueLastMonth = Order::where('status', 'delivered')
-            ->whereMonth('created_at', $now->copy()->subMonth()->month)
-            ->whereYear('created_at', $now->copy()->subMonth()->year)
+        $revenueLastPeriod = Order::where('status', 'completed')
+            ->whereBetween('created_at', [$lastStartDate, $lastEndDate])
             ->sum('total_amount');
 
-        $revenueGrowth = $revenueLastMonth > 0
-            ? round((($revenueThisMonth - $revenueLastMonth) / $revenueLastMonth) * 100, 1)
+        $revenueGrowth = $revenueLastPeriod > 0
+            ? round((($revenueThisPeriod - $revenueLastPeriod) / $revenueLastPeriod) * 100, 1)
             : 0;
 
         // ── Đơn hàng ───────────────────────────────────────────────────────────
-        $orderStats = Order::select('status', DB::raw('count(*) as total'))
+        $orderStats = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        $totalOrders = Order::count();
+        $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])->count();
+        $totalOrdersLastPeriod = Order::whereBetween('created_at', [$lastStartDate, $lastEndDate])->count();
+        
+        $orderGrowth = $totalOrdersLastPeriod > 0
+            ? round((($totalOrders - $totalOrdersLastPeriod) / $totalOrdersLastPeriod) * 100, 1)
+            : 0;
 
         // ── Người dùng ─────────────────────────────────────────────────────────
         $totalUsers = User::where('role', 'user')->count();
 
-        $newUsersThisMonth = User::where('role', 'user')
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
+        $newUsersThisPeriod = User::where('role', 'user')
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
         // ── Sản phẩm ───────────────────────────────────────────────────────────
         $totalProducts = Product::count();
         $activeProducts = Product::where('status', true)->count();
 
-        // Top 5 sản phẩm bán chạy (lọc cả soft-deleted records)
+        // ── Top 5 sản phẩm bán chạy trong khoảng thời gian ─────────────────────
         $topProducts = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
             ->join('products', 'product_variants.product_id', '=', 'products.id')
+            ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->where('orders.status', 'completed')
             ->whereNull('order_items.deleted_at')
             ->whereNull('product_variants.deleted_at')
             ->whereNull('products.deleted_at')
@@ -75,51 +99,41 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Doanh thu 7 ngày gần nhất (chỉ đếm đơn đã giao thành công)
+        // ── Biểu đồ 7 ngày gần nhất (hoặc theo khung thời gian) ────────────────
         $last7Days = collect(range(6, 0))->map(function ($daysAgo) {
             $date = Carbon::now()->subDays($daysAgo);
-            $revenue = Order::where('status', 'delivered')
+            $revenue = Order::where('status', 'completed')
                 ->whereDate('created_at', $date->toDateString())
                 ->sum('total_amount');
+            $ordersCount = Order::whereDate('created_at', $date->toDateString())->count();
 
             return [
-                'date'    => $date->format('d/m'),
+                'day'     => $date->format('d/m'),
                 'revenue' => (float) $revenue,
-            ];
-        });
-
-        // ── Đơn hàng 7 ngày gần nhất ───────────────────────────────────────────
-        $last7DaysOrders = collect(range(6, 0))->map(function ($daysAgo) {
-            $date = Carbon::now()->subDays($daysAgo);
-            $count = Order::whereDate('created_at', $date->toDateString())->count();
-
-            return [
-                'date'   => $date->format('d/m'),
-                'orders' => $count,
+                'orders'  => $ordersCount,
             ];
         });
 
         return response()->json([
             'revenue' => [
-                'this_month'  => (float) $revenueThisMonth,
-                'last_month'  => (float) $revenueLastMonth,
-                'growth'      => $revenueGrowth,
+                'current' => (float) $revenueThisPeriod,
+                'growth'  => $revenueGrowth,
             ],
             'orders' => [
                 'total'     => $totalOrders,
+                'growth'    => $orderGrowth,
                 'by_status' => $orderStats,
             ],
             'users' => [
-                'total'          => $totalUsers,
-                'new_this_month' => $newUsersThisMonth,
+                'total'           => $totalUsers,
+                'new_this_period' => $newUsersThisPeriod,
             ],
             'products' => [
                 'total'  => $totalProducts,
                 'active' => $activeProducts,
             ],
-            'top_products'      => $topProducts,
-            'revenue_chart'     => $last7Days,
-            'orders_chart'      => $last7DaysOrders,
+            'top_products'  => $topProducts,
+            'revenue_chart' => $last7Days,
         ]);
     }
 }

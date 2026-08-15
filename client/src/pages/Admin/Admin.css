@@ -10,8 +10,8 @@
 
 .admin-layout{
     display:flex;
-    min-height:100vh;
-    background:#f5f7fb;
+    min-height:200vh;
+    background:#d5d6da;
     font-family:Arial,Helvetica,sans-serif;
 }
 
@@ -4477,4 +4477,43 @@ grid-template-columns:1fr;
   height: 15px;
 
   stroke-width: 2;
+}
+/* ================= CSS CHO CÁC NÚT THAO TÁC (ACTION BUTTONS) ================= */
+.action-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-btns button {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+/* Nút xem / biến thể / sửa (Màu xanh dương / xám) */
+.action-btns .view-btn {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+.action-btns .view-btn:hover {
+    background-color: #e5e7eb;
+    color: #1f2937;
+}
+
+/* Nút khóa / xóa (Màu đỏ) */
+.action-btns .lock-btn {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+.action-btns .lock-btn:hover {
+    background-color: #fecaca;
+    color: #dc2626;
 }

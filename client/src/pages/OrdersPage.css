@@ -149,3 +149,38 @@
   color: #111827;
   font-size: 24px;
 }
+/* =========================================
+   MÀU SẮC TRẠNG THÁI ĐƠN HÀNG (BADGES)
+========================================= */
+.status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+}
+
+/* 1. Chờ xử lý (Pending) */
+.status.pending {
+    background-color: #ffbf00; 
+    color: #eee8e2; 
+}
+
+/* 2. Đang giao (Shipped) */
+.status.shipped {
+    background-color: #0072fd; 
+    color: #eff4ff; 
+}
+
+/* 3. Hoàn tất (Completed) */
+.status.completed {
+    background-color: #028824; 
+    color: #f6f7f6; 
+}
+
+/* 4. Đã hủy (Cancelled) */
+.status.cancelled {
+    background-color: #ff0000; 
+    color: #faf7f7; 
+}

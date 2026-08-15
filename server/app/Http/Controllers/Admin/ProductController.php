@@ -105,7 +105,7 @@ class ProductController extends Controller
      * Chi tiết sản phẩm
      * GET /admin/products/{id}
      */
-    public function show($id)
+    public function show(int $id)
     {
         $product = Product::withTrashed()
             ->with(['category', 'brand', 'variants', 'images', 'reviews.user'])
@@ -118,7 +118,7 @@ class ProductController extends Controller
      * Cập nhật sản phẩm
      * PUT /admin/products/{id}
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $product = Product::findOrFail($id);
 
@@ -157,7 +157,7 @@ class ProductController extends Controller
      * Xoá mềm sản phẩm
      * DELETE /admin/products/{id}
      */
-    public function destroy($id)
+    public function destroy( int $id)
     {
         $product = Product::findOrFail($id);
         $product->delete();
@@ -169,7 +169,7 @@ class ProductController extends Controller
      * Thêm ảnh chi tiết cho sản phẩm
      * POST /admin/products/{id}/images
      */
-    public function uploadImages(Request $request, $id)
+    public function uploadImages(Request $request,int $id)
     {
         $product = Product::findOrFail($id);
 
@@ -196,7 +196,7 @@ class ProductController extends Controller
      * Xoá ảnh chi tiết của sản phẩm
      * DELETE /admin/products/{id}/images/{imageId}
      */
-    public function deleteImage($id, $imageId)
+    public function deleteImage( int $id, int $imageId)
     {
         $image = ProductImage::where('product_id', $id)->findOrFail($imageId);
         $image->delete();
@@ -205,16 +205,16 @@ class ProductController extends Controller
     }
 
     /**
-     * Thêm/sửa variant của sản phẩm
+     * Thêm biến thể mới cho sản phẩm (Hàm chuẩn phục vụ API thêm biến thể)
      * POST /admin/products/{id}/variants
      */
-    public function storeVariant(Request $request, $id)
+    public function addVariant(Request $request, int $id)
     {
         $product = Product::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'size'  => 'required|string',
-            'color' => 'required|string',
+            'color' => 'required|string|max:255',
+            'size'  => 'required|string|max:255',
             'stock' => 'required|integer|min:0',
         ]);
 
@@ -222,11 +222,16 @@ class ProductController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $variant = $product->variants()->create($request->only('size', 'color', 'stock'));
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'color'      => $request->color,
+            'size'       => $request->size,
+            'stock'      => $request->stock,
+        ]);
 
         return response()->json([
             'message' => 'Thêm biến thể thành công!',
-            'variant' => $variant,
+            'variant' => $variant
         ], 201);
     }
 
@@ -234,7 +239,7 @@ class ProductController extends Controller
      * Cập nhật stock của variant
      * PUT /admin/products/{id}/variants/{variantId}
      */
-    public function updateVariant(Request $request, $id, $variantId)
+    public function updateVariant(Request $request, int $id, int $variantId)
     {
         $variant = ProductVariant::where('product_id', $id)->findOrFail($variantId);
 
@@ -260,7 +265,7 @@ class ProductController extends Controller
      * Xoá variant
      * DELETE /admin/products/{id}/variants/{variantId}
      */
-    public function deleteVariant($id, $variantId)
+    public function deleteVariant(int $id, int $variantId)
     {
         $variant = ProductVariant::where('product_id', $id)->findOrFail($variantId);
         $variant->delete();

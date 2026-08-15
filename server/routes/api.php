@@ -18,8 +18,7 @@ use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\OrderController as ClientOrderController; 
 use App\Http\Controllers\Api\VNPayController;
-
-
+use App\Http\Controllers\Api\ReviewController;
 
 // 2. Phân hệ Quản trị viên (Admin API)
 use App\Http\Controllers\Admin\DashboardController;
@@ -41,8 +40,6 @@ Route::get('/home', [ClientProductController::class, 'home']);
 Route::get('/products', [ClientProductController::class, 'index']);
 Route::get('/products/{id}', [ClientProductController::class, 'show']);
 
-
-
 // Xác thực tài khoản & Quên mật khẩu
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -52,11 +49,16 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 // Social Login bằng Google
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
 // API Áp dụng mã giảm giá
 Route::post('/coupons/apply', [CouponController::class, 'apply']);
 Route::get('/coupons', [CouponController::class, 'index']);
 
 Route::get('/vnpay/return', [VNPayController::class, 'vnpayReturn']);
+
+Route::get('/products/{productId}/reviews', [ReviewController::class, 'index']);
+
+Route::post('/reviews/{id}/report', [ReviewController::class, 'report']);
 /*
 |--------------------------------------------------------------------------
 | 2. CLIENT PROTECTED ROUTES (Cần đăng nhập - Sanctum Token)
@@ -64,11 +66,14 @@ Route::get('/vnpay/return', [VNPayController::class, 'vnpayReturn']);
 */
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vnpay/create', [VNPayController::class, 'createPayment']);
+    
     // Route để VNPay gửi IPN ngầm (Server to Server)
-Route::get('/vnpay/ipn', [VNPayController::class, 'vnpayIpn']);
+    Route::get('/vnpay/ipn', [VNPayController::class, 'vnpayIpn']);
+    
     // Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout']);
-Route::put('/user/password', [UserController::class, 'updatePassword']);
+    Route::put('/user/password', [UserController::class, 'updatePassword']);
+    
     // Quản lý thông tin cá nhân
     Route::get('/user/profile', [UserController::class, 'getProfile']);
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
@@ -88,14 +93,17 @@ Route::put('/user/password', [UserController::class, 'updatePassword']);
     Route::post('/cart/add', [CartController::class, 'add']);
     Route::put('/cart/update/{id}', [CartController::class, 'update']);
     Route::delete('/cart/remove/{id}', [CartController::class, 'remove']);
+    
+    // API Đánh giá sản phẩm
+    Route::post('/products/{productId}/reviews', [ReviewController::class, 'store']);
 
-    // 👈 BỔ SUNG: Quản lý đơn hàng của chính khách hàng đang đăng nhập
-    Route::get('/orders', [ClientOrderController::class, 'index']);       // Lấy danh sách đơn hàng của user
-    Route::post('/orders', [ClientOrderController::class, 'store']);      // Tạo đơn hàng mới từ giỏ hàng
-    Route::get('/orders/{id}', [ClientOrderController::class, 'show']);   // Xem chi tiết 1 đơn hàng
-    Route::put('/orders/{id}/cancel', [ClientOrderController::class, 'cancel']); // Hủy đơn hàng
+    // Quản lý đơn hàng của chính khách hàng đang đăng nhập
+    Route::get('/orders', [ClientOrderController::class, 'index']);       
+    Route::post('/orders', [ClientOrderController::class, 'store']);      
+    Route::get('/orders/{id}', [ClientOrderController::class, 'show']);   
+    Route::put('/orders/{id}/cancel', [ClientOrderController::class, 'cancel']); 
+  
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -138,4 +146,6 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
     // 3.8. Quản Lý Mã Giảm Giá (Coupons)
     Route::apiResource('/coupons', AdminCouponController::class);
+Route::delete('/coupons/bulk', [CouponController::class, 'bulkDestroy']);
+    
 });

@@ -23,6 +23,7 @@ import OrderSuccessPage from "./pages/OrderSuccessPage";
 import OrdersPage from "./pages/OrdersPage";
 
 // Import các trang Admin
+import AdminLogin from "./pages/Admin/AdminLogin";
 import AdminLayout from "./pages/Admin/AdminLayout";
 import Dashboard from "./pages/Admin/Dashboard";
 import Orders from "./pages/Admin/Orders";
@@ -33,7 +34,7 @@ import Statistics from "./pages/Admin/Statistics";
 import Comments from "./pages/Admin/Comments";
 import Variants from "./pages/Admin/Variants";
 import DiscountCodes from "./pages/Admin/DiscountCodes";
-
+import Brands from "./pages/Admin/Brands";
 // ==========================================
 // 1. TRẠM KIỂM SOÁT BẢO MẬT (ROUTE GUARDS)
 // ==========================================
@@ -97,6 +98,9 @@ function App() {
         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
 
         {/* NHÓM 4: ADMIN */}
+        {/* Đăng nhập Admin tách riêng, không nằm trong AdminLayout */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
@@ -107,6 +111,7 @@ function App() {
           <Route path="comments" element={<Comments />} />
           <Route path="products/variants" element={<Variants />} />
           <Route path="discount-codes" element={<DiscountCodes />} />
+          <Route path="brands" element={<Brands />} />
         </Route>
       </Routes>
     </BrowserRouter>

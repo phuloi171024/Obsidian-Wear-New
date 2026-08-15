@@ -34,23 +34,28 @@ class CouponController extends Controller
      */
     public function store(Request $request)
     {
+        // Thêm Validator cho đầy đủ các trường từ React gửi lên
         $validator = Validator::make($request->all(), [
-            'code'           => 'required|string|max:50|unique:coupons,code',
-            'discount_value' => 'required|numeric|min:0',
-            'end_date'       => 'nullable|date|after:today',
-            'status'         => 'boolean',
+            'code'            => 'required|string|max:50|unique:coupons,code',
+            'discount_type'   => 'required|string|in:fixed,percent,shipping',
+            'discount_value'  => 'required|numeric|min:0',
+            'min_order_value' => 'nullable|numeric|min:0',
+            'usage_limit'     => 'nullable|integer|min:1',
+            'expires_at'      => 'nullable|date',
+            'status'          => 'boolean',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $coupon = Coupon::create([
-            'code'           => strtoupper($request->code),
-            'discount_value' => $request->discount_value,
-            'end_date'       => $request->end_date,
-            'status'         => $request->get('status', true),
-        ]);
+        // Tự động in hoa mã code
+        if ($request->filled('code')) {
+            $request->merge(['code' => strtoupper($request->code)]);
+        }
+
+        // Lưu TOÀN BỘ dữ liệu vào Database
+        $coupon = Coupon::create($request->all());
 
         return response()->json([
             'message' => 'Tạo mã giảm giá thành công!',
@@ -62,7 +67,7 @@ class CouponController extends Controller
      * Chi tiết coupon
      * GET /admin/coupons/{id}
      */
-    public function show($id)
+    public function show( int $id)
     {
         $coupon = Coupon::withCount('orders')->findOrFail($id);
         return response()->json($coupon);
@@ -72,26 +77,31 @@ class CouponController extends Controller
      * Cập nhật coupon
      * PUT /admin/coupons/{id}
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $coupon = Coupon::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'code'           => 'sometimes|string|max:50|unique:coupons,code,' . $coupon->id,
-            'discount_value' => 'sometimes|numeric|min:0',
-            'end_date'       => 'nullable|date',
-            'status'         => 'sometimes|boolean',
+            'code'            => 'sometimes|string|max:50|unique:coupons,code,' . $coupon->id,
+            'discount_type'   => 'sometimes|string|in:fixed,percent,shipping',
+            'discount_value'  => 'sometimes|numeric|min:0',
+            'min_order_value' => 'nullable|numeric|min:0',
+            'usage_limit'     => 'nullable|integer|min:1',
+            'expires_at'      => 'nullable|date',
+            'status'          => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // Tự động in hoa mã code
         if ($request->filled('code')) {
             $request->merge(['code' => strtoupper($request->code)]);
         }
 
-        $coupon->update($request->only('code', 'discount_value', 'end_date', 'status'));
+        // LƯU Ý: Đã thay $request->only() bằng $request->all() để lưu đủ dữ liệu
+        $coupon->update($request->all());
 
         return response()->json([
             'message' => 'Cập nhật mã giảm giá thành công!',
@@ -103,11 +113,29 @@ class CouponController extends Controller
      * Xoá coupon
      * DELETE /admin/coupons/{id}
      */
-    public function destroy($id)
+    public function destroy( int $id)
     {
         $coupon = Coupon::findOrFail($id);
         $coupon->delete();
 
         return response()->json(['message' => 'Đã xoá mã giảm giá thành công!']);
+    }
+    /**
+     * Xóa nhiều mã giảm giá cùng lúc
+     * DELETE /admin/coupons/bulk
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids'   => 'required|array',
+            'ids.*' => 'integer|exists:coupons,id',
+        ]);
+
+        Coupon::whereIn('id', $request->ids)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Đã xoá các mã giảm giá được chọn thành công!'
+        ]);
     }
 }
