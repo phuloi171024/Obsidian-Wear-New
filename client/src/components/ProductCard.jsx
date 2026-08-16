@@ -41,7 +41,7 @@ export default function ProductCard({ product, badgeText }) {
 
       <div className="card-actions">
         <Link to={`/product/${product.id}`} className="card-add-cart-btn" style={{ textAlign: "center", textDecoration: "none", width: "100%" }}>
-          🛒 Chọn tùy chọn
+          Xem chi tiết
         </Link>
       </div>
     </div>

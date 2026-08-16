@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 import Header from '../components/Header';
+import './OrderSuccessPage.css';
 
 export default function OrderSuccessPage() {
   const location = useLocation();

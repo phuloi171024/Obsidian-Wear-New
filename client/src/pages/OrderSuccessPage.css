@@ -1,0 +1,510 @@
+/* =========================================================
+   TRANG ĐẶT HÀNG THÀNH CÔNG
+   ========================================================= */
+
+
+/* =========================================================
+   KHUNG NGOÀI
+   VÙNG MÀU ĐỎ TRONG HÌNH
+   -> CHUYỂN THÀNH TRẮNG VÀ DÃN THEO CHIỀU NGANG
+   ========================================================= */
+
+main.max-w-2xl {
+    width: 100% !important;
+
+    /* BỎ giới hạn 390px */
+    max-width: 100% !important;
+
+    min-height: calc(100vh - 80px);
+
+    margin: 0 auto !important;
+
+    padding: 40px 50px 60px !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: center !important;
+
+    background: #ffffff !important;
+
+    text-align: center;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   ICON CHECK
+   ========================================================= */
+
+main.max-w-2xl > div:first-child {
+    width: 68px !important;
+
+    height: 68px !important;
+
+    flex: 0 0 68px !important;
+
+    margin: 0 0 16px !important;
+
+    padding: 0 !important;
+
+    border-radius: 50% !important;
+
+    background: #efffe8 !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    box-shadow: none !important;
+}
+
+
+main.max-w-2xl > div:first-child svg {
+    width: 58px !important;
+
+    height: 58px !important;
+
+    color: #55c91a !important;
+}
+
+
+/* =========================================================
+   KHUNG NỘI DUNG ĐẶT HÀNG THÀNH CÔNG
+   VÙNG MÀU XANH TRONG HÌNH
+   ========================================================= */
+
+
+/* Tiêu đề */
+main.max-w-2xl > h1 {
+    width: 700px !important;
+
+    max-width: 100% !important;
+
+    margin: 0 0 14px !important;
+
+    padding: 15px 20px !important;
+
+    box-sizing: border-box;
+
+    background: #dff3e3 !important;
+
+    color: #245b32 !important;
+
+    font-size: 18px !important;
+
+    line-height: 1.35 !important;
+
+    font-weight: 700 !important;
+
+    text-transform: uppercase;
+
+    text-align: center;
+
+    border: 1px solid #c9e9d0 !important;
+
+    border-radius: 0 !important;
+}
+
+
+/* =========================================================
+   ĐOẠN CẢM ƠN
+   ========================================================= */
+
+main.max-w-2xl > p {
+    width: 700px !important;
+
+    max-width: 100% !important;
+
+    margin: 0 0 16px !important;
+
+    padding: 14px 16px !important;
+
+    box-sizing: border-box;
+
+    background: #ffffff !important;
+
+    border: 1px solid #e2e2e2 !important;
+
+    border-radius: 6px !important;
+
+    color: #777 !important;
+
+    font-size: 13px !important;
+
+    line-height: 1.6 !important;
+
+    text-align: left;
+}
+
+
+/* =========================================================
+   THÔNG TIN ĐƠN HÀNG
+   ========================================================= */
+
+main.max-w-2xl > div.bg-white {
+    width: 700px !important;
+
+    max-width: 100% !important;
+
+    margin: 0 !important;
+
+    padding: 16px 18px !important;
+
+    box-sizing: border-box;
+
+    background: #ffffff !important;
+
+    border: 1px solid #e3e3e3 !important;
+
+    border-radius: 6px !important;
+
+    box-shadow: none !important;
+
+    text-align: left;
+}
+
+
+/* =========================================================
+   TỪNG DÒNG THÔNG TIN
+   ========================================================= */
+
+main.max-w-2xl > div.bg-white > div {
+    width: 100% !important;
+
+    min-height: 38px;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: space-between !important;
+
+    gap: 25px;
+
+    padding: 8px 0 !important;
+
+    box-sizing: border-box;
+
+    font-size: 13px !important;
+
+    line-height: 1.5 !important;
+}
+
+
+/* =========================================================
+   NHÃN BÊN TRÁI
+   ========================================================= */
+
+main.max-w-2xl > div.bg-white span.text-gray-500,
+main.max-w-2xl > div.bg-white span.text-gray-700 {
+    color: #777 !important;
+
+    font-weight: 400 !important;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   GIÁ TRỊ BÊN PHẢI
+   ========================================================= */
+
+main.max-w-2xl > div.bg-white span.font-semibold {
+    color: #333 !important;
+
+    font-weight: 600 !important;
+
+    text-align: right;
+
+    margin-left: auto;
+}
+
+
+/* =========================================================
+   DÒNG TỔNG CỘNG
+   ========================================================= */
+
+main.max-w-2xl > div.bg-white > div:last-child {
+    margin-top: 5px !important;
+
+    padding-top: 12px !important;
+
+    border-top: 1px solid #eeeeee !important;
+}
+
+
+/* =========================================================
+   GIÁ TỔNG CỘNG
+   ========================================================= */
+
+main.max-w-2xl > div.bg-white span.text-indigo-600 {
+    color: #2563eb !important;
+
+    font-size: 16px !important;
+
+    font-weight: 700 !important;
+}
+
+
+/* =========================================================
+   KHU VỰC 2 NÚT
+   ========================================================= */
+
+main.max-w-2xl > div.flex.flex-col {
+    width: 700px !important;
+
+    max-width: 100% !important;
+
+    margin: 18px 0 0 !important;
+
+    display: flex !important;
+
+    /* QUAN TRỌNG: CHO 2 NÚT NẰM NGANG */
+    flex-direction: row !important;
+
+    align-items: center !important;
+
+    gap: 12px !important;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CẢ 2 NÚT
+   ========================================================= */
+
+main.max-w-2xl > div.flex.flex-col a {
+    flex: 1 1 0 !important;
+
+    width: auto !important;
+
+    min-width: 0 !important;
+
+    min-height: 42px;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    padding: 10px 15px !important;
+
+    box-sizing: border-box;
+
+    border-radius: 20px !important;
+
+    font-size: 13px !important;
+
+    font-weight: 600 !important;
+
+    line-height: 20px !important;
+
+    text-align: center;
+
+    text-decoration: none;
+
+    transition: background 0.2s ease;
+}
+
+
+/* =========================================================
+   NÚT TIẾP TỤC MUA SẮM
+   ========================================================= */
+
+main.max-w-2xl > div.flex.flex-col a:first-child {
+    background: #2563eb !important;
+
+    color: #ffffff !important;
+}
+
+
+main.max-w-2xl > div.flex.flex-col a:first-child:hover {
+    background: #1d4ed8 !important;
+}
+
+
+/* =========================================================
+   NÚT VỀ TRANG CHỦ
+   ========================================================= */
+
+main.max-w-2xl > div.flex.flex-col a:last-child {
+    background: #f1f1f1 !important;
+
+    color: #555 !important;
+}
+
+
+main.max-w-2xl > div.flex.flex-col a:last-child:hover {
+    background: #e5e5e5 !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    main.max-w-2xl {
+        padding: 35px 25px 50px !important;
+    }
+
+
+    main.max-w-2xl > h1,
+    main.max-w-2xl > p,
+    main.max-w-2xl > div.bg-white,
+    main.max-w-2xl > div.flex.flex-col {
+        width: 100% !important;
+
+        max-width: 700px !important;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - ĐIỆN THOẠI
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    main.max-w-2xl {
+        width: 100% !important;
+
+        max-width: 100% !important;
+
+        min-height: calc(100vh - 60px);
+
+        padding: 28px 16px 40px !important;
+    }
+
+
+    /* Icon */
+    main.max-w-2xl > div:first-child {
+        width: 62px !important;
+
+        height: 62px !important;
+
+        flex-basis: 62px !important;
+    }
+
+
+    main.max-w-2xl > div:first-child svg {
+        width: 52px !important;
+
+        height: 52px !important;
+    }
+
+
+    /* Tiêu đề */
+    main.max-w-2xl > h1 {
+        width: 100% !important;
+
+        font-size: 16px !important;
+
+        padding: 13px 10px !important;
+    }
+
+
+    /* Lời cảm ơn */
+    main.max-w-2xl > p {
+        width: 100% !important;
+
+        font-size: 11px !important;
+
+        padding: 12px !important;
+    }
+
+
+    /* Thông tin */
+    main.max-w-2xl > div.bg-white {
+        width: 100% !important;
+
+        padding: 12px !important;
+    }
+
+
+    main.max-w-2xl > div.bg-white > div {
+        font-size: 11px !important;
+
+        gap: 10px;
+    }
+
+
+    /* =====================================================
+       MOBILE: 2 NÚT CHUYỂN VỀ DỌC
+       ===================================================== */
+
+    main.max-w-2xl > div.flex.flex-col {
+        width: 100% !important;
+
+        flex-direction: column !important;
+
+        gap: 8px !important;
+    }
+
+
+    main.max-w-2xl > div.flex.flex-col a {
+        width: 100% !important;
+
+        flex: none !important;
+
+        min-height: 40px;
+    }
+}
+
+/* =========================================================
+   DÒNG TỔNG CỘNG - CANH THẲNG VỚI CÁC DÒNG PHÍA TRÊN
+   ========================================================= */
+
+main.max-w-2xl > div.bg-white > div:last-child {
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    align-items: center !important;
+
+    justify-content: space-between !important;
+
+    width: 100% !important;
+
+    margin-top: 5px !important;
+
+    padding-top: 12px !important;
+
+    border-top: 1px solid #eeeeee !important;
+
+    box-sizing: border-box;
+}
+
+
+/* Chữ "Tổng cộng" bên trái */
+main.max-w-2xl > div.bg-white > div:last-child > span:first-child {
+    margin-left: 0 !important;
+
+    text-align: left !important;
+
+    color: #333 !important;
+
+    font-weight: 600 !important;
+}
+
+
+/* Giá trị bên phải */
+main.max-w-2xl > div.bg-white > div:last-child > span:last-child {
+    margin-left: auto !important;
+
+    text-align: right !important;
+
+    color: #2563eb !important;
+
+    font-size: 16px !important;
+
+    font-weight: 700 !important;
+}
