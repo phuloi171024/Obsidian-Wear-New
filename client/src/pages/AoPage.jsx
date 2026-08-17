@@ -185,7 +185,7 @@ export default function AoPage() {
                     <Link to={`/product/${product.id}`} className="card-link">
                       <div className="card-img-wrapper" style={{ position: "relative" }}>
                         <img
-                          src={product.images && product.images.length > 0 ? product.images[0].image_url : "/images/placeholder.png"}
+                          src={product.thumbnail ? product.thumbnail : "/images/placeholder.png"}
                           alt={product.name}
                         />
                         <button

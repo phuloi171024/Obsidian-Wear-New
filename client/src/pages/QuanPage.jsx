@@ -238,12 +238,9 @@ export default function QuanPage() {
                   <div key={product.id} className="product-card-item">
                     <Link to={`/product/${product.id}`} className="card-link">
                       <div className="card-img-wrapper" style={{ position: "relative" }}>
+                        {/* ĐÃ SỬA: Lấy ảnh từ product.thumbnail */}
                         <img
-                          src={
-                            product.images && product.images.length > 0
-                              ? product.images[0].image_url
-                              : "/images/placeholder.png"
-                          }
+                          src={product.thumbnail ? product.thumbnail : "/images/placeholder.png"}
                           alt={product.name}
                         />
                         <button
@@ -295,12 +292,9 @@ export default function QuanPage() {
           <div className="custom-modal-box variant-modal">
             <h3>Tuỳ chọn sản phẩm</h3>
             <div className="variant-product-info">
+              {/* ĐÃ SỬA: Lấy ảnh từ activeProduct.thumbnail */}
               <img
-                src={
-                  activeProduct.images && activeProduct.images.length > 0
-                    ? activeProduct.images[0].image_url
-                    : "/images/placeholder.png"
-                }
+                src={activeProduct.thumbnail ? activeProduct.thumbnail : "/images/placeholder.png"}
                 alt={activeProduct.name}
               />
               <div>

@@ -147,5 +147,6 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     // 3.8. Quản Lý Mã Giảm Giá (Coupons)
     Route::apiResource('/coupons', AdminCouponController::class);
 Route::delete('/coupons/bulk', [CouponController::class, 'bulkDestroy']);
-    
+// API dùng để upload ảnh (nhớ dùng method POST)
+Route::post('/products/{id}/image', [AdminProductController::class, 'updateImage']);  
 });

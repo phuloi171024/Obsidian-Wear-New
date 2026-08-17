@@ -520,15 +520,12 @@ export default function ProductDetail() {
       <div className="product-detail">
         <div className="product-image">
           <img
-            src={
-              product.images &&
-              product.images.length > 0
-                ? product.images[0].image_url
-                : "/images/placeholder.png"
-            }
-            alt={product.name}
-            className="product-main-image"
-          />
+  src={
+    product.thumbnail ? product.thumbnail : "/images/placeholder.png"
+  }
+  alt={product.name}
+  className="product-main-image"
+/>
         </div>
 
         <div className="product-info">

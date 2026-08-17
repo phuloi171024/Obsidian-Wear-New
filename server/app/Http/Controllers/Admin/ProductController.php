@@ -9,6 +9,8 @@ use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+// NHỚ THÊM DÒNG NÀY ĐỂ DÙNG CLOUDINARY
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProductController extends Controller
 {
@@ -271,5 +273,66 @@ class ProductController extends Controller
         $variant->delete();
 
         return response()->json(['message' => 'Đã xoá biến thể!']);
+    }
+
+    /**
+     * [THÊM MỚI] Cập nhật ảnh đại diện (thumbnail) cho sản phẩm
+     * POST /admin/products/{id}/image
+     */
+    /**
+     * [THÊM MỚI] Cập nhật ảnh đại diện (thumbnail) cho sản phẩm
+     * POST /admin/products/{id}/image
+     */
+    public function updateImage(Request $request, int $id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không tìm thấy sản phẩm!'
+            ], 404);
+        }
+
+        $request->validate([
+            'image_file' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+        ]);
+
+        if ($request->hasFile('image_file')) {
+            try {
+                // CHỮA CHÁY: Khởi tạo trực tiếp Cloudinary bằng Link của em 
+                // Cách này sẽ bypass 100% lỗi cache .env của Laravel
+                $cloudinary = new \Cloudinary\Cloudinary('cloudinary://383195926683889:7bIeBEpS5bL44Nh_sVdnrC_j4r4@si8y1azq');
+                
+                // Gọi hàm up ảnh
+                $result = $cloudinary->uploadApi()->upload($request->file('image_file')->getRealPath(), [
+                    'folder' => 'obsidian_wear/products'
+                ]);
+
+                // Lấy đường dẫn an toàn (https)
+                $uploadedFileUrl = $result['secure_url'];
+
+                // Lưu vào Database
+                $product->thumbnail = $uploadedFileUrl;
+                $product->save();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Cập nhật ảnh sản phẩm thành công!',
+                    'thumbnail_url' => $uploadedFileUrl
+                ], 200);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Lỗi khi tải ảnh lên Cloudinary: ' . $e->getMessage()
+                ], 500);
+            }
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Vui lòng chọn một file ảnh.'
+        ], 400);
     }
 }

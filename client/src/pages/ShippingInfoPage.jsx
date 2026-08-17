@@ -25,6 +25,12 @@ export default function ShippingInfoPage() {
   });
   const [errors, setErrors] = useState({});
 
+  // ==========================================
+  // [THÊM MỚI] STATE: LƯU TRỮ SỔ ĐỊA CHỈ
+  // ==========================================
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+
   // --- STATE GIỎ HÀNG (KẾT NỐI API) ---
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,18 +54,49 @@ export default function ShippingInfoPage() {
     };
   };
 
-  // 1. GỌI API LẤY GIỎ HÀNG THẬT
+  // 1. GỌI API LẤY GIỎ HÀNG VÀ SỔ ĐỊA CHỈ
   useEffect(() => {
-    const fetchCart = async () => {
+    const fetchCartAndAddresses = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:8000/api/cart", { headers: getHeaders() });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          setCartItems(data.data);
-        } else {
-          if (res.status === 401) navigate("/login");
+        // Chạy song song 2 API: Lấy giỏ hàng và Lấy sổ địa chỉ
+        const [cartRes, addressRes] = await Promise.all([
+          fetch("http://localhost:8000/api/cart", { headers: getHeaders() }),
+          fetch("http://localhost:8000/api/user/addresses", { headers: getHeaders() })
+        ]);
+
+        // 1.1 Xử lý Giỏ hàng
+        const cartData = await cartRes.json();
+        if (cartRes.ok && cartData.success) {
+          setCartItems(cartData.data);
+        } else if (cartRes.status === 401) {
+          navigate("/login");
+          return;
         }
+
+        // 1.2 Xử lý Sổ địa chỉ
+        if (addressRes.ok) {
+          const addressData = await addressRes.json();
+          const addrs = addressData.data || [];
+          
+          if (addrs.length > 0) {
+            // Sắp xếp ưu tiên địa chỉ mặc định lên đầu
+            const sortedAddrs = addrs.sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0));
+            setSavedAddresses(sortedAddrs);
+
+            // Tự động điền địa chỉ mặc định (hoặc địa chỉ đầu tiên) vào Form
+            const defaultAddr = sortedAddrs[0];
+            setSelectedAddressId(defaultAddr.id);
+            setForm({
+              name: defaultAddr.receiver_name || "",
+              phone: defaultAddr.phone || "",
+              // Gộp Số nhà, Tên đường, Phường, Quận vào ô Địa chỉ
+              address: `${defaultAddr.street}, ${defaultAddr.ward}, ${defaultAddr.district}`,
+              city: defaultAddr.province || "",
+            });
+          }
+        }
+
       } catch (error) {
         toast.error("Lỗi kết nối máy chủ");
       } finally {
@@ -67,15 +104,41 @@ export default function ShippingInfoPage() {
       }
     };
 
-    // Kiểm tra xem trang trước có lưu mã giảm giá không (nếu có thì apply luôn)
+    // Kiểm tra xem trang trước có lưu mã giảm giá không
     const savedVouchers = JSON.parse(localStorage.getItem("applied_vouchers"));
     if (savedVouchers) {
       if (savedVouchers.product) setAppliedProductVoucher(savedVouchers.product);
       if (savedVouchers.shipping) setAppliedShippingVoucher(savedVouchers.shipping);
     }
 
-    fetchCart();
+    fetchCartAndAddresses();
   }, [navigate]);
+
+  // ==========================================
+  // [THÊM MỚI] HÀM XỬ LÝ KHI CHỌN ĐỊA CHỈ TỪ DROPDOWN
+  // ==========================================
+  const handleSelectAddress = (e) => {
+    const id = e.target.value;
+    setSelectedAddressId(id);
+
+    if (!id) {
+      // Nếu khách hàng chọn "Nhập địa chỉ mới" -> Xóa trắng form
+      setForm({ name: "", phone: "", address: "", city: "" });
+      return;
+    }
+
+    // Tìm địa chỉ được chọn và tự động dán thông tin
+    const addr = savedAddresses.find((a) => a.id.toString() === id);
+    if (addr) {
+      setForm({
+        name: addr.receiver_name || "",
+        phone: addr.phone || "",
+        address: `${addr.street}, ${addr.ward}, ${addr.district}`,
+        city: addr.province || "",
+      });
+      setErrors({}); // Xóa thông báo lỗi nếu có
+    }
+  };
 
   // 2. GỌI API LẤY DANH SÁCH MÃ TỪ DB
   const fetchCoupons = async () => {
@@ -131,22 +194,37 @@ export default function ShippingInfoPage() {
     }
   };
 
-  // --- XỬ LÝ FORM ĐIỀN THÔNG TIN[cite: 13] ---
+  // --- XỬ LÝ FORM ĐIỀN THÔNG TIN ---
   const handleChange = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+    // Nếu user tự gõ thông tin, bỏ chọn dropdown "Sổ địa chỉ"
+    setSelectedAddressId("");
   };
 
+  // --- HÀM KIỂM TRA LỖI (VALIDATE) ---
   const validate = () => {
     const newErrors = {};
-    if (!form.name.trim()) newErrors.name = "Vui lòng nhập họ tên người nhận";
+    if (!form.name.trim()) {
+      newErrors.name = "Vui lòng nhập họ tên người nhận";
+    }
+    
     if (!form.phone.trim()) {
       newErrors.phone = "Vui lòng nhập số điện thoại";
     } else if (!/^[0-9]{9,11}$/.test(form.phone.trim())) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
+      newErrors.phone = "Số điện thoại không hợp lệ (Phải từ 9-11 số)";
     }
-    if (!form.address.trim()) newErrors.address = "Vui lòng nhập địa chỉ";
-    if (!form.city.trim()) newErrors.city = "Vui lòng nhập tỉnh/thành phố";
+    
+    if (!form.address.trim()) {
+      newErrors.address = "Vui lòng nhập địa chỉ nhận hàng";
+    }
+    
+    if (!form.city.trim()) {
+      newErrors.city = "Vui lòng nhập tỉnh/thành phố";
+    }
+    
     return newErrors;
   };
 
@@ -171,12 +249,13 @@ export default function ShippingInfoPage() {
   // CHUYỂN TRANG THANH TOÁN
   const handleSubmit = () => {
     const newErrors = validate();
+    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      toast.error("Vui lòng nhập đầy đủ thông tin giao hàng!");
       return;
     }
     
-    // Lưu thông tin khách hàng và mã giảm giá để trang Payment xử lý
     localStorage.setItem("shipping_info", JSON.stringify(form));
     localStorage.setItem("applied_vouchers", JSON.stringify({
       product: appliedProductVoucher,
@@ -260,10 +339,33 @@ export default function ShippingInfoPage() {
                 Thông tin giao hàng
               </h2>
 
+              {/* ========================================== */}
+              {/* [THÊM MỚI] GIAO DIỆN CHỌN SỔ ĐỊA CHỈ */}
+              {/* ========================================== */}
+              {savedAddresses.length > 0 && (
+                <div className="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <label className="text-sm font-semibold text-blue-800 mb-2 flex items-center">
+                    <FaMapMarkerAlt className="mr-2" /> Chọn địa chỉ đã lưu (Sổ địa chỉ)
+                  </label>
+                  <select
+                    value={selectedAddressId}
+                    onChange={handleSelectAddress}
+                    className="w-full border border-blue-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 bg-white"
+                  >
+                    <option value="">-- Tạo một địa chỉ giao hàng mới --</option>
+                    {savedAddresses.map((addr) => (
+                      <option key={addr.id} value={addr.id}>
+                        [{addr.type}] {addr.receiver_name} - {addr.phone} - {addr.street}, {addr.ward}, {addr.district}, {addr.province}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
-                    Họ tên người nhận
+                    Họ tên người nhận <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -272,8 +374,8 @@ export default function ShippingInfoPage() {
                     placeholder="Nhập họ tên người nhận"
                     className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
                       errors.name
-                        ? "border-red-400 focus:border-red-400 focus:ring-red-300"
-                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-400"
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
                     }`}
                   />
                   {errors.name && (
@@ -283,7 +385,7 @@ export default function ShippingInfoPage() {
 
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
-                    Số điện thoại
+                    Số điện thoại <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -292,8 +394,8 @@ export default function ShippingInfoPage() {
                     placeholder="Nhập số điện thoại"
                     className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
                       errors.phone
-                        ? "border-red-400 focus:border-red-400 focus:ring-red-300"
-                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-400"
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
                     }`}
                   />
                   {errors.phone && (
@@ -303,17 +405,17 @@ export default function ShippingInfoPage() {
 
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
-                    Địa chỉ
+                    Địa chỉ chi tiết (Số nhà, Tên đường, Phường/Xã) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.address}
                     onChange={handleChange("address")}
-                    placeholder="Nhập địa chỉ nhận hàng"
+                    placeholder="Nhập số nhà, tên đường, phường/xã..."
                     className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
                       errors.address
-                        ? "border-red-400 focus:border-red-400 focus:ring-red-300"
-                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-400"
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
                     }`}
                   />
                   {errors.address && (
@@ -323,7 +425,7 @@ export default function ShippingInfoPage() {
 
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
-                    Tỉnh/Thành phố
+                    Tỉnh/Thành phố <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -332,8 +434,8 @@ export default function ShippingInfoPage() {
                     placeholder="Nhập tỉnh/thành phố"
                     className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
                       errors.city
-                        ? "border-red-400 focus:border-red-400 focus:ring-red-300"
-                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-400"
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
                     }`}
                   />
                   {errors.city && (
@@ -454,7 +556,7 @@ export default function ShippingInfoPage() {
                 <span className="text-xl font-bold text-red-500">{new Intl.NumberFormat('vi-VN').format(total)}đ</span>
               </div>
 
-              {/* NÚT THANH TOÁN (Màu cam đặc trưng) */}
+              {/* NÚT THANH TOÁN */}
               <button
                 onClick={handleSubmit}
                 className="w-full bg-[#f26522] hover:bg-[#e05515] text-white font-bold py-3.5 rounded-full transition shadow-md"

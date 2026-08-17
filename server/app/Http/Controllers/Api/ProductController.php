@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProductController extends Controller
 {
@@ -14,16 +15,28 @@ class ProductController extends Controller
      */
     public function home()
     {
+        // 1. Sản phẩm mới nhất (Logic thật: lấy sản phẩm mới nhất dựa vào created_at)
         $newestProducts = Product::with(['category', 'brand', 'images', 'variants'])
             ->where('status', true)
             ->latest()
             ->take(8)
             ->get();
 
-        // [THÊM MỚI]: Lấy sản phẩm bán chạy (Tạm dùng inRandomOrder để giả lập)
+        // 2. [ĐÃ CẬP NHẬT CHUẨN 100%]: Sản phẩm bán chạy (Logic thật tính từ đơn hàng)
         $bestSellingProducts = Product::with(['category', 'brand', 'images', 'variants'])
-            ->where('status', true)
-            ->inRandomOrder()
+            ->where('products.status', true)
+            ->select('products.*')
+            // Sử dụng truy vấn con (Subquery) để tính tổng số lượng đã bán của sản phẩm này
+            ->addSelect(\Illuminate\Support\Facades\DB::raw('(
+                SELECT COALESCE(SUM(oi.quantity), 0)
+                FROM order_items oi
+                JOIN product_variants pv ON pv.id = oi.product_variant_id
+                JOIN orders o ON o.id = oi.order_id
+                WHERE pv.product_id = products.id 
+                AND o.status = "completed"
+            ) as total_sold'))
+            ->orderByDesc('total_sold') // Sắp xếp giảm dần theo số lượng đã bán
+            ->latest()                  // Nếu có nhiều sản phẩm chưa bán được cái nào (tổng = 0), ưu tiên hiện sản phẩm mới
             ->take(8)
             ->get();
 
@@ -33,7 +46,6 @@ class ProductController extends Controller
             'status' => true,
             'data' => [
                 'newest_products' => $newestProducts,
-                // [THÊM MỚI]: Gửi thêm dữ liệu bán chạy ra cho Frontend
                 'best_selling_products' => $bestSellingProducts,
                 'featured_categories' => $featuredCategories,
             ]

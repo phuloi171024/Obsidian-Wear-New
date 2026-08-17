@@ -430,13 +430,9 @@ export default function ProductPage() {
                         style={{ position: "relative" }}
                       >
                         <img
-                          src={
-                            product.images && product.images.length > 0
-                              ? product.images[0].image_url
-                              : "/images/placeholder.png"
-                          }
-                          alt={product.name}
-                        />
+  src={product.thumbnail ? product.thumbnail : "/images/placeholder.png"}
+  alt={product.name}
+/>
                         <button
                           onClick={(e) => handleToggleWishlist(e, product.id)}
                           title="Yêu thích"
@@ -519,14 +515,10 @@ export default function ProductPage() {
             <h3>Tuỳ chọn sản phẩm</h3>
 
             <div className="variant-product-info">
-              <img
-                src={
-                  activeProduct.images && activeProduct.images.length > 0
-                    ? activeProduct.images[0].image_url
-                    : "/images/placeholder.png"
-                }
-                alt={activeProduct.name}
-              />
+             <img
+  src={activeProduct.thumbnail ? activeProduct.thumbnail : "/images/placeholder.png"}
+  alt={activeProduct.name}
+/>
 
               <div>
                 <h4>{activeProduct.name}</h4>

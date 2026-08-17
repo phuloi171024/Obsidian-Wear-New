@@ -28,10 +28,7 @@ export default function ProductCard({ product, badgeText }) {
       {/* Bấm vào ảnh chuyển sang trang chi tiết */}
       <Link to={`/product/${product.id}`} className="card-link">
         <div className="card-img-wrapper">
-          <img
-            src={product.images && product.images.length > 0 ? product.images[0].image_url : "/images/placeholder.png"}
-            alt={product.name}
-          />
+          <img src={product.thumbnail ? product.thumbnail : "/images/placeholder.png"} />
         </div>
         <div className="card-info">
           <h4 className="product-name">{product.name}</h4>

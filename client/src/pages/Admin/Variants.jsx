@@ -3,13 +3,6 @@ import {
   FiSearch,
   FiEdit,
   FiTrash2,
-  FiEye,
-  FiPlus,
-  FiSave,
-  FiChevronLeft,
-  FiChevronRight,
-  FiChevronsLeft,
-  FiChevronsRight,
   FiBox,
   FiShoppingBag,
   FiXCircle,
@@ -24,6 +17,12 @@ export default function Variants() {
   const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+
+  // ==========================================
+  // THÊM MỚI: STATE DÀNH CHO PHÂN TRANG
+  // ==========================================
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // Cài đặt số lượng biến thể muốn hiển thị trên 1 trang
 
   // Thống kê tổng quan
   const [stats, setStats] = useState({
@@ -44,8 +43,8 @@ export default function Variants() {
 
     try {
       setLoading(true);
-      // Gọi danh sách sản phẩm kèm theo biến thể của chúng từ Backend
-      const res = await fetch(`http://localhost:8000/api/admin/products?search=${keyword}`, {
+      // Ép lấy 1000 sản phẩm để chắc chắn gom được toàn bộ biến thể của cả web
+      const res = await fetch(`http://localhost:8000/api/admin/products?per_page=1000&search=${keyword}`, {
         headers: {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -54,14 +53,13 @@ export default function Variants() {
       const data = await res.json();
 
       if (res.ok) {
-        const productsList = data.data || [];
+        const productsList = Array.isArray(data) ? data : (data.data || []);
         let allVariantsList = [];
         let totalCount = 0;
         let sellingCount = 0;
         let outCount = 0;
         let lowCount = 0;
 
-        // Gom tất cả biến thể của các sản phẩm lại thành một mảng tổng
         productsList.forEach(prod => {
           if (prod.variants && prod.variants.length > 0) {
             prod.variants.forEach(v => {
@@ -105,6 +103,9 @@ export default function Variants() {
           out: outCount,
           low: lowCount
         });
+        
+        // Reset về trang 1 mỗi khi lấy lại dữ liệu (hoặc khi search)
+        setCurrentPage(1);
       }
     } catch (error) {
       toast.error("Không thể tải danh sách biến thể!");
@@ -189,6 +190,19 @@ export default function Variants() {
     return new Intl.NumberFormat('vi-VN').format(amount);
   };
 
+  // ==========================================
+  // THÊM MỚI: LOGIC TÍNH TOÁN PHÂN TRANG
+  // ==========================================
+  // 1. Tính toán index của phần tử đầu và phần tử cuối trên trang hiện tại
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  
+  // 2. Cắt mảng tổng (variants) ra thành 1 mảng nhỏ chỉ chứa 10 phần tử để hiển thị
+  const currentVariants = variants.slice(indexOfFirstItem, indexOfLastItem);
+  
+  // 3. Tính tổng số trang
+  const totalPages = Math.ceil(variants.length / itemsPerPage);
+
   return (
     <div className="variants-page">
       <Toaster position="top-right" />
@@ -198,7 +212,7 @@ export default function Variants() {
         <FiSearch />
         <input
           type="text"
-          placeholder="Tìm kiếm theo tên sản phẩm hoặc SKU (Nhấn Enter)..."
+          placeholder="Tìm kiếm theo tên sản phẩm (Nhấn Enter)..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={handleSearch}
@@ -271,7 +285,8 @@ export default function Variants() {
             ) : variants.length === 0 ? (
               <tr><td colSpan="10" style={{ textAlign: "center", padding: "40px", color: "#888" }}>Không tìm thấy biến thể nào.</td></tr>
             ) : (
-              variants.map((item) => (
+              // BƯỚC ĐỔI QUAN TRỌNG: Render từ mảng "currentVariants" thay vì mảng gốc
+              currentVariants.map((item) => (
                 <tr key={item.id}>
                   <td className="check-column"><input type="checkbox" /></td>
                   <td>
@@ -306,6 +321,37 @@ export default function Variants() {
           </tbody>
         </table>
       </div>
+
+      {/* ==========================================
+          THÊM MỚI: GIAO DIỆN NÚT BẤM PHÂN TRANG 
+          ========================================== */}
+      {totalPages > 1 && (
+        <div className="pagination" style={{ marginTop: "20px" }}>
+          <button 
+            disabled={currentPage === 1} 
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            {"<"}
+          </button>
+          
+          {[...Array(totalPages)].map((_, i) => (
+            <button 
+              key={i + 1} 
+              className={currentPage === i + 1 ? "active" : ""} 
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button 
+            disabled={currentPage === totalPages} 
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            {">"}
+          </button>
+        </div>
+      )}
 
       {/* MODAL CHỈNH SỬA BIẾN THỂ */}
       {editModal.show && (

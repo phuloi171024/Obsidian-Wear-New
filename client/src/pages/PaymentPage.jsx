@@ -9,17 +9,16 @@ export default function PaymentPage() {
   const [activeTab, setActiveTab] = useState('cod');
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState({
-    code: 'ORD' + Math.floor(10000000 + Math.random() * 90000000),
     total: '0',
     rawTotal: 0,
     method: 'Thanh toán khi nhận hàng (COD)',
   });
   const navigate = useNavigate();
 
-  // THÊM: State quản lý Ghi chú đơn hàng
+  // State quản lý Ghi chú đơn hàng
   const [note, setNote] = useState("");
 
-  // SỬA LẠI ĐOẠN NÀY ĐỂ ĐỌC ĐÚNG MẢNG GIỎ HÀNG TỪ CartController.php
+  // SỬA LẠI HÀM NÀY ĐỂ TÍNH TIỀN GỒM CẢ PHÍ SHIP VÀ MÃ GIẢM GIÁ
   useEffect(() => {
     const fetchCartAndOrderInfo = async () => {
       const token = localStorage.getItem("access_token") || localStorage.getItem("token");
@@ -35,21 +34,32 @@ export default function PaymentPage() {
         });
         const data = await res.json();
         
-        // Kiểm tra đúng cấu trúc phản hồi từ CartController.php (data.success và data.data là mảng)
         if (res.ok && data.success && Array.isArray(data.data)) {
-          // Tính tổng tiền dựa trên giá sản phẩm và số lượng trong giỏ hàng thực tế
-          const calculatedTotal = data.data.reduce((sum, item) => {
+          // 1. Tính tổng tiền hàng gốc
+          const subtotal = data.data.reduce((sum, item) => {
             const price = item.product_variant?.product?.price || item.product_variant?.price || 0;
             return sum + (price * item.quantity);
           }, 0);
 
-          const finalTotal = calculatedTotal > 0 ? calculatedTotal : 0;
+          // 2. Tính số lượng để ra phí ship (Giống y hệt CartPage)
+          const totalQuantity = data.data.reduce((sum, item) => sum + item.quantity, 0);
+          const baseShippingFee = data.data.length > 0 ? (totalQuantity >= 3 ? 0 : 30000) : 0;
+
+          // 3. Lấy mã giảm giá từ LocalStorage để trừ đi
+          const appliedVouchers = JSON.parse(localStorage.getItem("applied_vouchers") || "{}");
+          const productDiscount = appliedVouchers.product ? Number(appliedVouchers.product.discount_value) : 0;
+          const shippingDiscount = appliedVouchers.shipping ? Math.min(Number(appliedVouchers.shipping.discount_value), baseShippingFee) : 0;
+
+          // 4. Tính tổng tiền cuối cùng (Giá gốc + Ship - Giảm giá)
+          const finalShippingFee = baseShippingFee - shippingDiscount;
+          const finalTotal = Math.max(0, subtotal + finalShippingFee - productDiscount);
+
           const formattedTotal = Number(finalTotal).toLocaleString('vi-VN');
 
           setOrder(prev => ({
             ...prev,
-            total: formattedTotal,
-            rawTotal: Number(finalTotal),
+            total: formattedTotal,     // Hiển thị ra màn hình (VD: 370.000)
+            rawTotal: Number(finalTotal), // Đẩy xuống DB cho Backend
           }));
         }
       } catch (error) {
@@ -59,7 +69,6 @@ export default function PaymentPage() {
 
     fetchCartAndOrderInfo();
   }, []);
-
 
 // API ĐẶT HÀNG VÀ THANH TOÁN
   const handleConfirmOrder = async () => {
@@ -95,13 +104,13 @@ export default function PaymentPage() {
           payment_method: activeTab,
           total_price: order.rawTotal,
           address_id: addressId || null, 
-          note: note                     
+          note: note,   
+          coupon_id: couponId                  
         })
       });
 
       const orderData = await orderRes.json();
 
-      // =========== THAY THẾ ĐOẠN BẮT LỖI NÀY ===========
       if (!orderRes.ok || !orderData.status) {
         // Bắt riêng lỗi 400 (Giỏ hàng trống do đã bấm tạo đơn trước đó)
         if (orderRes.status === 400) {
@@ -118,7 +127,9 @@ export default function PaymentPage() {
         setLoading(false);
         return;
       }
+      
       const realOrderId = orderData.order_id;
+      
       // 2. XỬ LÝ THEO PHƯƠNG THỨC THANH TOÁN
       if (activeTab === 'sepay' || activeTab === 'vnpay') {
         // GỌI API TẠO LINK VNPAY VỚI ID ĐƠN HÀNG THẬT
@@ -164,7 +175,7 @@ export default function PaymentPage() {
 
   const steps = [
     { label: 'Giỏ hàng', icon: FaShoppingCart, status: 'done', href: '/cart' },
-    { label: 'Thông tin giao hàng', icon: FaMapMarkerAlt, status: 'done', href: '/ShippingInfoPage' },
+    { label: 'Thông tin giao hàng', icon: FaMapMarkerAlt, status: 'done', href: '/shipping-info' }, // ĐÃ SỬA THÀNH '/shipping-info'
     { label: 'Thanh toán', icon: FaCheck, status: 'active', href: null },
   ];
 
@@ -256,8 +267,8 @@ export default function PaymentPage() {
               <h3>{activeTab === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán trực tuyến (VNPay)'}</h3>
             </div>
 
+            {/* ĐÃ XÓA DÒNG MÃ ĐƠN HÀNG ẢO (ORD...) TẠI ĐÂY */}
             <div className="space-y-2.5 text-sm">
-              <p className="text-gray-600"><span className="font-semibold text-gray-800">Mã đơn hàng:</span> {order.code}</p>
               <p className="text-gray-600"><span className="font-semibold text-gray-800">Tổng tiền cần thanh toán:</span> <span className="text-red-500 font-bold text-base">{order.total} đ</span></p>
               <p className="text-gray-600"><span className="font-semibold text-gray-800">Phương thức:</span> {activeTab === 'cod' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản / Quét mã VNPay'}</p>
             </div>
@@ -296,7 +307,6 @@ export default function PaymentPage() {
               </div>
             )}
 
-            {/* THÊM MỚI: FORM NHẬP GHI CHÚ ĐƠN HÀNG GIỮA HƯỚNG DẪN VÀ NÚT BẤM */}
             <div className="mt-6">
               <label className="block text-sm font-semibold text-gray-800 mb-2">Ghi chú đơn hàng (Không bắt buộc)</label>
               <textarea
@@ -319,7 +329,7 @@ export default function PaymentPage() {
               </button>
 
               <button
-                onClick={() => navigate('/ShippingInfoPage')}
+                onClick={() => navigate('/shipping-info')} // ĐÃ SỬA THÀNH '/shipping-info'
                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-3 px-4 rounded-xl transition-colors cursor-pointer"
               >
                 Quay lại chi tiết đơn hàng

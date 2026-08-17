@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiCheck, FiLayers } from "react-icons/fi";
+import React, { useState, useEffect, useRef } from "react";
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiCheck, FiLayers, FiImage, FiUploadCloud } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import "./Admin.css";
@@ -36,6 +36,12 @@ export default function Products() {
   const [productVariants, setProductVariants] = useState([]);
   const [newVariant, setNewVariant] = useState({ color: "", size: "", stock: 10 });
 
+  // ==========================================
+  // THÊM: STATE & REF CHO CHỨC NĂNG UP ẢNH
+  // ==========================================
+  const [uploadingId, setUploadingId] = useState(null);
+  const fileInputRef = useRef(null);
+
   // ================= 1. GỌI API LẤY DANH SÁCH =================
   const fetchProducts = async (page = 1, keyword = "") => {
     const token = localStorage.getItem("access_token");
@@ -52,7 +58,12 @@ export default function Products() {
       const data = await res.json();
 
       if (res.ok) {
-        setProducts(data.data || []);
+        // [ĐÃ SỬA]: Code Cũ của em mong đợi data.data và phân trang.
+        // Tuy nhiên ProductController.php hàm index() trả về mảng trực tiếp trong data.data
+        // Do đó ta điều chỉnh lại cách nhận dữ liệu cho an toàn.
+        const productList = Array.isArray(data.data) ? data.data : (data.data?.data || []);
+        setProducts(productList);
+        
         setCurrentPage(data.current_page || 1);
         setTotalPages(data.last_page || 1);
       }
@@ -192,7 +203,58 @@ export default function Products() {
     }
   };
 
-  // ================= 5. MỞ POPUP BIẾN THỂ THEO SẢN PHẨM =================
+  // ==========================================
+  // [THÊM MỚI]: 5. CHỨC NĂNG UPLOAD ẢNH LÊN CLOUDINARY
+  // ==========================================
+  const triggerFileSelect = (productId) => {
+    setUploadingId(productId);
+    fileInputRef.current.click(); 
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !uploadingId) return;
+
+    // Phải dùng FormData để gói file ảnh
+    const formData = new FormData();
+    formData.append("image_file", file);
+
+    const toastId = toast.loading("Đang tải ảnh lên Cloudinary...");
+
+    try {
+      const token = localStorage.getItem("access_token");
+      
+      const res = await fetch(`http://localhost:8000/api/admin/products/${uploadingId}/image`, {
+        method: "POST",
+        headers: {
+          "Accept": "application/json", // Đã bổ sung header để tránh lỗi CORS/Redirect
+          "Authorization": `Bearer ${token}`
+          // Tuyệt đối không khai báo Content-Type ở đây
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.status) {
+        toast.success("Cập nhật ảnh thành công!", { id: toastId });
+        
+        // Cập nhật lại hình ảnh ngay lập tức trên giao diện
+        setProducts(products.map(p => 
+          p.id === uploadingId ? { ...p, thumbnail: data.thumbnail_url } : p
+        ));
+      } else {
+        toast.error(data.message || "Lỗi khi up ảnh!", { id: toastId });
+      }
+    } catch (error) {
+      toast.error("Không thể kết nối đến máy chủ!", { id: toastId });
+    } finally {
+      setUploadingId(null);
+      e.target.value = null; 
+    }
+  };
+
+  // ================= 6. MỞ POPUP BIẾN THỂ THEO SẢN PHẨM =================
   const openVariantModal = async (product) => {
     setVariantModal({ show: true, product });
     const token = localStorage.getItem("access_token");
@@ -209,7 +271,6 @@ export default function Products() {
     }
   };
 
-  // Thêm biến thể mới trực tiếp trong Popup
   const handleAddVariantInModal = async () => {
     if (!newVariant.color || !newVariant.size) {
       toast.error("Vui lòng nhập màu và size!");
@@ -227,7 +288,7 @@ export default function Products() {
       });
       if (res.ok) {
         toast.success("Thêm biến thể thành công!");
-        openVariantModal(variantModal.product); // Refresh lại popup
+        openVariantModal(variantModal.product); 
         setNewVariant({ color: "", size: "", stock: 10 });
       } else {
         toast.error("Không thể thêm biến thể!");
@@ -244,6 +305,15 @@ export default function Products() {
   return (
     <div className="admin-page">
       <Toaster position="top-right" />
+
+      {/* THẺ INPUT FILE ẨN CHỜ LỆNH UP ẢNH */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept="image/png, image/jpeg, image/jpg, image/webp"
+        onChange={handleFileChange}
+      />
 
       {/* HEADER */}
       <div className="page-header">
@@ -274,7 +344,7 @@ export default function Products() {
           <thead>
             <tr>
               <th width="70">ID</th>
-              <th width="60">Ảnh</th>
+              <th width="120">Hình ảnh</th>
               <th>Tên sản phẩm</th>
               <th>SKU</th>
               <th>Giá bán</th>
@@ -291,13 +361,28 @@ export default function Products() {
               products.map((item) => (
                 <tr key={item.id}>
                   <td>#{item.id}</td>
+                  
+                  {/* [THÊM MỚI]: Cột hiển thị ảnh và nút Upload */}
                   <td>
-                    <img 
-                      src={item.thumbnail || "https://placehold.co/40"} 
-                      alt="" 
-                      style={{ width: "38px", height: "38px", objectFit: "cover", borderRadius: "6px", border: "1px solid #eee" }} 
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '45px', height: '45px', borderRadius: '6px', border: '1px solid #eee', background: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {item.thumbnail ? (
+                          <img src={item.thumbnail} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <FiImage style={{ color: '#9ca3af', fontSize: '20px' }} />
+                        )}
+                      </div>
+                      <button 
+                        onClick={() => triggerFileSelect(item.id)}
+                        disabled={uploadingId === item.id}
+                        style={{ background: '#eff6ff', color: '#2563eb', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold' }}
+                        title="Tải ảnh lên"
+                      >
+                        <FiUploadCloud /> {uploadingId === item.id ? "Đang up" : "Sửa ảnh"}
+                      </button>
+                    </div>
                   </td>
+
                   <td><strong style={{ color: "#111827" }}>{item.name}</strong></td>
                   <td style={{ color: "#6b7280" }}>{item.sku}</td>
                   <td style={{ fontWeight: "600", color: "#10b981" }}>{formatVND(item.price)}</td>
