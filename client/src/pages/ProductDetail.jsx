@@ -17,6 +17,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
+  const [displayImage, setDisplayImage] = useState("");
   const [availableSizes, setAvailableSizes] = useState([]);
   const [availableColors, setAvailableColors] = useState([]);
 
@@ -75,7 +76,7 @@ export default function ProductDetail() {
           }
         }
         setProduct(data);
-
+        setDisplayImage(data.thumbnail || (data.images?.length > 0 ? data.images[0].image_url : "/images/placeholder.png"));
         // Xử lý trích xuất Size và Màu từ variants của database
         if (data.variants && data.variants.length > 0) {
           const sizes = [

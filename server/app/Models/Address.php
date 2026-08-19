@@ -12,7 +12,15 @@ class Address extends Model
 
     // Sửa lại danh sách $fillable khớp chính xác 100% với bảng addresses trong DB
 protected $fillable = [
-    'user_id', 'receiver_name', 'phone', 'province', 'district', 'ward', 'street', 'type', 'is_default'
+    'user_id',
+    'type',
+    'receiver_name',
+    'phone',
+    'province',
+    'district',
+    'ward',
+    'street',
+    'is_default'
 ];
 
     // Địa chỉ thuộc về một người dùng

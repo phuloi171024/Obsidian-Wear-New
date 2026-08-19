@@ -54,23 +54,24 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 Route::post('/coupons/apply', [CouponController::class, 'apply']);
 Route::get('/coupons', [CouponController::class, 'index']);
 
+// VNPay: Return & IPN (ĐÃ GIẢI QUYẾT AC62: Bỏ auth:sanctum cho IPN)
 Route::get('/vnpay/return', [VNPayController::class, 'vnpayReturn']);
+Route::get('/vnpay/ipn', [VNPayController::class, 'vnpayIpn']); 
 
+// Reviews
 Route::get('/products/{productId}/reviews', [ReviewController::class, 'index']);
-
 Route::post('/reviews/{id}/report', [ReviewController::class, 'report']);
+
 /*
 |--------------------------------------------------------------------------
 | 2. CLIENT PROTECTED ROUTES (Cần đăng nhập - Sanctum Token)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
+    // VNPay Create Payment
     Route::post('/vnpay/create', [VNPayController::class, 'createPayment']);
     
-    // Route để VNPay gửi IPN ngầm (Server to Server)
-    Route::get('/vnpay/ipn', [VNPayController::class, 'vnpayIpn']);
-    
-    // Đăng xuất
+    // Đăng xuất & Đổi mật khẩu
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::put('/user/password', [UserController::class, 'updatePassword']);
     
@@ -102,7 +103,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [ClientOrderController::class, 'store']);      
     Route::get('/orders/{id}', [ClientOrderController::class, 'show']);   
     Route::put('/orders/{id}/cancel', [ClientOrderController::class, 'cancel']); 
-  
 });
 
 /*
@@ -110,7 +110,7 @@ Route::middleware('auth:sanctum')->group(function () {
 | 3. ADMIN PROTECTED ROUTES (Khu vực Quản trị Admin)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->group(function () {
 
     // 3.1. Dashboard Thống Kê
     Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -126,6 +126,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::post('/products/{id}/variants', [AdminProductController::class, 'addVariant']);
     Route::put('/products/{id}/variants/{variantId}', [AdminProductController::class, 'updateVariant']);
     Route::delete('/products/{id}/variants/{variantId}', [AdminProductController::class, 'deleteVariant']);
+    Route::post('/products/{id}/image', [AdminProductController::class, 'updateImage']);  
 
     // 3.5. Quản Lý Đơn Hàng (Orders - Dành cho Admin quản lý toàn hệ thống)
     Route::get('/orders', [AdminOrderController::class, 'index']);
@@ -145,8 +146,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::delete('/reviews/{id}', [AdminReviewController::class, 'destroy']);
 
     // 3.8. Quản Lý Mã Giảm Giá (Coupons)
+    Route::post('/coupons/bulk', [AdminCouponController::class, 'bulkDestroy']);
     Route::apiResource('/coupons', AdminCouponController::class);
-Route::delete('/coupons/bulk', [CouponController::class, 'bulkDestroy']);
-// API dùng để upload ảnh (nhớ dùng method POST)
-Route::post('/products/{id}/image', [AdminProductController::class, 'updateImage']);  
+
 });

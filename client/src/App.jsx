@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import Header from './components/Header'; // Chú ý: import ở App.jsx chỉ là ./
+import Header from './components/Header'; 
 
 // Import các trang Client & Tài khoản
 import Home from "./pages/Home";
@@ -35,6 +35,10 @@ import Comments from "./pages/Admin/Comments";
 import Variants from "./pages/Admin/Variants";
 import DiscountCodes from "./pages/Admin/DiscountCodes";
 import Brands from "./pages/Admin/Brands";
+
+// IMPORT "NGƯỜI GÁC CỔNG" CHO TRANG ADMIN
+import AdminRoute from "./components/AdminRoute";
+
 // ==========================================
 // 1. TRẠM KIỂM SOÁT BẢO MẬT (ROUTE GUARDS)
 // ==========================================
@@ -98,21 +102,26 @@ function App() {
         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
 
         {/* NHÓM 4: ADMIN */}
-        {/* Đăng nhập Admin tách riêng, không nằm trong AdminLayout */}
         <Route path="/admin/login" element={<AdminLogin />} />
         
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="products" element={<Products />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="users" element={<Users />} />
-          <Route path="statistics" element={<Statistics />} />
-          <Route path="comments" element={<Comments />} />
-          <Route path="products/variants" element={<Variants />} />
-          <Route path="discount-codes" element={<DiscountCodes />} />
-          <Route path="brands" element={<Brands />} />
+        {/* ==========================================
+            KHU VỰC ADMIN ĐÃ ĐƯỢC BẢO VỆ BỞI ADMINROUTE
+            ========================================== */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="products" element={<Products />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="users" element={<Users />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="comments" element={<Comments />} />
+            <Route path="products/variants" element={<Variants />} />
+            <Route path="discount-codes" element={<DiscountCodes />} />
+            <Route path="brands" element={<Brands />} />
+          </Route>
         </Route>
+
       </Routes>
     </BrowserRouter>
   );

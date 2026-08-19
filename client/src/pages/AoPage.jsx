@@ -214,8 +214,8 @@ export default function AoPage() {
                     </Link>
 
                     <div className="card-actions">
-                      <button className="card-add-cart-btn" onClick={(e) => openVariantModal(e, product, false)} title="Thêm giỏ hàng">🛒 Thêm giỏ</button>
-                      <button className="card-buy-now-btn" onClick={(e) => openVariantModal(e, product, true)} title="Mua ngay">⚡ Mua ngay</button>
+                      <button className="card-add-cart-btn" onClick={(e) => openVariantModal(e, product, false)} title="Thêm giỏ hàng"> Thêm giỏ</button>
+                      <button className="card-buy-now-btn" onClick={(e) => openVariantModal(e, product, true)} title="Mua ngay"> Mua ngay</button>
                     </div>
                   </div>
                 ))

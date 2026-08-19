@@ -29,7 +29,7 @@ class OrderController extends Controller
         ], 200);
     }
 
-    // 2. Tạo đơn hàng mới từ giỏ hàng
+    // 2. Tạo đơn hàng mới từ giỏ hàng (ĐÃ FIX AC58 - TỰ TÍNH TIỀN)
     public function store(Request $request)
     {
         $user = $request->user();
@@ -43,31 +43,58 @@ class OrderController extends Controller
                     return response()->json(['status' => false, 'message' => 'Giỏ hàng của bạn đang trống!'], 400);
                 }
 
-                // 2. Tính tiền
-                $totalAmount = 0;
+                // 2. TÍNH TIỀN TỪ DATABASE (Bảo mật: Không nhận total_price từ Frontend)
+                $subtotal = 0;
+                $totalQuantity = 0;
+                
                 foreach ($cartItems as $item) {
+                    // Lấy giá thực tế từ Database
                     $price = $item->productVariant->product->price;
-                    $totalAmount += $price * $item->quantity;
+                    $subtotal += $price * $item->quantity;
+                    $totalQuantity += $item->quantity;
                 }
-                $finalTotal = $request->input('total_price', $totalAmount);
-                $couponId = $request->input('coupon_id'); // Lấy mã giảm giá thẳng từ Request
+
+                // Phí vận chuyển: Đồng bộ logic >= 3 cái freeship, ngược lại 30k
+                $shippingFee = ($totalQuantity >= 3) ? 0 : 30000;
+
+                // Xử lý mã giảm giá
+                $discountAmount = 0;
+                $couponId = $request->input('coupon_id'); 
+
+                if (!empty($couponId)) {
+                    $coupon = Coupon::find($couponId);
+                    if ($coupon && $coupon->status && !$coupon->trashed()) {
+                        // Tính số tiền được giảm
+                        if ($coupon->discount_type === 'percent') {
+                            $discountAmount = min($subtotal * ($coupon->discount_value / 100), $subtotal);
+                        } elseif ($coupon->discount_type === 'shipping') {
+                            $discountAmount = min($coupon->discount_value, $shippingFee);
+                        } else {
+                            // Fixed discount
+                            $discountAmount = min($coupon->discount_value, $subtotal);
+                        }
+                    }
+                }
+
+                // TỔNG TIỀN CHUẨN XÁC CUỐI CÙNG
+                $finalTotal = max(0, $subtotal + $shippingFee - $discountAmount);
 
                 // 3. Tạo Đơn hàng
                 $order = Order::create([
                     'user_id'      => $user->id,
-                    'total_amount' => $finalTotal,
+                    'total_amount' => $finalTotal, // Dùng tổng tiền Backend tự tính
                     'status'       => 'pending', 
-                    'coupon_id'    => empty($couponId) ? null : $couponId, // Lưu ID mã giảm giá
+                    'coupon_id'    => empty($couponId) ? null : $couponId, 
                     'address_id'   => $request->input('address_id'),
                     'note'         => $request->input('note'),
                 ]);
 
-                // 👇 ĐOẠN QUAN TRỌNG NHẤT: CỘNG LƯỢT DÙNG MÃ GIẢM GIÁ
+                // Cộng lượt dùng mã giảm giá
                 if (!empty($couponId)) {
                     $coupon = Coupon::find($couponId);
                     if ($coupon) {
-                        $coupon->used_count = $coupon->used_count + 1; // Cộng 1 lượt dùng
-                        $coupon->save(); // Lưu thẳng vào DB
+                        $coupon->used_count = $coupon->used_count + 1;
+                        $coupon->save();
                     }
                 }
 
@@ -140,7 +167,7 @@ class OrderController extends Controller
                 }
             }
 
-            // 👇 THÊM MỚI: NẾU ĐƠN HÀNG CÓ MÃ GIẢM GIÁ -> TRẢ LẠI 1 LƯỢT DÙNG CHO MÃ ĐÓ
+            // Hoàn lại lượt dùng mã giảm giá
             if ($order->coupon_id != null) {
                 $coupon = Coupon::find($order->coupon_id);
                 if ($coupon && $coupon->used_count > 0) {
@@ -194,11 +221,11 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Mã giảm giá đã hết lượt sử dụng!'], 400);
         }
 
-        // 6. KIỂM TRA MỖI USER CHỈ ĐƯỢC DÙNG 1 LẦN (SẼ HOẠT ĐỘNG HOÀN HẢO SAU KHI SỬA BƯỚC 1)
+        // KIỂM TRA MỖI USER CHỈ ĐƯỢC DÙNG 1 LẦN
         if ($user) {
             $hasUsed = Order::where('user_id', $user->id)
                 ->where('coupon_id', $coupon->id)
-                ->where('status', '!=', 'cancelled') // Trừ các đơn đã hủy ra
+                ->where('status', '!=', 'cancelled') 
                 ->exists();
 
             if ($hasUsed) {

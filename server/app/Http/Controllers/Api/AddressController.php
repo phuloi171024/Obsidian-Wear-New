@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Models\Address;
 
 class AddressController extends Controller
@@ -14,9 +13,10 @@ class AddressController extends Controller
      */
     public function index(Request $request)
     {
-        // Chỉ lấy địa chỉ của user này, ưu tiên hiển thị địa chỉ mặc định lên đầu
+        // Ưu tiên hiển thị địa chỉ mặc định lên đầu, sau đó đến địa chỉ mới tạo
         $addresses = Address::where('user_id', $request->user()->id)
                             ->orderBy('is_default', 'desc')
+                            ->latest()
                             ->get();
 
         return response()->json([
@@ -32,34 +32,37 @@ class AddressController extends Controller
     {
         $user = $request->user();
 
-        // Xác thực dữ liệu với các trường chi tiết mới
-        $request->validate([
-            'type' => 'required|string',
-            'receiver_name' => 'required|string',
-            'phone' => 'required|string',
-            'province' => 'required|string',
-            'district' => 'required|string',
-            'ward' => 'required|string',
-            'street' => 'required|string',
-            'is_default' => 'boolean'
+        // Thêm nullable cho is_default vì nếu không tick, React có thể không gửi lên
+        $validated = $request->validate([
+            'type' => 'nullable|string|max:255',
+            'receiver_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+            'province' => 'required|string|max:100',
+            'district' => 'required|string|max:100',
+            'ward' => 'required|string|max:100',
+            'street' => 'required|string|max:255',
+            'is_default' => 'nullable|boolean'
         ]);
 
+        // Hàm boolean() của Laravel xử lý an toàn mọi kiểu dữ liệu ('true', 1, true, 'on'...)
+        $isDefault = $request->boolean('is_default', false);
+
         // Nếu người dùng chọn đặt làm mặc định, gỡ mặc định của tất cả địa chỉ cũ
-        if ($request->input('is_default')) {
+        if ($isDefault) {
             Address::where('user_id', $user->id)->update(['is_default' => false]);
         }
 
         // Tạo địa chỉ mới
         $address = Address::create([
             'user_id' => $user->id,
-            'type' => $request->type,
-            'receiver_name' => $request->receiver_name,
-            'phone' => $request->phone,
-            'province' => $request->province,
-            'district' => $request->district,
-            'ward' => $request->ward,
-            'street' => $request->street,
-            'is_default' => $request->is_default ?? false,
+            'type' => $validated['type'] ?? 'Nhà',
+            'receiver_name' => $validated['receiver_name'],
+            'phone' => $validated['phone'],
+            'province' => $validated['province'],
+            'district' => $validated['district'],
+            'ward' => $validated['ward'],
+            'street' => $validated['street'],
+            'is_default' => $isDefault,
         ]);
 
         return response()->json([
@@ -84,33 +87,36 @@ class AddressController extends Controller
             return response()->json(['status' => false, 'message' => 'Không tìm thấy địa chỉ'], 404);
         }
 
-        // Xác thực dữ liệu với các trường chi tiết mới
-        $request->validate([
-            'type' => 'required|string',
-            'receiver_name' => 'required|string',
-            'phone' => 'required|string',
-            'province' => 'required|string',
-            'district' => 'required|string',
-            'ward' => 'required|string',
-            'street' => 'required|string',
-            'is_default' => 'boolean'
+        $validated = $request->validate([
+            'type' => 'nullable|string|max:255',
+            'receiver_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+            'province' => 'required|string|max:100',
+            'district' => 'required|string|max:100',
+            'ward' => 'required|string|max:100',
+            'street' => 'required|string|max:255',
+            'is_default' => 'nullable|boolean'
         ]);
 
-        // Nếu người dùng tick chọn "Đặt làm mặc định" khi sửa, gỡ mặc định các địa chỉ cũ
-        if ($request->input('is_default')) {
-            Address::where('user_id', $user->id)->update(['is_default' => false]);
+        $isDefault = $request->boolean('is_default', false);
+
+        // Nếu tick chọn "Đặt làm mặc định" và trước đó nó chưa phải là mặc định -> gỡ mặc định các địa chỉ cũ
+        if ($isDefault && !$address->is_default) {
+            Address::where('user_id', $user->id)
+                   ->where('id', '!=', $address->id)
+                   ->update(['is_default' => false]);
         }
 
         // Cập nhật thông tin vào DB
         $address->update([
-            'type' => $request->type,
-            'receiver_name' => $request->receiver_name,
-            'phone' => $request->phone,
-            'province' => $request->province,
-            'district' => $request->district,
-            'ward' => $request->ward,
-            'street' => $request->street,
-            'is_default' => $request->is_default ?? $address->is_default,
+            'type' => $validated['type'] ?? $address->type,
+            'receiver_name' => $validated['receiver_name'],
+            'phone' => $validated['phone'],
+            'province' => $validated['province'],
+            'district' => $validated['district'],
+            'ward' => $validated['ward'],
+            'street' => $validated['street'],
+            'is_default' => $isDefault,
         ]);
 
         return response()->json([
@@ -125,7 +131,6 @@ class AddressController extends Controller
      */
     public function destroy(Request $request, int $id)
     {
-        // Chỉ cho phép xóa địa chỉ của chính mình
         $address = Address::where('id', $id)->where('user_id', $request->user()->id)->first();
 
         if (!$address) {

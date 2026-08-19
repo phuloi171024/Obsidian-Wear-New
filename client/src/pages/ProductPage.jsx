@@ -24,6 +24,19 @@ export default function ProductPage() {
   const [priceFilter, setPriceFilter] = useState("all");
   const [sortOption, setSortOption] = useState("default");
 
+  // =========================================================
+  // ĐOẠN CODE ĐÃ ĐƯỢC THÊM VÀO: TỰ ĐỘNG RESET LỌC KHI TÌM KIẾM
+  // =========================================================
+  useEffect(() => {
+    // Nếu có từ khóa tìm kiếm mới trên thanh URL, lập tức xóa sạch các bộ lọc cũ
+    if (searchKeyword) {
+      setSelectedCategory("");
+      setSelectedBrands([]);
+      setPriceFilter("all");
+    }
+  }, [searchKeyword]);
+  // =========================================================
+
   // State quản lý Popup
   const [showModal, setShowModal] = useState(false);
   const [activeProduct, setActiveProduct] = useState(null);
@@ -430,9 +443,9 @@ export default function ProductPage() {
                         style={{ position: "relative" }}
                       >
                         <img
-  src={product.thumbnail ? product.thumbnail : "/images/placeholder.png"}
-  alt={product.name}
-/>
+                          src={product.thumbnail ? product.thumbnail : "/images/placeholder.png"}
+                          alt={product.name}
+                        />
                         <button
                           onClick={(e) => handleToggleWishlist(e, product.id)}
                           title="Yêu thích"
@@ -516,9 +529,9 @@ export default function ProductPage() {
 
             <div className="variant-product-info">
              <img
-  src={activeProduct.thumbnail ? activeProduct.thumbnail : "/images/placeholder.png"}
-  alt={activeProduct.name}
-/>
+                src={activeProduct.thumbnail ? activeProduct.thumbnail : "/images/placeholder.png"}
+                alt={activeProduct.name}
+              />
 
               <div>
                 <h4>{activeProduct.name}</h4>

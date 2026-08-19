@@ -250,7 +250,7 @@ export default function PaymentPage() {
               onClick={() => setActiveTab('cod')}
               className={`flex items-center space-x-2 pb-3 px-2 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${activeTab === 'cod' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
             >
-              <span>💵 Tiền mặt khi nhận hàng</span>
+              <span>COD</span>
             </button>
             <button 
               onClick={() => setActiveTab('sepay')}
@@ -278,7 +278,7 @@ export default function PaymentPage() {
               <>
                 <div className="bg-amber-50/60 border-l-4 border-amber-500 rounded-r-xl p-4 text-xs text-amber-800 space-y-1.5">
                   <div className="flex items-center space-x-1.5 font-bold text-amber-900 mb-1">
-                    <span>⚠️ Lưu ý quan trọng:</span>
+                    <span> Lưu ý quan trọng:</span>
                   </div>
                   <p>• Vui lòng chuẩn bị đúng số tiền khi nhận hàng</p>
                   <p>• Kiểm tra kỹ sản phẩm trước khi thanh toán</p>

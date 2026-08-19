@@ -234,4 +234,23 @@ class CouponController extends Controller
             ],
         ], 200);
     }
+    public function bulkDestroy(Request $request)
+{
+    $ids = $request->input('ids', []);
+
+    if (!is_array($ids) || empty($ids)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Danh sách mã giảm giá không hợp lệ.',
+        ], 422);
+    }
+
+    // Thực hiện xóa các ID được gửi lên
+    \App\Models\Coupon::whereIn('id', $ids)->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Đã xóa các mã giảm giá được chọn.',
+    ]);
+}
 }
