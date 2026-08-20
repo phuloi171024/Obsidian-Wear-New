@@ -4517,51 +4517,37 @@ grid-template-columns:1fr;
     background-color: #fecaca;
     color: #dc2626;
 }
-/* ==========================================
-   FIX LỖI BẢNG BỊ GÔM LẠI - KÉO GIÃN 100%
-   ========================================== */
 
-/* 1. Ép khung chứa bảng bung rộng hết mức có thể */
-.variants-table-wrapper, 
-.table-card {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto; /* Tự động có thanh cuộn ngang nếu màn hình quá nhỏ */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+/* Icon Tổng thành viên trên bảng thống kê */
+.dashboard-icon.green {
+    color: #fff !important;
 }
 
-/* 2. Ép cái bảng bên trong giãn căng 100% theo khung chứa */
-.variants-table,
-.admin-table {
-    width: 100%;
-    min-width: 1200px; /* Đảm bảo bảng không bao giờ bị co rúm nhỏ hơn 1200px */
-    table-layout: auto;
-    border-collapse: collapse;
+.dashboard-icon.green svg {
+    color: #fff !important;
+    stroke: #fff !important;
 }
 
-/* 3. Tăng khoảng không gian (thở) cho các ô trong bảng */
-.variants-table th, 
-.variants-table td,
-.admin-table th,
-.admin-table td {
-    padding: 16px 14px; /* Giãn cách trên dưới 16px, trái phải 14px */
-    white-space: nowrap; /* Ép chữ trên 1 dòng, không bị rớt dòng bậy bạ */
-    vertical-align: middle;
+/* ================================
+   TRẠNG THÁI ĐƠN HÀNG
+   ================================ */
+
+.status {
+    color: #fff !important;
 }
 
-/* 4. Riêng cột "Tên sản phẩm" thì cho phép rớt dòng nếu tên quá dài */
-.variants-table td:nth-child(3),
-.admin-table td:nth-child(3) {
-    white-space: normal;
-    min-width: 250px;
-    line-height: 1.5;
+.status.pending {
+    color: #fff !important;
 }
 
-/* 5. Căn chỉnh lại khu vực chứa toàn bộ nội dung Admin (Nếu đang bị bóp) */
-.variants-page,
-.admin-page {
-    width: 100%;
-    max-width: 100%;
-    padding: 24px 32px; /* Đẩy nội dung cách mép màn hình một chút cho đẹp */
+.status.shipping {
+    color: #fff !important;
+}
+
+.status.done {
+    color: #fff !important;
+}
+
+.status.cancel {
+    color: #fff !important;
 }

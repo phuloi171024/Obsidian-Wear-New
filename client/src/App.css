@@ -787,119 +787,6 @@ footer {
   margin-top: 0 !important;
 }
 
-
-/* =========================================================
-   16. RESPONSIVE - TABLET
-   ========================================================= */
-
-@media (max-width: 900px) {
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .max-w-6xl {
-    width: calc(100% - 32px) !important;
-    max-width: none !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .max-w-xl {
-    width: 100% !important;
-    max-width: 650px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .grid.grid-cols-1.lg\:grid-cols-3 {
-    grid-template-columns: 1fr !important;
-
-    gap: 20px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .grid.grid-cols-1.lg\:grid-cols-3
-  > div:first-child {
-    height: auto !important;
-    min-height: 365px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .grid.grid-cols-1.lg\:grid-cols-3
-  > div:last-child {
-    height: auto !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .grid.grid-cols-1.lg\:grid-cols-3
-  > div:last-child
-  > button {
-    position: static !important;
-
-    transform: none !important;
-
-    width: 177px !important;
-
-    display: block !important;
-
-    margin: 20px auto 0 !important;
-  }
-}
-
-
-/* =========================================================
-   17. RESPONSIVE - MOBILE
-   ========================================================= */
-
-@media (max-width: 600px) {
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .max-w-6xl {
-    width: calc(100% - 24px) !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  h1 {
-    font-size: 20px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .max-w-xl {
-    margin-bottom: 35px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .max-w-xl .w-9.h-9 {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .max-w-xl span {
-    font-size: 9px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .grid.grid-cols-1.lg\:grid-cols-3
-  > div:first-child {
-    height: auto !important;
-
-    min-height: 0 !important;
-
-    padding: 20px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .grid.grid-cols-1.lg\:grid-cols-3
-  > div:last-child {
-    padding: 18px !important;
-  }
-
-  body:has(input[placeholder="Nhập họ tên người nhận"])
-  .grid.grid-cols-1.lg\:grid-cols-3
-  > div:last-child
-  > button {
-    width: 100% !important;
-  }
-}
-
 /* ==============================
    STEP - THÔNG TIN ĐẶT HÀNG
    ============================== */
@@ -1444,29 +1331,6 @@ main.max-w-4xl > .bg-white.rounded-2xl
   background: #e5e7eb !important;
 }
 
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (max-width: 700px) {
-
-  main.max-w-4xl {
-    width: calc(100% - 24px) !important;
-
-    padding-top: 20px !important;
-  }
-
-  main.max-w-4xl > .bg-white.rounded-2xl {
-    padding: 14px !important;
-  }
-
-  main.max-w-4xl > .bg-white.rounded-2xl
-  .space-y-6 > .flex.items-center.space-x-2 h3 {
-    font-size: 15px !important;
-  }
-}
-
 /* =========================================
    TAB PHƯƠNG THỨC THANH TOÁN
    ========================================= */
@@ -1999,34 +1863,6 @@ button.bg-gray-900 {
 > .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
 > button.w-full:hover {
   background: #285bc5 !important;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (max-width: 991px) {
-  .grid.grid-cols-1.lg\:grid-cols-3.gap-6 {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 600px) {
-  .grid.grid-cols-1.lg\:grid-cols-3.gap-6
-  > .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
-  .bg-gray-50.rounded-lg.p-4.mb-6
-  .flex.justify-between.items-center.mb-3 {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-
-  .grid.grid-cols-1.lg\:grid-cols-3.gap-6
-  > .bg-white.rounded-xl.shadow-sm.border.border-gray-100.p-6.h-fit
-  .bg-gray-50.rounded-lg.p-4.mb-6
-  button.text-xs.font-semibold.text-blue-600 {
-    white-space: normal !important;
-  }
 }
 
 /* =========================================================
@@ -2576,3 +2412,3593 @@ button.bg-gray-900 {
     text-decoration: none !important;
 }
 
+/* ============================================================
+   FINAL - PHÓNG TO TOÀN BỘ TRANG THÔNG TIN ĐẶT HÀNG
+   KHÔNG SỬA JSX
+   KHÔNG ẢNH HƯỞNG CÁC TRANG KHÁC
+   ============================================================ */
+
+
+/* ============================================================
+   1. KHUNG TOÀN TRANG
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"]) {
+    background: #f7f8fa !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.min-h-screen {
+    background: #f7f8fa !important;
+}
+
+
+/* Khung chính */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl {
+    width: calc(100% - 80px) !important;
+
+    max-width: 1450px !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+
+    padding-top: 35px !important;
+    padding-bottom: 70px !important;
+}
+
+
+/* ============================================================
+   2. BREADCRUMB
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.text-sm.text-gray-400.mb-2 {
+
+    margin-bottom: 16px !important;
+
+    font-size: 14px !important;
+
+    line-height: 1.5 !important;
+}
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.text-sm.text-gray-400.mb-2 a {
+
+    font-size: 14px !important;
+}
+
+
+/* ============================================================
+   3. TIÊU ĐỀ "THÔNG TIN ĐẶT HÀNG"
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > h1 {
+
+    margin-top: 0 !important;
+
+    margin-bottom: 35px !important;
+
+    font-size: 34px !important;
+
+    line-height: 1.3 !important;
+
+    font-weight: 700 !important;
+
+    color: #111827 !important;
+}
+
+
+/* ============================================================
+   4. THANH 3 BƯỚC
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl {
+
+    width: 100% !important;
+
+    max-width: 900px !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    margin-bottom: 45px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+}
+
+
+/* Vòng tròn */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.w-9.h-9 {
+
+    width: 48px !important;
+
+    height: 48px !important;
+
+    min-width: 48px !important;
+
+    border-radius: 50% !important;
+
+    font-size: 16px !important;
+}
+
+
+/* Icon */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.w-9.h-9 svg {
+
+    width: 17px !important;
+
+    height: 17px !important;
+}
+
+
+/* Chữ bước */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+span {
+
+    font-size: 14px !important;
+
+    line-height: 1.4 !important;
+
+    font-weight: 600 !important;
+
+    white-space: nowrap !important;
+}
+
+
+/* Đường nối */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.h-0\.5 {
+
+    height: 3px !important;
+
+    margin-left: 18px !important;
+
+    margin-right: 18px !important;
+}
+
+
+/* ============================================================
+   5. KHU VỰC 2 CỘT
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6 {
+
+    display: grid !important;
+
+    grid-template-columns:
+        minmax(0, 1.85fr)
+        minmax(400px, 0.85fr) !important;
+
+    gap: 35px !important;
+
+    width: 100% !important;
+
+    align-items: start !important;
+}
+
+
+/* ============================================================
+   6. CARD THÔNG TIN GIAO HÀNG
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2 {
+
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    min-height: 600px !important;
+
+    height: auto !important;
+
+    padding: 38px !important;
+
+    box-sizing: border-box !important;
+
+    background: #ffffff !important;
+
+    border: 1px solid #e5e7eb !important;
+
+    border-radius: 16px !important;
+
+    box-shadow:
+        0 5px 22px rgba(15, 23, 42, 0.07) !important;
+
+    position: relative !important;
+}
+
+
+/* Tiêu đề card */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2
+h2 {
+
+    margin-bottom: 28px !important;
+
+    font-size: 24px !important;
+
+    line-height: 1.4 !important;
+
+    font-weight: 700 !important;
+
+    color: #111827 !important;
+}
+
+
+/* ============================================================
+   7. SỔ ĐỊA CHỈ
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2
+.bg-blue-50 {
+
+    padding: 20px !important;
+
+    margin-bottom: 28px !important;
+
+    border-radius: 12px !important;
+
+    border: 1px solid #dbeafe !important;
+
+    background: #eff6ff !important;
+}
+
+
+/* Label sổ địa chỉ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2
+.bg-blue-50 label {
+
+    margin-bottom: 10px !important;
+
+    font-size: 15px !important;
+}
+
+
+/* Select */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2
+.bg-blue-50 select {
+
+    width: 100% !important;
+
+    height: 52px !important;
+
+    min-height: 52px !important;
+
+    padding: 0 16px !important;
+
+    font-size: 15px !important;
+
+    border-radius: 9px !important;
+}
+
+
+/* ============================================================
+   8. FORM - KHOẢNG CÁCH
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2
+.space-y-5 {
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    gap: 24px !important;
+
+    margin: 0 !important;
+}
+
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2
+.space-y-5 > div {
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+}
+
+
+/* ============================================================
+   9. LABEL FORM
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2
+.space-y-5 label {
+
+    display: block !important;
+
+    margin-bottom: 9px !important;
+
+    font-size: 15px !important;
+
+    line-height: 1.4 !important;
+
+    font-weight: 500 !important;
+
+    color: #374151 !important;
+}
+
+
+/* ============================================================
+   10. INPUT FORM
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> .lg\:col-span-2
+.space-y-5 input {
+
+    width: 100% !important;
+
+    height: 54px !important;
+
+    min-height: 54px !important;
+
+    padding: 12px 17px !important;
+
+    font-size: 15px !important;
+
+    line-height: 1.4 !important;
+
+    border-radius: 9px !important;
+
+    box-sizing: border-box !important;
+}
+
+
+/* ============================================================
+   11. CARD GIỎ HÀNG BÊN PHẢI
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child {
+
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    min-height: 600px !important;
+
+    height: auto !important;
+
+    padding: 30px !important;
+
+    box-sizing: border-box !important;
+
+    background: #ffffff !important;
+
+    border: 1px solid #e5e7eb !important;
+
+    border-radius: 16px !important;
+
+    box-shadow:
+        0 5px 22px rgba(15, 23, 42, 0.07) !important;
+
+    position: relative !important;
+}
+
+
+/* Tiêu đề giỏ hàng */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+> h2 {
+
+    margin-bottom: 24px !important;
+
+    font-size: 21px !important;
+
+    line-height: 1.4 !important;
+
+    font-weight: 700 !important;
+
+    color: #111827 !important;
+}
+
+
+/* ============================================================
+   12. SẢN PHẨM TRONG GIỎ
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.max-h-60 {
+
+    max-height: 340px !important;
+
+    margin-bottom: 24px !important;
+
+    padding-right: 8px !important;
+
+    overflow-y: auto !important;
+}
+
+
+/* Ảnh sản phẩm */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.max-h-60
+.w-14.h-14 {
+
+    width: 78px !important;
+
+    height: 78px !important;
+
+    min-width: 78px !important;
+
+    border-radius: 10px !important;
+}
+
+
+/* Tên sản phẩm */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.max-h-60
+.text-sm.font-medium {
+
+    font-size: 15px !important;
+
+    line-height: 1.5 !important;
+}
+
+
+/* Size + số lượng */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.max-h-60
+.text-xs {
+
+    font-size: 13px !important;
+
+    line-height: 1.4 !important;
+}
+
+
+/* Giá sản phẩm */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.max-h-60
+.font-semibold {
+
+    font-size: 15px !important;
+}
+
+
+/* ============================================================
+   13. TỔNG TIỀN
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.text-gray-600.text-sm.font-medium {
+
+    font-size: 15px !important;
+}
+
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.font-bold.text-gray-900 {
+
+    font-size: 16px !important;
+}
+
+
+/* ============================================================
+   14. KHU VỰC GIẢM GIÁ
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.bg-gray-50.rounded-lg.p-4.mb-6 {
+
+    padding: 20px !important;
+
+    margin-bottom: 25px !important;
+
+    border-radius: 12px !important;
+}
+
+
+/* Tiêu đề giảm giá */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.bg-gray-50.rounded-lg.p-4.mb-6 h3 {
+
+    font-size: 15px !important;
+}
+
+
+/* Input voucher */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.bg-gray-50.rounded-lg.p-4.mb-6 input {
+
+    height: 48px !important;
+
+    min-height: 48px !important;
+
+    font-size: 14px !important;
+}
+
+
+/* ============================================================
+   15. NÚT MÃ GIẢM GIÁ
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.bg-gray-50.rounded-lg.p-4.mb-6
+button {
+
+    min-height: 44px !important;
+
+    font-size: 13px !important;
+}
+
+
+/* ============================================================
+   16. PHÍ VẬN CHUYỂN
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.border-t {
+
+    padding-top: 18px !important;
+
+    margin-top: 18px !important;
+}
+
+
+/* ============================================================
+   17. TỔNG THANH TOÁN
+   ============================================================ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+.text-xl.font-bold.text-red-500 {
+
+    font-size: 27px !important;
+
+    line-height: 1.3 !important;
+
+    font-weight: 700 !important;
+}
+
+
+/* ============================================================
+   18. NÚT ĐẶT HÀNG
+   ============================================================ */
+
+/* QUAN TRỌNG:
+   CSS cũ của bạn đang để position absolute,
+   top 365px, width 177px.
+   Phải reset toàn bộ. */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl
+.grid.grid-cols-1.lg\:grid-cols-3.gap-6
+> div:last-child
+> button {
+
+    position: static !important;
+
+    top: auto !important;
+
+    left: auto !important;
+
+    transform: none !important;
+
+    width: 100% !important;
+
+    height: 54px !important;
+
+    min-height: 54px !important;
+
+    margin: 25px 0 0 !important;
+
+    padding: 0 20px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    border: none !important;
+
+    border-radius: 10px !important;
+
+    font-size: 16px !important;
+
+    font-weight: 700 !important;
+
+    line-height: 1.4 !important;
+
+    color: #ffffff !important;
+
+    cursor: pointer !important;
+}
+
+
+/* ============================================================
+   19. TABLET
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl {
+
+        width: calc(100% - 40px) !important;
+
+        max-width: none !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6 {
+
+        grid-template-columns:
+            minmax(0, 1.45fr)
+            minmax(320px, 1fr) !important;
+
+        gap: 22px !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > .lg\:col-span-2 {
+
+        padding: 28px !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > div:last-child {
+
+        padding: 24px !important;
+    }
+}
+
+
+/* ============================================================
+   20. TABLET NHỎ
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl {
+
+        width: calc(100% - 30px) !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6 {
+
+        grid-template-columns: 1fr !important;
+
+        gap: 20px !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > .lg\:col-span-2 {
+
+        min-height: auto !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > div:last-child {
+
+        min-height: auto !important;
+
+        position: static !important;
+    }
+}
+
+
+/* ============================================================
+   21. MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl {
+
+        width: calc(100% - 24px) !important;
+
+        padding-top: 20px !important;
+
+        padding-bottom: 45px !important;
+    }
+
+
+    /* Tiêu đề */
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > h1 {
+
+        font-size: 27px !important;
+
+        margin-bottom: 28px !important;
+    }
+
+
+    /* Thanh bước */
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl {
+
+        width: 100% !important;
+
+        margin-bottom: 30px !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl
+    .w-9.h-9 {
+
+        width: 40px !important;
+
+        height: 40px !important;
+
+        min-width: 40px !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl
+    span {
+
+        font-size: 11px !important;
+    }
+
+
+    /* Card trái */
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > .lg\:col-span-2 {
+
+        width: 100% !important;
+
+        padding: 22px !important;
+
+        border-radius: 13px !important;
+    }
+
+
+    /* Card phải */
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > div:last-child {
+
+        width: 100% !important;
+
+        padding: 22px !important;
+
+        border-radius: 13px !important;
+
+        position: static !important;
+    }
+
+
+    /* Input */
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    input {
+
+        height: 50px !important;
+
+        min-height: 50px !important;
+
+        font-size: 14px !important;
+    }
+
+
+    /* Card title */
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    h2 {
+
+        font-size: 20px !important;
+    }
+
+
+    /* Hình sản phẩm */
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > div:last-child
+    .max-h-60
+    .w-14.h-14 {
+
+        width: 65px !important;
+
+        height: 65px !important;
+
+        min-width: 65px !important;
+    }
+
+
+    /* Nút */
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > div:last-child
+    > button {
+
+        width: 100% !important;
+
+        height: 52px !important;
+
+        min-height: 52px !important;
+
+        margin-top: 20px !important;
+
+        font-size: 15px !important;
+    }
+}
+
+
+/* ============================================================
+   22. MOBILE RẤT NHỎ
+   ============================================================ */
+
+@media (max-width: 420px) {
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl {
+
+        width: calc(100% - 16px) !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > h1 {
+
+        font-size: 23px !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > .lg\:col-span-2,
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl
+    .grid.grid-cols-1.lg\:grid-cols-3.gap-6
+    > div:last-child {
+
+        padding: 17px !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl
+    span {
+
+        font-size: 9px !important;
+    }
+
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl
+    .w-9.h-9 {
+
+        width: 34px !important;
+
+        height: 34px !important;
+
+        min-width: 34px !important;
+    }
+}
+
+/* =========================================
+   THANH TIẾN TRÌNH - DÃN ĐỀU GIAO DIỆN
+   ========================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl {
+    width: 100% !important;
+    max-width: 1050px !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+
+/* 2 đoạn gạch */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.h-0\.5 {
+    height: 3px !important;
+
+    flex: 1 1 auto !important;
+
+    width: auto !important;
+
+    min-width: 0 !important;
+    max-width: none !important;
+
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+}
+
+
+/* Vòng tròn */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+.w-9.h-9 {
+    width: 52px !important;
+    height: 52px !important;
+
+    min-width: 52px !important;
+
+    flex-shrink: 0 !important;
+}
+
+
+/* Chữ */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+span {
+    font-size: 15px !important;
+    white-space: nowrap !important;
+}
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 900px) {
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl {
+        max-width: 850px !important;
+    }
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl
+    .h-0\.5 {
+        min-width: 100px !important;
+        max-width: 170px !important;
+    }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl {
+        width: 100% !important;
+    }
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl
+    .h-0\.5 {
+        min-width: 30px !important;
+        max-width: 70px !important;
+
+        margin-left: 6px !important;
+        margin-right: 6px !important;
+
+        height: 2px !important;
+    }
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl
+    .w-9.h-9 {
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+    }
+
+    body:has(input[placeholder="Nhập họ tên người nhận"])
+    .max-w-6xl > .flex.items-center.mb-10.max-w-xl
+    span {
+        font-size: 11px !important;
+    }
+}
+
+/* =========================================
+   FIX: 2 THANH NỐI BẰNG NHAU
+========================================= */
+
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+> div.flex.items-center.flex-1 {
+
+    flex: none !important;
+    min-width: 0 !important;
+}
+
+/* Thanh nối thứ 1 và thứ 2 */
+body:has(input[placeholder="Nhập họ tên người nhận"])
+.max-w-6xl > .flex.items-center.mb-10.max-w-xl
+> div.flex.items-center.flex-1
+> div.flex-1.h-0\.5 {
+
+    flex: none !important;
+
+    width: 300px !important;
+    min-width: 300px !important;
+    max-width: 300px !important;
+
+    height: 3px !important;
+
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+}
+
+/* =========================================================
+   RESPONSIVE - TRANG THÔNG TIN ĐẶT HÀNG
+   ========================================================= */
+
+
+/* =========================
+   TABLET
+   769px - 1100px
+   ========================= */
+
+@media (max-width: 1100px) {
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-6xl {
+    max-width: 94% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* Thanh tiến trình */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl {
+    max-width: 100% !important;
+  }
+
+  /* Form + đơn hàng */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 {
+    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr) !important;
+    gap: 18px !important;
+  }
+
+  /* Form */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:first-child {
+    padding: 24px !important;
+  }
+
+  /* Đơn hàng */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:last-child {
+    padding: 18px !important;
+  }
+}
+
+
+/* =========================
+   MOBILE
+   <= 768px
+   ========================= */
+
+@media (max-width: 768px) {
+
+  /* Khung chính */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-6xl {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+
+    padding-top: 15px !important;
+    padding-bottom: 30px !important;
+  }
+
+
+  /* Breadcrumb */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .text-sm.text-gray-400.mb-2 {
+    margin-bottom: 18px !important;
+    font-size: 10px !important;
+  }
+
+
+  /* Tiêu đề */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  h1 {
+    font-size: 22px !important;
+    margin-bottom: 25px !important;
+  }
+
+
+  /* =========================
+     THANH TIẾN TRÌNH
+     ========================= */
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-bottom: 35px !important;
+  }
+
+  /* Icon nhỏ lại */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl .w-9.h-9 {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+
+  /* Chữ bước */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl span {
+    font-size: 10px !important;
+  }
+
+  /* Thanh nối */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl .h-0\.5 {
+    margin-left: 7px !important;
+    margin-right: 7px !important;
+    height: 2px !important;
+  }
+
+
+  /* =========================
+     FORM + ĐƠN HÀNG
+     ========================= */
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 {
+    display: flex !important;
+    flex-direction: column !important;
+
+    gap: 18px !important;
+
+    margin-top: 0 !important;
+  }
+
+
+  /* =========================
+     FORM GIAO HÀNG
+     ========================= */
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:first-child {
+    width: 100% !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    padding: 22px 18px !important;
+
+    border-radius: 8px !important;
+  }
+
+
+  /* Tiêu đề form */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:first-child h2 {
+    font-size: 16px !important;
+    margin-bottom: 18px !important;
+  }
+
+
+  /* Form fields */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:first-child .space-y-5 {
+    gap: 13px !important;
+  }
+
+
+  /* Label */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:first-child label {
+    font-size: 11px !important;
+    margin-bottom: 6px !important;
+  }
+
+
+  /* Input */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:first-child input {
+    height: 42px !important;
+
+    padding: 8px 12px !important;
+
+    font-size: 12px !important;
+
+    border-radius: 5px !important;
+  }
+
+
+  /* =========================
+     CARD ĐƠN HÀNG
+     ========================= */
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:last-child {
+    width: 100% !important;
+
+    min-height: 0 !important;
+
+    padding: 20px 18px !important;
+
+    border-radius: 8px !important;
+  }
+
+
+  /* Tiêu đề đơn hàng */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:last-child > h2 {
+    font-size: 15px !important;
+    margin-bottom: 15px !important;
+  }
+
+
+  /* Danh sách sản phẩm */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:last-child .max-h-60 {
+    max-height: 180px !important;
+  }
+
+
+  /* Ảnh sản phẩm */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:last-child
+  .max-h-60 .w-14.h-14 {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+  }
+}
+
+
+/* =========================
+   ĐIỆN THOẠI NHỎ
+   <= 480px
+   ========================= */
+
+@media (max-width: 480px) {
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-6xl {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+
+  /* Tiêu đề */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  h1 {
+    font-size: 20px !important;
+    margin-bottom: 20px !important;
+  }
+
+
+  /* Thanh tiến trình */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl {
+    margin-bottom: 30px !important;
+  }
+
+
+  /* Icon */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl .w-9.h-9 {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+
+
+  /* Icon bên trong */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl .w-9.h-9 svg {
+    font-size: 11px !important;
+  }
+
+
+  /* Tên bước */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl span {
+    font-size: 8px !important;
+  }
+
+
+  /* Thanh nối */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .max-w-xl .h-0\.5 {
+    margin-left: 4px !important;
+    margin-right: 4px !important;
+  }
+
+
+  /* Form */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:first-child {
+    padding: 18px 14px !important;
+  }
+
+
+  /* Input */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:first-child input {
+    height: 40px !important;
+    font-size: 11px !important;
+  }
+
+
+  /* Đơn hàng */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  .grid.grid-cols-1.lg\:grid-cols-3 > div:last-child {
+    padding: 18px 14px !important;
+  }
+}
+
+/* =========================================================
+   PAYMENT PAGE
+   KÍCH THƯỚC ĐỒNG BỘ VỚI TRANG THÔNG TIN ĐẶT HÀNG
+   ========================================================= */
+
+/* ===== KHUNG TOÀN TRANG ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl {
+    width: 100% !important;
+    max-width: 1152px !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    padding: 32px 16px 64px !important;
+
+    font-size: 16px !important;
+}
+
+
+/* ===== THANH 3 BƯỚC ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl > .flex.items-center.mb-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-bottom: 35px !important;
+}
+
+
+/* Icon của 3 bước */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.flex.items-center.mb-8
+.w-9.h-9 {
+    width: 40px !important;
+    height: 40px !important;
+
+    min-width: 40px !important;
+}
+
+
+/* Tên bước */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.flex.items-center.mb-8 span {
+    font-size: 15px !important;
+}
+
+
+/* ===== KHUNG TRẮNG ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+> div.bg-white.rounded-2xl {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 40px !important;
+
+    border-radius: 12px !important;
+
+    box-sizing: border-box !important;
+}
+
+
+/* ===== TIÊU ĐỀ PHƯƠNG THỨC THANH TOÁN ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+> div.bg-white.rounded-2xl
+> h2 {
+    font-size: 26px !important;
+    line-height: 1.4 !important;
+
+    margin-bottom: 28px !important;
+
+    font-weight: 700 !important;
+}
+
+
+/* ===== TAB COD / VNPAY ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+> div.bg-white.rounded-2xl
+> .flex.border-b {
+    width: 100% !important;
+
+    margin-bottom: 30px !important;
+}
+
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+> div.bg-white.rounded-2xl
+> .flex.border-b button {
+    font-size: 16px !important;
+
+    padding-top: 8px !important;
+    padding-bottom: 14px !important;
+}
+
+
+/* ===== NỘI DUNG CHÍNH ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.space-y-6 {
+    width: 100% !important;
+}
+
+
+/* Tiêu đề COD / VNPay */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.space-y-6 > .flex.items-center {
+    font-size: 20px !important;
+
+    margin-bottom: 24px !important;
+}
+
+
+/* ===== THÔNG TIN TỔNG TIỀN ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.space-y-2\.5 {
+    margin-bottom: 25px !important;
+}
+
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.space-y-2\.5 p {
+    font-size: 16px !important;
+
+    line-height: 1.8 !important;
+}
+
+
+/* Giá tiền */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.text-red-500 {
+    font-size: 18px !important;
+}
+
+
+/* ===== 2 KHUNG THÔNG BÁO ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.border-l-4 {
+    width: 100% !important;
+
+    padding: 22px 24px !important;
+
+    border-radius: 8px !important;
+
+    margin-top: 22px !important;
+}
+
+
+/* Chữ trong thông báo */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.border-l-4 p {
+    font-size: 15px !important;
+
+    line-height: 1.8 !important;
+}
+
+
+/* Tiêu đề thông báo */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.border-l-4 .font-bold {
+    font-size: 16px !important;
+}
+
+
+/* ===== GHI CHÚ ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.mt-6 {
+    margin-top: 30px !important;
+}
+
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.mt-6 label {
+    display: block !important;
+
+    font-size: 16px !important;
+
+    margin-bottom: 10px !important;
+}
+
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+textarea {
+    width: 100% !important;
+
+    min-height: 130px !important;
+
+    padding: 14px 16px !important;
+
+    font-size: 15px !important;
+
+    line-height: 1.6 !important;
+
+    box-sizing: border-box !important;
+}
+
+
+/* ===== 2 NÚT ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.pt-4 {
+    padding-top: 25px !important;
+}
+
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.pt-4 button {
+    width: 100% !important;
+
+    min-height: 54px !important;
+
+    padding: 14px 20px !important;
+
+    font-size: 16px !important;
+
+    border-radius: 8px !important;
+}
+
+
+/* Khoảng cách giữa 2 nút */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.pt-4.space-y-3 {
+    row-gap: 14px !important;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl {
+        max-width: 100% !important;
+
+        padding: 28px 20px 50px !important;
+    }
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl
+    > div.bg-white.rounded-2xl {
+        padding: 32px !important;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl {
+        padding: 20px 12px 40px !important;
+    }
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl
+    > div.bg-white.rounded-2xl {
+        padding: 22px 18px !important;
+
+        border-radius: 10px !important;
+    }
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl
+    > div.bg-white.rounded-2xl
+    > h2 {
+        font-size: 22px !important;
+    }
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl
+    .flex.items-center.mb-8 span {
+        font-size: 11px !important;
+    }
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl
+    .flex.items-center.mb-8 .w-9.h-9 {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+    }
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl
+    .border-l-4 {
+        padding: 18px !important;
+    }
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl
+    .border-l-4 p {
+        font-size: 14px !important;
+    }
+
+    body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+    main.flex-grow.max-w-4xl
+    textarea {
+        min-height: 110px !important;
+    }
+}
+
+/* =====================================================
+   PAYMENT PAGE - ĐỒNG BỘ TO CHỮ
+   ===================================================== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .text-xs {
+    font-size: 15px !important;
+}
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .text-sm {
+    font-size: 16px !important;
+}
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .text-base {
+    font-size: 17px !important;
+}
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .text-lg {
+    font-size: 20px !important;
+}
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .text-xl {
+    font-size: 22px !important;
+}
+
+
+/* Chữ trong các ô thông báo */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .border-l-4 * {
+    font-size: 16px !important;
+}
+
+
+/* Chữ thông tin đơn hàng */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .space-y-2\.5 * {
+    font-size: 16px !important;
+}
+
+
+/* Chữ của phương thức COD / VNPay */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .flex.items-center.gap-2 {
+    font-size: 18px !important;
+}
+
+
+/* Chữ trong tab */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .border-b button {
+    font-size: 17px !important;
+}
+
+
+/* Chữ ghi chú */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl textarea {
+    font-size: 16px !important;
+}
+
+
+/* Placeholder */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl textarea::placeholder {
+    font-size: 15px !important;
+}
+
+
+/* Chữ nút */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .pt-4 button {
+    font-size: 17px !important;
+}
+
+
+/* Chữ tổng tiền / giá */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .font-semibold,
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl .font-bold {
+    font-size: 17px !important;
+}
+
+/* =====================================================
+   FIX CHÍNH XÁC 2 DÒNG TỔNG TIỀN + PHƯƠNG THỨC
+   ===================================================== */
+
+/* Cả 2 dòng */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+div.space-y-2\.5.text-sm
+p {
+    font-size: 20px !important;
+    line-height: 1.8 !important;
+}
+
+
+/* "Tổng tiền cần thanh toán" */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+div.space-y-2\.5.text-sm
+p .font-semibold {
+    font-size: 20px !important;
+}
+
+
+/* 540.000 đ */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+div.space-y-2\.5.text-sm
+p .text-red-500.text-base {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+}
+
+
+/* "Phương thức:" */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+div.space-y-2\.5.text-sm
+p:nth-child(2) .font-semibold {
+    font-size: 20px !important;
+}
+
+
+/* "Thanh toán khi nhận hàng" */
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+div.space-y-2\.5.text-sm
+p:nth-child(2) {
+    font-size: 20px !important;
+}
+
+/* ===== PHÓNG TO CHỮ 2 NÚT CUỐI TRANG THANH TOÁN ===== */
+
+body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+main.flex-grow.max-w-4xl
+.pt-4
+button
+span {
+    font-size: 18px !important;
+    line-height: 1.5 !important;
+    font-weight: 600 !important;
+}
+
+/* ===== SỬA CHỮ NÚT QUAY LẠI CHI TIẾT ĐƠN HÀNG ===== */
+
+main.max-w-4xl > .bg-white.rounded-2xl
+.space-y-6 > .pt-4 > button:last-child {
+    font-size: 18px !important;
+    font-weight: 500 !important;
+}
+
+/* =========================================================
+   RESPONSIVE - TRANG PHƯƠNG THỨC THANH TOÁN
+   ĐỒNG BỘ VỚI TRANG THÔNG TIN ĐẶT HÀNG
+   ========================================================= */
+
+
+/* =========================
+   TABLET
+   <= 1100px
+   ========================= */
+
+@media (max-width: 1100px) {
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl {
+    width: 94% !important;
+    max-width: 94% !important;
+
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* Thanh tiến trình */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8 {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Thanh nối */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8
+  .h-0\.5 {
+    min-width: 100px !important;
+    max-width: 170px !important;
+  }
+
+  /* Khung thanh toán */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl {
+    padding: 30px !important;
+  }
+}
+
+
+/* =========================
+   MOBILE
+   <= 768px
+   ========================= */
+
+@media (max-width: 768px) {
+
+  /* Khung chính */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 15px 15px 30px !important;
+  }
+
+
+  /* Breadcrumb */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .text-sm.text-gray-400.mb-2 {
+    margin-bottom: 18px !important;
+    font-size: 10px !important;
+  }
+
+
+  /* Tiêu đề */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > h1 {
+    font-size: 22px !important;
+    margin-bottom: 25px !important;
+  }
+
+
+  /* =========================
+     THANH TIẾN TRÌNH
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-bottom: 35px !important;
+  }
+
+
+  /* Icon */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8
+  .w-9.h-9 {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+
+
+  /* Chữ bước */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8
+  span {
+    font-size: 10px !important;
+  }
+
+
+  /* Thanh nối */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8
+  .h-0\.5 {
+    min-width: 30px !important;
+    max-width: 70px !important;
+
+    margin-left: 7px !important;
+    margin-right: 7px !important;
+
+    height: 2px !important;
+  }
+
+
+  /* =========================
+     KHUNG THANH TOÁN
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl {
+    width: 100% !important;
+
+    padding: 22px 18px !important;
+
+    border-radius: 8px !important;
+  }
+
+
+  /* Tiêu đề phương thức */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl
+  > h2 {
+    font-size: 18px !important;
+    margin-bottom: 20px !important;
+  }
+
+
+  /* =========================
+     TAB COD / VNPAY
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl
+  > .flex.border-b {
+    margin-bottom: 22px !important;
+
+    width: 100% !important;
+
+    overflow-x: auto !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl
+  > .flex.border-b button {
+    font-size: 13px !important;
+
+    padding: 8px 10px 12px !important;
+
+    white-space: nowrap !important;
+  }
+
+
+  /* =========================
+     TIÊU ĐỀ COD / VNPAY
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .space-y-6
+  > .flex.items-center {
+    font-size: 17px !important;
+
+    margin-bottom: 18px !important;
+  }
+
+
+  /* =========================
+     THÔNG TIN TỔNG TIỀN
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  div.space-y-2\.5.text-sm
+  p {
+    font-size: 14px !important;
+
+    line-height: 1.7 !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  div.space-y-2\.5.text-sm
+  p .font-semibold {
+    font-size: 14px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  div.space-y-2\.5.text-sm
+  p .text-red-500 {
+    font-size: 16px !important;
+  }
+
+
+  /* =========================
+     KHUNG THÔNG BÁO
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .border-l-4 {
+    width: 100% !important;
+
+    padding: 16px !important;
+
+    margin-top: 16px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .border-l-4 p {
+    font-size: 13px !important;
+
+    line-height: 1.7 !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .border-l-4 .font-bold {
+    font-size: 14px !important;
+  }
+
+
+  /* =========================
+     GHI CHÚ
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .mt-6 {
+    margin-top: 22px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .mt-6 label {
+    font-size: 13px !important;
+
+    margin-bottom: 7px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  textarea {
+    width: 100% !important;
+
+    min-height: 110px !important;
+
+    padding: 10px 12px !important;
+
+    font-size: 12px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  textarea::placeholder {
+    font-size: 11px !important;
+  }
+
+
+  /* =========================
+     2 NÚT
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .pt-4 {
+    padding-top: 18px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .pt-4 button {
+    width: 100% !important;
+
+    min-height: 48px !important;
+
+    padding: 12px 14px !important;
+
+    font-size: 14px !important;
+
+    border-radius: 7px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .pt-4.space-y-3 {
+    row-gap: 10px !important;
+  }
+}
+
+
+/* =========================
+   ĐIỆN THOẠI NHỎ
+   <= 480px
+   ========================= */
+
+@media (max-width: 480px) {
+
+  /* Khung chính */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl {
+    padding: 10px 10px 25px !important;
+  }
+
+
+  /* Breadcrumb */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .text-sm.text-gray-400.mb-2 {
+    font-size: 9px !important;
+
+    margin-bottom: 14px !important;
+  }
+
+
+  /* Tiêu đề */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > h1 {
+    font-size: 20px !important;
+
+    margin-bottom: 20px !important;
+  }
+
+
+  /* =========================
+     THANH TIẾN TRÌNH
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8 {
+    margin-bottom: 30px !important;
+  }
+
+
+  /* Icon */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8
+  .w-9.h-9 {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+
+
+  /* Icon bên trong */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8
+  .w-9.h-9 svg {
+    font-size: 11px !important;
+  }
+
+
+  /* Chữ bước */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8
+  span {
+    font-size: 8px !important;
+  }
+
+
+  /* Thanh nối */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8
+  .h-0\.5 {
+    min-width: 20px !important;
+    max-width: 45px !important;
+
+    margin-left: 4px !important;
+    margin-right: 4px !important;
+  }
+
+
+  /* =========================
+     KHUNG TRẮNG
+     ========================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl {
+    padding: 18px 14px !important;
+
+    border-radius: 8px !important;
+  }
+
+
+  /* Tiêu đề */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl
+  > h2 {
+    font-size: 17px !important;
+
+    margin-bottom: 18px !important;
+  }
+
+
+  /* Tab */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl
+  > .flex.border-b button {
+    font-size: 11px !important;
+
+    padding-left: 7px !important;
+    padding-right: 7px !important;
+
+    padding-bottom: 10px !important;
+  }
+
+
+  /* Tiêu đề COD */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .space-y-6
+  > .flex.items-center {
+    font-size: 15px !important;
+
+    margin-bottom: 15px !important;
+  }
+
+
+  /* Tổng tiền */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  div.space-y-2\.5.text-sm
+  p {
+    font-size: 12px !important;
+
+    line-height: 1.6 !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  div.space-y-2\.5.text-sm
+  p .font-semibold {
+    font-size: 12px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  div.space-y-2\.5.text-sm
+  p .text-red-500 {
+    font-size: 14px !important;
+  }
+
+
+  /* Thông báo */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .border-l-4 {
+    padding: 14px !important;
+
+    margin-top: 12px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .border-l-4 p {
+    font-size: 11px !important;
+
+    line-height: 1.6 !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .border-l-4 .font-bold {
+    font-size: 12px !important;
+  }
+
+
+  /* Ghi chú */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .mt-6 label {
+    font-size: 11px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  textarea {
+    min-height: 95px !important;
+
+    padding: 9px 10px !important;
+
+    font-size: 11px !important;
+  }
+
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  textarea::placeholder {
+    font-size: 10px !important;
+  }
+
+
+  /* 2 nút */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .pt-4 button {
+    min-height: 44px !important;
+
+    padding: 10px 10px !important;
+
+    font-size: 12px !important;
+
+    border-radius: 6px !important;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE - TRANG ĐƠN HÀNG THÀNH CÔNG
+   ĐỒNG BỘ VỚI TRANG THÔNG TIN ĐẶT HÀNG
+   ========================================================= */
+
+
+/* =========================
+   TABLET
+   <= 1100px
+   ========================= */
+
+@media (max-width: 1100px) {
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl {
+        width: 94% !important;
+        max-width: 94% !important;
+
+        padding-left: 25px !important;
+        padding-right: 25px !important;
+    }
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > h1,
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > p,
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white,
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.flex.flex-col {
+        width: 100% !important;
+        max-width: 700px !important;
+    }
+}
+
+
+/* =========================
+   MOBILE
+   <= 768px
+   ========================= */
+
+@media (max-width: 768px) {
+
+    /* Khung chính */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        min-height: calc(100vh - 60px);
+
+        padding: 25px 15px 35px !important;
+    }
+
+
+    /* =========================
+       ICON CHECK
+       ========================= */
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div:first-child {
+        width: 60px !important;
+        height: 60px !important;
+        flex-basis: 60px !important;
+
+        margin-bottom: 15px !important;
+    }
+
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div:first-child svg {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+
+    /* =========================
+       TIÊU ĐỀ
+       ========================= */
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > h1 {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        font-size: 20px !important;
+        line-height: 1.4 !important;
+
+        padding: 14px 12px !important;
+
+        margin-bottom: 14px !important;
+    }
+
+
+    /* =========================
+       LỜI CẢM ƠN
+       ========================= */
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > p {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        font-size: 12px !important;
+        line-height: 1.6 !important;
+
+        padding: 13px !important;
+
+        margin-bottom: 15px !important;
+    }
+
+
+    /* =========================
+       THÔNG TIN ĐƠN HÀNG
+       ========================= */
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        padding: 14px !important;
+
+        border-radius: 8px !important;
+    }
+
+
+    /* Các dòng thông tin */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white > div {
+        width: 100% !important;
+
+        min-height: 40px !important;
+
+        gap: 12px !important;
+
+        padding: 8px 0 !important;
+
+        font-size: 12px !important;
+
+        line-height: 1.5 !important;
+    }
+
+
+    /* Chữ bên trái */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white
+    span.text-gray-500,
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white
+    span.text-gray-700 {
+        font-size: 12px !important;
+
+        white-space: normal !important;
+    }
+
+
+    /* Giá trị bên phải */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white
+    span.font-semibold {
+        font-size: 12px !important;
+
+        text-align: right !important;
+
+        word-break: break-word !important;
+    }
+
+
+    /* Tổng tiền */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white > div:last-child
+    span:last-child {
+        font-size: 15px !important;
+    }
+
+
+    /* =========================
+       2 NÚT
+       ========================= */
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.flex.flex-col {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        flex-direction: column !important;
+
+        gap: 10px !important;
+
+        margin-top: 20px !important;
+    }
+
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.flex.flex-col a {
+        width: 100% !important;
+
+        flex: none !important;
+
+        min-height: 46px !important;
+
+        padding: 12px 15px !important;
+
+        font-size: 13px !important;
+
+        border-radius: 8px !important;
+    }
+}
+
+
+/* =========================
+   ĐIỆN THOẠI NHỎ
+   <= 480px
+   ========================= */
+
+@media (max-width: 480px) {
+
+    /* Khung chính */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        padding: 20px 10px 30px !important;
+    }
+
+
+    /* Icon */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div:first-child {
+        width: 52px !important;
+        height: 52px !important;
+        flex-basis: 52px !important;
+
+        margin-bottom: 13px !important;
+    }
+
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div:first-child svg {
+        width: 44px !important;
+        height: 44px !important;
+    }
+
+
+    /* Tiêu đề */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > h1 {
+        font-size: 17px !important;
+
+        padding: 12px 8px !important;
+
+        margin-bottom: 12px !important;
+    }
+
+
+    /* Lời cảm ơn */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > p {
+        font-size: 11px !important;
+
+        line-height: 1.6 !important;
+
+        padding: 11px !important;
+
+        margin-bottom: 12px !important;
+    }
+
+
+    /* Khung thông tin */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white {
+        padding: 11px !important;
+
+        border-radius: 7px !important;
+    }
+
+
+    /* Dòng thông tin */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white > div {
+        min-height: 38px !important;
+
+        gap: 8px !important;
+
+        padding: 7px 0 !important;
+
+        font-size: 11px !important;
+    }
+
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white
+    span.text-gray-500,
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white
+    span.text-gray-700 {
+        font-size: 11px !important;
+    }
+
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white
+    span.font-semibold {
+        font-size: 11px !important;
+
+        max-width: 55% !important;
+    }
+
+
+    /* Tổng tiền */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.bg-white > div:last-child
+    span:last-child {
+        font-size: 14px !important;
+    }
+
+
+    /* 2 nút */
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.flex.flex-col {
+        margin-top: 15px !important;
+
+        gap: 8px !important;
+    }
+
+
+    body:has(main.max-w-2xl > h1)
+    main.max-w-2xl > div.flex.flex-col a {
+        min-height: 42px !important;
+
+        padding: 10px !important;
+
+        font-size: 12px !important;
+
+        border-radius: 7px !important;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE TV - OBISIDIAN WEAR
+   THÔNG TIN ĐẶT HÀNG
+   PHƯƠNG THỨC THANH TOÁN
+   ĐƠN HÀNG THÀNH CÔNG
+
+   Chỉ áp dụng cho màn hình lớn.
+   Không ảnh hưởng mobile/tablet.
+   ========================================================= */
+
+
+/* =========================================================
+   TV FULL HD
+   1400px trở lên
+   ========================================================= */
+
+@media screen and (min-width: 1400px) {
+
+  /* =======================================================
+     1. THÔNG TIN ĐẶT HÀNG
+     ======================================================= */
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main {
+    width: 100% !important;
+    max-width: 1600px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Tiêu đề */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main h1 {
+    font-size: 36px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Thanh tiến trình */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .flex.items-center.mb-8 {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Số bước */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .flex.items-center.mb-8 .w-9.h-9 {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    font-size: 18px !important;
+  }
+
+  /* Chữ bước */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .flex.items-center.mb-8 span {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+  }
+
+  /* Đường nối */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .flex.items-center.mb-8 .h-0\.5 {
+    height: 4px !important;
+    min-width: 140px !important;
+  }
+
+  /* Form trắng */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .bg-white {
+    padding: 45px !important;
+  }
+
+  /* Tiêu đề form */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .bg-white h2 {
+    font-size: 28px !important;
+  }
+
+  /* Label */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main label {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+  }
+
+  /* Input */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main input,
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main select {
+    min-height: 56px !important;
+    padding: 14px 18px !important;
+    font-size: 18px !important;
+  }
+
+  /* Placeholder */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main input::placeholder {
+    font-size: 17px !important;
+  }
+
+  /* Khoảng cách các ô */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .space-y-4 > * + * {
+    margin-top: 20px !important;
+  }
+
+  /* Nút */
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main button {
+    min-height: 58px !important;
+    padding: 14px 35px !important;
+    font-size: 19px !important;
+    font-weight: 600 !important;
+  }
+
+
+  /* =======================================================
+     2. PHƯƠNG THỨC THANH TOÁN
+     ======================================================= */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl {
+    width: 100% !important;
+    max-width: 1500px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+  }
+
+  /* Breadcrumb */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .text-sm.text-gray-400.mb-2 {
+    font-size: 17px !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Tiêu đề */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > h1 {
+    font-size: 38px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 35px !important;
+  }
+
+  /* Thanh tiến trình */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8 {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Số bước */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8 .w-9.h-9 {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    font-size: 18px !important;
+  }
+
+  /* Chữ bước */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8 span {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+  }
+
+  /* Đường nối */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > .flex.items-center.mb-8 .h-0\.5 {
+    height: 4px !important;
+    min-width: 140px !important;
+  }
+
+  /* Khung trắng */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl {
+    width: 100% !important;
+    padding: 45px !important;
+    border-radius: 18px !important;
+  }
+
+  /* Tiêu đề trong khung */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl h2 {
+    font-size: 28px !important;
+  }
+
+  /* Label */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl label {
+    font-size: 18px !important;
+  }
+
+  /* Text */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl p {
+    font-size: 18px !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Textarea */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl textarea {
+    min-height: 140px !important;
+    padding: 16px 18px !important;
+    font-size: 18px !important;
+  }
+
+  /* Nút */
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .pt-4 button {
+    min-height: 58px !important;
+    padding: 14px 35px !important;
+    font-size: 19px !important;
+  }
+
+
+  /* =======================================================
+     3. ĐƠN HÀNG THÀNH CÔNG
+     ======================================================= */
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl {
+    width: 100% !important;
+    max-width: 1500px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+  }
+
+  /* Tiêu đề */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > h1 {
+    font-size: 42px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Mô tả */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > p {
+    font-size: 19px !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Icon thành công */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div:first-child {
+    width: 90px !important;
+    height: 90px !important;
+    min-width: 90px !important;
+    margin-bottom: 25px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div:first-child svg {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  /* Card thông tin */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white {
+    width: 100% !important;
+    max-width: 1200px !important;
+    padding: 40px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Chữ trong card */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white p,
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white span {
+    font-size: 18px !important;
+  }
+
+  /* Nút */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl button {
+    min-height: 58px !important;
+    padding: 14px 35px !important;
+    font-size: 18px !important;
+  }
+}
+
+
+/* =========================================================
+   TV 1920px+
+   ========================================================= */
+
+@media screen and (min-width: 1800px) {
+
+  /* ===== THÔNG TIN ĐẶT HÀNG ===== */
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main {
+    max-width: 1800px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main h1 {
+    font-size: 44px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .bg-white {
+    padding: 55px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .bg-white h2 {
+    font-size: 32px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main label {
+    font-size: 20px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main input,
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main select {
+    min-height: 62px !important;
+    font-size: 20px !important;
+  }
+
+
+  /* ===== PHƯƠNG THỨC THANH TOÁN ===== */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl {
+    max-width: 1800px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > h1 {
+    font-size: 46px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl {
+    padding: 55px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl label {
+    font-size: 20px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl p {
+    font-size: 20px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .pt-4 button {
+    min-height: 64px !important;
+    font-size: 21px !important;
+  }
+
+
+  /* ===== ĐƠN HÀNG THÀNH CÔNG ===== */
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl {
+    max-width: 1800px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > h1 {
+    font-size: 50px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > p {
+    font-size: 21px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white {
+    max-width: 1400px !important;
+    padding: 50px !important;
+  }
+}
+
+
+/* =========================================================
+   TV 4K - 2560px+
+   ========================================================= */
+
+@media screen and (min-width: 2400px) {
+
+  /* ===== THÔNG TIN ĐẶT HÀNG ===== */
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main {
+    max-width: 2200px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main h1 {
+    font-size: 52px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .bg-white {
+    padding: 65px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main .bg-white h2 {
+    font-size: 38px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main label {
+    font-size: 23px !important;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main input,
+  body:has(input[placeholder="Nhập họ tên người nhận"])
+  main select {
+    min-height: 70px !important;
+    font-size: 22px !important;
+  }
+
+
+  /* ===== PHƯƠNG THỨC THANH TOÁN ===== */
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl {
+    max-width: 2200px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > h1 {
+    font-size: 54px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  > div.bg-white.rounded-2xl {
+    padding: 65px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl label {
+    font-size: 23px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl p {
+    font-size: 23px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl textarea {
+    min-height: 180px !important;
+    font-size: 22px !important;
+  }
+
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"])
+  main.flex-grow.max-w-4xl
+  .pt-4 button {
+    min-height: 70px !important;
+    font-size: 23px !important;
+  }
+
+
+  /* ===== ĐƠN HÀNG THÀNH CÔNG ===== */
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl {
+    max-width: 2200px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > h1 {
+    font-size: 58px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > p {
+    font-size: 24px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div:first-child {
+    width: 110px !important;
+    height: 110px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white {
+    max-width: 1700px !important;
+    padding: 65px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white p,
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white span {
+    font-size: 22px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl button {
+    min-height: 70px !important;
+    font-size: 22px !important;
+  }
+}
+
+
+/* =========================================================
+   CHỐNG VỠ GIAO DIỆN TRÊN TV
+   ========================================================= */
+
+@media screen and (min-width: 1400px) {
+
+  body:has(input[placeholder="Nhập họ tên người nhận"]) *,
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"]) *,
+  body:has(main.max-w-2xl > h1) * {
+    box-sizing: border-box;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"]) img,
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"]) img,
+  body:has(main.max-w-2xl > h1) img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  body:has(input[placeholder="Nhập họ tên người nhận"]) input,
+  body:has(input[placeholder="Nhập họ tên người nhận"]) select,
+  body:has(input[placeholder="Nhập họ tên người nhận"]) textarea,
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"]) input,
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"]) select,
+  body:has(textarea[placeholder*="Giao hàng vào giờ hành chính"]) textarea {
+    max-width: 100% !important;
+  }
+}
+
+/* =========================================================
+   FIX TRANG ĐƠN HÀNG THÀNH CÔNG TRÊN TV
+   Giữ khung nội dung gọn, không kéo full màn hình
+   ========================================================= */
+
+@media screen and (min-width: 1400px) {
+
+  /* Khung chính vẫn nằm giữa */
+  body:has(main.max-w-2xl > h1) main.max-w-2xl {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+  }
+
+  /* ICON */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div:first-child {
+    width: 80px !important;
+    height: 80px !important;
+    min-width: 80px !important;
+    margin-bottom: 20px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div:first-child svg {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  /* TIÊU ĐỀ - GIỮ KHUNG GỌN */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > h1 {
+    width: 700px !important;
+    max-width: 700px !important;
+    font-size: 32px !important;
+    padding: 18px 20px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* LỜI CẢM ƠN */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > p {
+    width: 700px !important;
+    max-width: 700px !important;
+    font-size: 17px !important;
+    padding: 18px 20px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* KHUNG THÔNG TIN ĐƠN HÀNG */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white {
+    width: 700px !important;
+    max-width: 700px !important;
+    padding: 20px 22px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* CHỮ TRONG KHUNG */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white > div {
+    font-size: 16px !important;
+    min-height: 42px !important;
+  }
+
+  /* Tổng cộng */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white span.text-indigo-600 {
+    font-size: 18px !important;
+  }
+
+  /* HAI NÚT */
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.flex.flex-col {
+    width: 700px !important;
+    max-width: 700px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.flex.flex-col a {
+    min-height: 48px !important;
+    font-size: 16px !important;
+  }
+}
+
+
+/* =========================================================
+   TV 1920px+
+   Chỉ tăng chữ, KHÔNG tăng chiều rộng khung
+   ========================================================= */
+
+@media screen and (min-width: 1800px) {
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > h1 {
+    width: 700px !important;
+    max-width: 700px !important;
+    font-size: 34px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > p {
+    width: 700px !important;
+    max-width: 700px !important;
+    font-size: 18px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white {
+    width: 700px !important;
+    max-width: 700px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white > div {
+    font-size: 17px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.flex.flex-col {
+    width: 700px !important;
+    max-width: 700px !important;
+  }
+}
+
+
+/* =========================================================
+   TV 4K
+   Vẫn giữ khung 700px, chỉ tăng chữ vừa phải
+   ========================================================= */
+
+@media screen and (min-width: 2400px) {
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > h1 {
+    width: 750px !important;
+    max-width: 750px !important;
+    font-size: 38px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > p {
+    width: 750px !important;
+    max-width: 750px !important;
+    font-size: 19px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white {
+    width: 750px !important;
+    max-width: 750px !important;
+    padding: 24px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.bg-white > div {
+    font-size: 18px !important;
+  }
+
+  body:has(main.max-w-2xl > h1)
+  main.max-w-2xl > div.flex.flex-col {
+    width: 750px !important;
+    max-width: 750px !important;
+  }
+}
