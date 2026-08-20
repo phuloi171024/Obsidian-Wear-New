@@ -67,7 +67,7 @@ export default function CheckoutPage() {
   return (
     <>
       <Toaster position="top-right" />
-      <Header />
+  
 
       <div className="checkout-page">
         {/* Breadcrumb */}

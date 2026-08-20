@@ -141,12 +141,33 @@ export default function ShippingInfoPage() {
   };
 
   // 2. GỌI API LẤY DANH SÁCH MÃ TỪ DB
+// 2. GỌI API LẤY DANH SÁCH MÃ TỪ DB (ĐÃ NÂNG CẤP BỘ LỌC)
   const fetchCoupons = async () => {
     try {
       const res = await fetch("http://localhost:8000/api/coupons", { headers: getHeaders() });
       const data = await res.json();
       if (res.ok && data.success) {
-        setDbCoupons(data.data);
+        const now = new Date();
+        
+        // Lọc bỏ ngay các mã đã hết hạn, hết lượt hoặc bị khóa
+        const validCoupons = data.data.filter(coupon => {
+          // 1. Kiểm tra trạng thái đang hoạt động
+          if (coupon.status === 0 || coupon.status === false) return false;
+          
+          // 2. Kiểm tra số lượt dùng (nếu có giới hạn)
+          if (coupon.usage_limit !== null && coupon.used_count >= coupon.usage_limit) return false;
+          
+          // 3. Kiểm tra ngày hết hạn
+          if (coupon.expires_at) {
+            const expiryDate = new Date(coupon.expires_at);
+            if (expiryDate < now) return false;
+          }
+          
+          return true; // Thỏa mãn hết các điều kiện thì mới cho phép hiển thị
+        });
+
+        // Chỉ lưu các mã còn hợp lệ vào state
+        setDbCoupons(validCoupons); 
       }
     } catch (error) {
       console.error("Không thể tải danh sách mã giảm giá");

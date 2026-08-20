@@ -13,7 +13,7 @@ import {
 export default function Contact() {
   return (
     <>
-      <Header />
+      
       <div className="breadcrumb">
   <Link to="/">Trang chủ</Link>
 

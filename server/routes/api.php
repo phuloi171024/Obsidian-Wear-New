@@ -24,7 +24,7 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BrandController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController; // Chỉ giữ lại dòng này
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
@@ -54,7 +54,7 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 Route::post('/coupons/apply', [CouponController::class, 'apply']);
 Route::get('/coupons', [CouponController::class, 'index']);
 
-// VNPay: Return & IPN (ĐÃ GIẢI QUYẾT AC62: Bỏ auth:sanctum cho IPN)
+// VNPay: Return & IPN
 Route::get('/vnpay/return', [VNPayController::class, 'vnpayReturn']);
 Route::get('/vnpay/ipn', [VNPayController::class, 'vnpayIpn']); 
 
@@ -110,6 +110,7 @@ Route::middleware('auth:sanctum')->group(function () {
 | 3. ADMIN PROTECTED ROUTES (Khu vực Quản trị Admin)
 |--------------------------------------------------------------------------
 */
+// Đã gắn AdminMiddleware thành công chặn hoàn toàn WA04
 Route::middleware(['auth:sanctum', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->group(function () {
 
     // 3.1. Dashboard Thống Kê
@@ -127,6 +128,7 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\AdminMiddleware::class])
     Route::put('/products/{id}/variants/{variantId}', [AdminProductController::class, 'updateVariant']);
     Route::delete('/products/{id}/variants/{variantId}', [AdminProductController::class, 'deleteVariant']);
     Route::post('/products/{id}/image', [AdminProductController::class, 'updateImage']);  
+    Route::post('/products/{product}/variants/{variant}/image', [AdminProductController::class, 'updateVariantImage']); // Đã sửa về AdminProductController cho đồng nhất
 
     // 3.5. Quản Lý Đơn Hàng (Orders - Dành cho Admin quản lý toàn hệ thống)
     Route::get('/orders', [AdminOrderController::class, 'index']);
@@ -146,7 +148,7 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\AdminMiddleware::class])
     Route::delete('/reviews/{id}', [AdminReviewController::class, 'destroy']);
 
     // 3.8. Quản Lý Mã Giảm Giá (Coupons)
-    Route::post('/coupons/bulk', [AdminCouponController::class, 'bulkDestroy']);
+    Route::delete('/coupons/bulk', [AdminCouponController::class, 'bulkDestroy']);
     Route::apiResource('/coupons', AdminCouponController::class);
 
 });

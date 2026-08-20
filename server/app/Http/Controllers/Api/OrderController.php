@@ -57,22 +57,58 @@ class OrderController extends Controller
                 // Phí vận chuyển: Đồng bộ logic >= 3 cái freeship, ngược lại 30k
                 $shippingFee = ($totalQuantity >= 3) ? 0 : 30000;
 
-                // Xử lý mã giảm giá
+                // ==============================================================
+                // XỬ LÝ MÃ GIẢM GIÁ - BƯỚC CHỐT CHẶN THANH TOÁN CUỐI CÙNG
+                // ==============================================================
                 $discountAmount = 0;
                 $couponId = $request->input('coupon_id'); 
 
                 if (!empty($couponId)) {
                     $coupon = Coupon::find($couponId);
-                    if ($coupon && $coupon->status && !$coupon->trashed()) {
-                        // Tính số tiền được giảm
-                        if ($coupon->discount_type === 'percent') {
-                            $discountAmount = min($subtotal * ($coupon->discount_value / 100), $subtotal);
-                        } elseif ($coupon->discount_type === 'shipping') {
-                            $discountAmount = min($coupon->discount_value, $shippingFee);
-                        } else {
-                            // Fixed discount
-                            $discountAmount = min($coupon->discount_value, $subtotal);
-                        }
+
+                    // 1. Kiểm tra tồn tại
+                    if (!$coupon || $coupon->trashed()) {
+                        return response()->json(['status' => false, 'message' => 'Mã giảm giá không tồn tại!'], 404);
+                    }
+                    // 2. Kiểm tra trạng thái khóa
+                    if (!$coupon->status) {
+                        return response()->json(['status' => false, 'message' => 'Mã giảm giá này đã bị tạm ngưng!'], 400);
+                    }
+                    // 3. Kiểm tra số lượt sử dụng
+                    if ($coupon->usage_limit !== null && $coupon->used_count >= $coupon->usage_limit) {
+                        return response()->json(['status' => false, 'message' => 'Mã giảm giá này đã hết lượt sử dụng!'], 400);
+                    }
+                    // 4. Kiểm tra ngày hết hạn
+                    $now = Carbon::now();
+                    if (($coupon->expires_at && $now->greaterThan($coupon->expires_at)) || ($coupon->end_date && $now->greaterThan($coupon->end_date))) {
+                        return response()->json(['status' => false, 'message' => 'Mã giảm giá này đã hết hạn!'], 400);
+                    }
+                    // 5. Kiểm tra giá trị đơn hàng tối thiểu
+                    if ($coupon->min_order_value !== null && $subtotal < $coupon->min_order_value) {
+                        return response()->json(['status' => false, 'message' => 'Đơn hàng chưa đạt giá trị tối thiểu để dùng mã này!'], 400);
+                    }
+
+                    // ==========================================
+                    // THÊM CHỐT CHẶN: MỖI USER CHỈ ĐƯỢC DÙNG 1 LẦN 
+                    // ==========================================
+                    $hasUsed = Order::where('user_id', $user->id)
+                                    ->where('coupon_id', $coupon->id)
+                                    ->where('status', '!=', 'cancelled') 
+                                    ->exists();
+
+                    if ($hasUsed) {
+                        return response()->json(['status' => false, 'message' => 'Bạn đã sử dụng mã giảm giá này cho một đơn hàng trước đó rồi!'], 400);
+                    }
+                    // ==========================================
+
+                    // Tính số tiền được giảm nếu vượt qua hết chốt chặn
+                    if ($coupon->discount_type === 'percent') {
+                        $discountAmount = min($subtotal * ($coupon->discount_value / 100), $subtotal);
+                    } elseif ($coupon->discount_type === 'shipping') {
+                        $discountAmount = min($coupon->discount_value, $shippingFee);
+                    } else {
+                        // Fixed discount
+                        $discountAmount = min($coupon->discount_value, $subtotal);
                     }
                 }
 
@@ -90,12 +126,9 @@ class OrderController extends Controller
                 ]);
 
                 // Cộng lượt dùng mã giảm giá
-                if (!empty($couponId)) {
-                    $coupon = Coupon::find($couponId);
-                    if ($coupon) {
-                        $coupon->used_count = $coupon->used_count + 1;
-                        $coupon->save();
-                    }
+                if (!empty($couponId) && isset($coupon)) {
+                    $coupon->used_count = $coupon->used_count + 1;
+                    $coupon->save();
                 }
 
                 // 4. Lưu items và Trừ tồn kho
@@ -189,7 +222,7 @@ class OrderController extends Controller
         }
     }
     
-    // 4. Áp dụng mã giảm giá ở giỏ hàng (Check điều kiện)
+    // 4. Áp dụng mã giảm giá ở giỏ hàng (Check điều kiện lúc bấm Áp Dụng)
     public function apply(Request $request)
     {
         $validated = $request->validate([
@@ -203,22 +236,38 @@ class OrderController extends Controller
 
         $coupon = Coupon::whereRaw('UPPER(code) = ?', [$code])->first();
 
-        if (!$coupon) {
+        // ==============================================================
+        // 5 CHỐT CHẶN BẢO MẬT MÃ GIẢM GIÁ
+        // ==============================================================
+        
+        // 1. Kiểm tra tồn tại
+        if (!$coupon || $coupon->trashed()) {
             return response()->json(['success' => false, 'message' => 'Mã giảm giá không tồn tại!'], 404);
         }
 
-        if (!$coupon->status || $coupon->trashed()) {
-            return response()->json(['success' => false, 'message' => 'Mã giảm giá này đã bị khóa hoặc không khả dụng!'], 400);
+        // 2. Kiểm tra khóa
+        if (!$coupon->status) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá này đã bị tạm ngưng!'], 400);
         }
 
+        // 3. Kiểm tra số lượt sử dụng
+        if ($coupon->usage_limit !== null && $coupon->used_count >= $coupon->usage_limit) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá này đã hết lượt sử dụng!'], 400);
+        }
+
+        // 4. Kiểm tra ngày hết hạn
         $now = Carbon::now();
         if (($coupon->expires_at && $now->greaterThan($coupon->expires_at)) || 
             ($coupon->end_date && $now->greaterThan($coupon->end_date))) {
             return response()->json(['success' => false, 'message' => 'Mã giảm giá đã hết hạn sử dụng!'], 400);
         }
 
-        if ($coupon->usage_limit !== null && $coupon->used_count >= $coupon->usage_limit) {
-            return response()->json(['success' => false, 'message' => 'Mã giảm giá đã hết lượt sử dụng!'], 400);
+        // 5. Kiểm tra giá trị đơn hàng tối thiểu
+        if ($coupon->min_order_value !== null && $orderValue < (float) $coupon->min_order_value) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format((float) $coupon->min_order_value, 0, ',', '.') . 'đ để áp dụng mã này.',
+            ], 400);
         }
 
         // KIỂM TRA MỖI USER CHỈ ĐƯỢC DÙNG 1 LẦN
@@ -234,13 +283,6 @@ class OrderController extends Controller
                     'message' => 'Bạn đã sử dụng mã giảm giá này rồi! Mỗi người chỉ được dùng 1 lần.'
                 ], 400);
             }
-        }
-
-        if ($coupon->min_order_value !== null && $orderValue < (float) $coupon->min_order_value) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format((float) $coupon->min_order_value, 0, ',', '.') . 'đ để áp dụng mã này.',
-            ], 400);
         }
 
         if (!in_array($coupon->discount_type, ['fixed', 'percent', 'shipping'], true)) {

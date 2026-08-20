@@ -162,7 +162,7 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
   return (
     <>
       <Toaster position="top-right" />
-      <Header />
+   
 
       <div className="orders-page">
         <div className="account-layout">

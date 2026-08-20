@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FiSearch,
   FiEdit,
@@ -8,7 +8,9 @@ import {
   FiXCircle,
   FiAlertTriangle,
   FiX,
-  FiCheck
+  FiCheck,
+  FiImage,
+  FiUploadCloud
 } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
 import "./Admin.css";
@@ -19,10 +21,14 @@ export default function Variants() {
   const [search, setSearch] = useState("");
 
   // ==========================================
-  // THÊM MỚI: STATE DÀNH CHO PHÂN TRANG
+  // THÊM: STATE & REF CHO CHỨC NĂNG UP ẢNH BIẾN THỂ
   // ==========================================
+  const [uploadingVariant, setUploadingVariant] = useState(null); // Lưu { productId, variantId }
+  const fileInputRef = useRef(null);
+
+  // STATE DÀNH CHO PHÂN TRANG
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20; // Cài đặt số lượng biến thể muốn hiển thị trên 1 trang
+  const itemsPerPage = 20;
 
   // Thống kê tổng quan
   const [stats, setStats] = useState({
@@ -43,7 +49,6 @@ export default function Variants() {
 
     try {
       setLoading(true);
-      // Ép lấy 1000 sản phẩm để chắc chắn gom được toàn bộ biến thể của cả web
       const res = await fetch(`http://localhost:8000/api/admin/products?per_page=1000&search=${keyword}`, {
         headers: {
           "Accept": "application/json",
@@ -82,7 +87,8 @@ export default function Variants() {
               allVariantsList.push({
                 id: v.id,
                 productId: prod.id,
-                image: prod.thumbnail || "https://placehold.co/40",
+                // ƯU TIÊN ẢNH BIẾN THỂ: Nếu biến thể có ảnh thì dùng, không thì lấy ảnh gốc sản phẩm
+                image: v.image || v.image_url || prod.thumbnail || "https://placehold.co/40",
                 productName: prod.name,
                 sku: prod.sku,
                 size: v.size,
@@ -104,7 +110,6 @@ export default function Variants() {
           low: lowCount
         });
         
-        // Reset về trang 1 mỗi khi lấy lại dữ liệu (hoặc khi search)
         setCurrentPage(1);
       }
     } catch (error) {
@@ -124,7 +129,54 @@ export default function Variants() {
     }
   };
 
-  // ================= 2. XÓA BIẾN THỂ =================
+  // ================= 2. UPLOAD ẢNH CHO BIẾN THỂ =================
+  const triggerFileSelect = (productId, variantId) => {
+    setUploadingVariant({ productId, variantId });
+    fileInputRef.current.click(); 
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !uploadingVariant) return;
+
+    const formData = new FormData();
+    formData.append("image_file", file);
+
+    const toastId = toast.loading("Đang tải ảnh lên Cloudinary...");
+
+    try {
+      const token = localStorage.getItem("access_token");
+      
+      const res = await fetch(`http://localhost:8000/api/admin/products/${uploadingVariant.productId}/variants/${uploadingVariant.variantId}/image`, {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.status) {
+        toast.success("Cập nhật ảnh màu sắc thành công!", { id: toastId });
+        
+        // Cập nhật state để ảnh mới hiện lên tức thì không cần f5
+        setVariants(variants.map(v => 
+          v.id === uploadingVariant.variantId ? { ...v, image: data.image_url } : v
+        ));
+      } else {
+        toast.error(data.message || "Lỗi khi up ảnh!", { id: toastId });
+      }
+    } catch (error) {
+      toast.error("Không thể kết nối đến máy chủ!", { id: toastId });
+    } finally {
+      setUploadingVariant(null);
+      e.target.value = null; 
+    }
+  };
+
+  // ================= 3. XÓA BIẾN THỂ =================
   const handleDelete = async (productId, variantId) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa biến thể này?")) return;
 
@@ -148,7 +200,7 @@ export default function Variants() {
     }
   };
 
-  // ================= 3. SỬA BIẾN THỂ =================
+  // ================= 4. SỬA BIẾN THỂ =================
   const openEditModal = (item) => {
     setEditModal({ show: true, variant: item });
     setEditForm({ color: item.color, size: item.size, stock: item.stock });
@@ -190,22 +242,24 @@ export default function Variants() {
     return new Intl.NumberFormat('vi-VN').format(amount);
   };
 
-  // ==========================================
-  // THÊM MỚI: LOGIC TÍNH TOÁN PHÂN TRANG
-  // ==========================================
-  // 1. Tính toán index của phần tử đầu và phần tử cuối trên trang hiện tại
+  // Tính toán phân trang
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  
-  // 2. Cắt mảng tổng (variants) ra thành 1 mảng nhỏ chỉ chứa 10 phần tử để hiển thị
   const currentVariants = variants.slice(indexOfFirstItem, indexOfLastItem);
-  
-  // 3. Tính tổng số trang
   const totalPages = Math.ceil(variants.length / itemsPerPage);
 
   return (
     <div className="variants-page">
       <Toaster position="top-right" />
+
+      {/* THẺ INPUT FILE ẨN CHỜ LỆNH UP ẢNH */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept="image/png, image/jpeg, image/jpg, image/webp"
+        onChange={handleFileChange}
+      />
 
       {/* SEARCH */}
       <div className="variants-search">
@@ -254,11 +308,11 @@ export default function Variants() {
         </div>
       </div>
 
-      {/* TITLE + BUTTON */}
+      {/* TITLE */}
       <div className="variants-heading">
         <div>
-          <h1>Quản lí tổng tất cả biến thể</h1>
-          <p>Hệ thống quản lý toàn bộ size, màu sắc và tồn kho của sản phẩm.</p>
+          <h1>Quản lý tổng tất cả biến thể</h1>
+          <p>Cập nhật tồn kho và hình ảnh riêng biệt cho từng kích cỡ, màu sắc.</p>
         </div>
       </div>
 
@@ -268,7 +322,7 @@ export default function Variants() {
           <thead>
             <tr>
               <th className="check-column"><input type="checkbox" /></th>
-              <th>Hình ảnh</th>
+              <th width="150">Hình ảnh màu sắc</th>
               <th>Tên sản phẩm</th>
               <th>Mã SKU</th>
               <th>Kích thước</th>
@@ -285,21 +339,37 @@ export default function Variants() {
             ) : variants.length === 0 ? (
               <tr><td colSpan="10" style={{ textAlign: "center", padding: "40px", color: "#888" }}>Không tìm thấy biến thể nào.</td></tr>
             ) : (
-              // BƯỚC ĐỔI QUAN TRỌNG: Render từ mảng "currentVariants" thay vì mảng gốc
               currentVariants.map((item) => (
                 <tr key={item.id}>
                   <td className="check-column"><input type="checkbox" /></td>
+                  
+                  {/* CỘT HÌNH ẢNH MỚI CÓ NÚT UPLOAD */}
                   <td>
-                    <div className="variant-thumbnail">
-                      <img src={item.image} alt="" style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "6px" }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '45px', height: '45px', borderRadius: '6px', border: '1px solid #eee', background: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                        {item.image && item.image !== "https://placehold.co/40" ? (
+                          <img src={item.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <FiImage style={{ color: '#9ca3af', fontSize: '20px' }} />
+                        )}
+                      </div>
+                      <button 
+                        onClick={() => triggerFileSelect(item.productId, item.id)}
+                        disabled={uploadingVariant?.variantId === item.id}
+                        style={{ background: '#eff6ff', color: '#2563eb', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold', width: "max-content" }}
+                        title="Tải ảnh lên cho màu này"
+                      >
+                        <FiUploadCloud /> {uploadingVariant?.variantId === item.id ? "Đang up..." : "Sửa ảnh"}
+                      </button>
                     </div>
                   </td>
+
                   <td><strong>{item.productName}</strong></td>
                   <td className="variant-sku">{item.sku}</td>
                   <td>{item.size}</td>
-                  <td>{item.color}</td>
+                  <td><span style={{background: "#f3f4f6", padding: "4px 8px", borderRadius: "4px", fontSize: "13px", fontWeight: "600"}}>{item.color}</span></td>
                   <td className="variant-price">{formatVND(item.price)}đ</td>
-                  <td><strong>{item.stock}</strong></td>
+                  <td><strong style={{ color: item.stock > 0 ? "#10b981" : "#ef4444"}}>{item.stock}</strong></td>
                   <td>
                     <span className={`variant-status ${item.statusClass}`}>
                       {item.status}
@@ -322,9 +392,7 @@ export default function Variants() {
         </table>
       </div>
 
-      {/* ==========================================
-          THÊM MỚI: GIAO DIỆN NÚT BẤM PHÂN TRANG 
-          ========================================== */}
+      {/* PHÂN TRANG */}
       {totalPages > 1 && (
         <div className="pagination" style={{ marginTop: "20px" }}>
           <button 

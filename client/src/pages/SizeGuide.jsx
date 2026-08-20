@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 export default function SizeGuide() {
   return (
     <>
-      <Header />
 
       <div className="size-page">
 

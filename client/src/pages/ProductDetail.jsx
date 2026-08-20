@@ -466,6 +466,27 @@ export default function ProductDetail() {
     }
   };
 
+  // ================= TÍNH NĂNG MỚI: ĐỔI MÀU ẢNH SẢN PHẨM =================
+  const handleColorChange = (selectedCol) => {
+    setColor(selectedCol); // Vẫn lưu màu khách chọn
+
+    if (!product) return;
+
+    // Logic đổi ảnh: Kiểm tra xem biến thể màu đó có chứa link ảnh riêng không
+    const variant = product.variants?.find((v) => v.color === selectedCol);
+    
+    // Tùy thuộc vào Database của em lưu ảnh ở đâu (image, thumbnail, hoặc trong mảng images)
+    if (variant && (variant.image || variant.image_url || variant.thumbnail)) {
+      setDisplayImage(variant.image || variant.image_url || variant.thumbnail);
+    } else {
+      // Nếu biến thể không có ảnh riêng, kiểm tra xem mảng ảnh phụ có gắn màu không
+      const colorImage = product.images?.find((img) => img.color === selectedCol);
+      if (colorImage && colorImage.image_url) {
+        setDisplayImage(colorImage.image_url);
+      }
+    }
+  };
+
   if (loading)
     return (
       <div
@@ -519,14 +540,13 @@ export default function ProductDetail() {
       </div>
 
       <div className="product-detail">
+        {/* 1. Đổi src của thẻ img sang state displayImage */}
         <div className="product-image">
           <img
-  src={
-    product.thumbnail ? product.thumbnail : "/images/placeholder.png"
-  }
-  alt={product.name}
-  className="product-main-image"
-/>
+            src={displayImage || "/images/placeholder.png"} 
+            alt={product.name}
+            className="product-main-image"
+          />
         </div>
 
         <div className="product-info">
@@ -585,24 +605,17 @@ export default function ProductDetail() {
             <div className="option product-options">
               <h4>Màu sắc</h4>
 
+              {/* 2. Đổi hàm onClick của nút Màu sắc */}
               <div className="color-list color-options">
-                {availableColors.map(
-                  (c) => (
-                    <button
-                      key={c}
-                      className={`color-btn ${
-                        color === c
-                          ? "active"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        setColor(c)
-                      }
-                    >
-                      {c}
-                    </button>
-                  )
-                )}
+                {availableColors.map((c) => (
+                  <button
+                    key={c}
+                    className={`color-btn ${color === c ? "active" : ""}`}
+                    onClick={() => handleColorChange(c)} // ĐÃ SỬA CHỖ NÀY
+                  >
+                    {c}
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -927,7 +940,7 @@ export default function ProductDetail() {
                       className="review-item"
                       key={r.id}
                     >
-                      {/* ĐÃ SỬA: Thêm nút báo cáo vào phần Header của bình luận */}
+                
                       <div className="review-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <span className="review-name" style={{ marginRight: '10px' }}>

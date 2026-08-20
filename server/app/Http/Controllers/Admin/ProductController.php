@@ -335,4 +335,44 @@ class ProductController extends Controller
             'message' => 'Vui lòng chọn một file ảnh.'
         ], 400);
     }
+    /**
+     * POST /admin/products/{id}/variants/{variantId}/image
+     */
+    public function updateVariantImage(Request $request, int $id, int $variantId)
+    {
+        $variant = ProductVariant::where('product_id', $id)->findOrFail($variantId);
+
+        $request->validate([
+            'image_file' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+        ]);
+
+        if ($request->hasFile('image_file')) {
+            try {
+                // Khởi tạo Cloudinary bằng URL cứng giống hàm up ảnh sản phẩm của em
+                $cloudinary = new \Cloudinary\Cloudinary('cloudinary://383195926683889:7bIeBEpS5bL44Nh_sVdnrC_j4r4@si8y1azq');
+                
+                $result = $cloudinary->uploadApi()->upload($request->file('image_file')->getRealPath(), [
+                    'folder' => 'obsidian_wear/variants'
+                ]);
+
+                // Lưu link ảnh vào cột 'image' của bảng product_variants
+                $variant->image = $result['secure_url'];
+                $variant->save();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Cập nhật ảnh biến thể thành công!',
+                    'image_url' => $result['secure_url']
+                ], 200);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Lỗi Cloudinary: ' . $e->getMessage()
+                ], 500);
+            }
+        }
+
+        return response()->json(['status' => false, 'message' => 'Vui lòng chọn ảnh.'], 400);
+    }
 }

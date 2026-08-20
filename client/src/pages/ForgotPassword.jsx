@@ -3,6 +3,7 @@ import "./Auth.css";
 import { Link } from "react-router-dom";
 import { FiMail } from "react-icons/fi";
 import { authService } from "../services/authService"; 
+import Header from "../components/Header";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

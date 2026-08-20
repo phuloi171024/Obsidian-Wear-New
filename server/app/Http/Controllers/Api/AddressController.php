@@ -32,7 +32,6 @@ class AddressController extends Controller
     {
         $user = $request->user();
 
-        // Thêm nullable cho is_default vì nếu không tick, React có thể không gửi lên
         $validated = $request->validate([
             'type' => 'nullable|string|max:255',
             'receiver_name' => 'required|string|max:255',
@@ -44,8 +43,12 @@ class AddressController extends Controller
             'is_default' => 'nullable|boolean'
         ]);
 
-        // Hàm boolean() của Laravel xử lý an toàn mọi kiểu dữ liệu ('true', 1, true, 'on'...)
         $isDefault = $request->boolean('is_default', false);
+
+        // LOGIC THÔNG MINH 1: Nếu user chưa có địa chỉ nào -> Tự động ép thành mặc định
+        if (Address::where('user_id', $user->id)->count() === 0) {
+            $isDefault = true;
+        }
 
         // Nếu người dùng chọn đặt làm mặc định, gỡ mặc định của tất cả địa chỉ cũ
         if ($isDefault) {
@@ -131,7 +134,9 @@ class AddressController extends Controller
      */
     public function destroy(Request $request, int $id)
     {
-        $address = Address::where('id', $id)->where('user_id', $request->user()->id)->first();
+        $user = $request->user();
+        
+        $address = Address::where('id', $id)->where('user_id', $user->id)->first();
 
         if (!$address) {
             return response()->json([
@@ -140,7 +145,17 @@ class AddressController extends Controller
             ], 404);
         }
 
+        $wasDefault = $address->is_default;
+        
         $address->delete();
+
+        // LOGIC THÔNG MINH 2: Nếu xóa trúng địa chỉ mặc định, đôn địa chỉ gần nhất lên thay thế
+        if ($wasDefault) {
+            $nextAddress = Address::where('user_id', $user->id)->latest()->first();
+            if ($nextAddress) {
+                $nextAddress->update(['is_default' => true]);
+            }
+        }
 
         return response()->json([
             'status'  => true,
