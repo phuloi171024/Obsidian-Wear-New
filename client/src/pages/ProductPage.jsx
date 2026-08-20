@@ -10,7 +10,8 @@ import { FiHeart } from "react-icons/fi";
 export default function ProductPage() {
   const navigate = useNavigate();
   const location = useLocation();
-
+const queryParams = new URLSearchParams(location.search);
+const categoryId = queryParams.get("category_id");
   // Lấy từ khóa search từ trên thanh URL xuống
   const searchParams = new URLSearchParams(location.search);
   const searchKeyword = searchParams.get("search") || "";

@@ -96,6 +96,7 @@ export default function ProductDetail() {
             setColor(colors[0]);
           }
         }
+        
 
         // === GỌI API LẤY DANH SÁCH ĐÁNH GIÁ TỪ DATABASE ===
         try {
@@ -153,6 +154,55 @@ export default function ProductDetail() {
       fetchProductDetailAndRelated();
     }
   }, [id]);
+  // =========================================================
+  // THÊM ĐOẠN NÀY: TỰ ĐỘNG ĐỔI ẢNH KHI CHỌN BIẾN THỂ (MÀU SẮC)
+  // =========================================================
+  useEffect(() => {
+    // Chỉ chạy khi đã có dữ liệu sản phẩm, có biến thể và khách đã chọn màu
+    if (product?.variants && color) {
+      
+      // 1. Tìm trong kho biến thể xem cái nào khớp với màu khách vừa bấm
+      const selectedVariant = product.variants.find((v) => v.color === color);
+
+      // 2. Lấy đường dẫn ảnh của biến thể đó (hỗ trợ cả 2 tên cột image hoặc image_url)
+      const variantImage = selectedVariant?.image || selectedVariant?.image_url;
+
+      if (variantImage) {
+        // Nếu biến thể có ảnh riêng -> Đổi ảnh lớn thành ảnh của biến thể
+        setDisplayImage(variantImage);
+      } else {
+        // Nếu biến thể này không được Admin up ảnh riêng -> Trả về ảnh gốc mặc định của sản phẩm
+        setDisplayImage(
+          product.thumbnail || 
+          (product.images && product.images.length > 0 ? product.images[0].image_url : "")
+        );
+      }
+    }
+  }, [color, product]); // Cái mảng này chính là "Camera": Hễ color thay đổi là tự động chạy code bên trong// =========================================================
+  // THÊM ĐOẠN NÀY: TỰ ĐỘNG ĐỔI ẢNH KHI CHỌN BIẾN THỂ (MÀU SẮC)
+  // =========================================================
+  useEffect(() => {
+    // Chỉ chạy khi đã có dữ liệu sản phẩm, có biến thể và khách đã chọn màu
+    if (product?.variants && color) {
+      
+      // 1. Tìm trong kho biến thể xem cái nào khớp với màu khách vừa bấm
+      const selectedVariant = product.variants.find((v) => v.color === color);
+
+      // 2. Lấy đường dẫn ảnh của biến thể đó (hỗ trợ cả 2 tên cột image hoặc image_url)
+      const variantImage = selectedVariant?.image || selectedVariant?.image_url;
+
+      if (variantImage) {
+        // Nếu biến thể có ảnh riêng -> Đổi ảnh lớn thành ảnh của biến thể
+        setDisplayImage(variantImage);
+      } else {
+        // Nếu biến thể này không được Admin up ảnh riêng -> Trả về ảnh gốc mặc định của sản phẩm
+        setDisplayImage(
+          product.thumbnail || 
+          (product.images && product.images.length > 0 ? product.images[0].image_url : "")
+        );
+      }
+    }
+  }, [color, product]); // Cái mảng này chính là "Camera": Hễ color thay đổi là tự động chạy code bên trong
 
   const handleToggleWishlist = async () => {
     const token =
@@ -1001,52 +1051,163 @@ export default function ProductDetail() {
         )}
       </div>
 
-      {/* Sản phẩm liên quan */}
-      <div className="related-products">
-        <h3>
+    {/* Sản phẩm liên quan - Thiết kế Mini Card chuẩn Trang danh sách */}
+      <div 
+        className="related-products" 
+        style={{ 
+          marginTop: "50px", 
+          paddingTop: "30px", 
+          borderTop: "1px solid #e5e7eb" 
+        }}
+      >
+        <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b", marginBottom: "20px" }}>
           Sản phẩm liên quan
         </h3>
 
-        <div className="related-list">
-          {relatedProducts.length >
-          0 ? (
-            relatedProducts.map(
-              (item) => (
+        <div 
+          className="related-list"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", // Chia cột linh hoạt thu nhỏ
+            gap: "16px",
+          }}
+        >
+          {relatedProducts.length > 0 ? (
+            relatedProducts.map((item) => {
+              // Xử lý lấy đường dẫn ảnh thông minh
+              const imageUrl =
+                item.thumbnail ||
+                (item.images && item.images.length > 0 ? item.images[0].image_url : null) ||
+                item.image ||
+                "https://placehold.co/300x300/eeeeee/666666?text=No+Image";
+
+              return (
                 <Link
                   to={`/product/${item.id}`}
-                  className="related-card"
                   key={item.id}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "10px",
+                    overflow: "hidden",
+                    textDecoration: "none",
+                    color: "inherit",
+                    transition: "all 0.25s ease",
+                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-4px)";
+                    e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                    e.currentTarget.style.borderColor = "#cbd5e1";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                    e.currentTarget.style.borderColor = "#e5e7eb";
+                  }}
                 >
-                  <img
-                    src={
-                      item.images &&
-                      item.images
-                        .length > 0
-                        ? item.images[0]
-                            .image_url
-                        : "/images/placeholder.png"
-                    }
-                    alt={item.name}
-                  />
+                  {/* 1. KHUNG HÌNH ẢNH SẢN PHẨM THU NHỎ */}
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "160px",
+                      backgroundColor: "#f8fafc",
+                      overflow: "hidden",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderBottom: "1px solid #f1f5f9"
+                    }}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://placehold.co/300x300/eeeeee/666666?text=No+Image";
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
 
-                  <p>
-                    {Number(
-                      item.price
-                    ).toLocaleString(
-                      "vi-VN"
-                    )}{" "}
-                    đ
-                  </p>
+                  {/* 2. KHUNG THÔNG TIN CHUẨN CARD SẢN PHẨM */}
+                  <div 
+                    style={{ 
+                      padding: "12px", 
+                      display: "flex", 
+                      flexDirection: "column", 
+                      justifyContent: "space-between",
+                      flexGrow: 1 
+                    }}
+                  >
+                    <div>
+                      {/* Tên Thương hiệu / Danh mục nhỏ bên trên */}
+                      {(item.brand?.name || item.category?.name) && (
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            color: "#64748b",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            display: "block",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {item.brand?.name || item.category?.name}
+                        </span>
+                      )}
+
+                      {/* Tên sản phẩm (Giới hạn tối đa 2 dòng để các card bằng nhau) */}
+                      <h4
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          color: "#1e293b",
+                          margin: "0 0 8px 0",
+                          lineHeight: "1.4",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          height: "36px", // Đảm bảo chiều cao 2 dòng cố định
+                        }}
+                        title={item.name}
+                      >
+                        {item.name || "Sản phẩm thể thao"}
+                      </h4>
+                    </div>
+
+                    {/* Giá tiền sản phẩm */}
+                    <div style={{ marginTop: "6px" }}>
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "700",
+                          color: "#2563eb",
+                          display: "block",
+                        }}
+                      >
+                        {Number(item.price || 0).toLocaleString("vi-VN")} đ
+                      </span>
+                    </div>
+                  </div>
                 </Link>
-              )
-            )
+              );
+            })
           ) : (
             <p
               style={{
-                textAlign:
-                  "center",
-                color: "#666",
-                width: "100%",
+                textAlign: "center",
+                color: "#64748b",
+                gridColumn: "1 / -1",
+                padding: "20px",
               }}
             >
               Không có sản phẩm liên quan nào.

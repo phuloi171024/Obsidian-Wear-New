@@ -39,7 +39,7 @@ use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 Route::get('/home', [ClientProductController::class, 'home']);
 Route::get('/products', [ClientProductController::class, 'index']);
 Route::get('/products/{id}', [ClientProductController::class, 'show']);
-
+Route::get('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index']);
 // Xác thực tài khoản & Quên mật khẩu
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
