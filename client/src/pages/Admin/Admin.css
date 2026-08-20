@@ -417,8 +417,8 @@ tbody td:nth-child(4){
 
 .status.shipping{
     background:#2563eb;
+    color:#fff !important;
 }
-
 .status.done{
     background:#16a34a;
 }
@@ -4564,4 +4564,15 @@ grid-template-columns:1fr;
     width: 100%;
     max-width: 100%;
     padding: 24px 32px; /* Đẩy nội dung cách mép màn hình một chút cho đẹp */
+}
+
+.dashboard-icon.green {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+.dashboard-icon.green svg {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    filter: none !important;
 }
