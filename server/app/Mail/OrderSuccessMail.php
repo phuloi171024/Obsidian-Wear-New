@@ -21,6 +21,6 @@ class OrderSuccessMail extends Mailable
     public function build()
     {
         return $this->subject('Xác nhận đặt hàng thành công tại Obsidian Wear')
-                    ->view('emails.order_success'); // Trỏ tới file giao diện email ở bước 3
+                    ->view('emails.order_success'); 
     }
 }
