@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Order; // THÊM DÒNG NÀY ĐỂ NHẬN DIỆN MODEL ORDER
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -10,10 +11,10 @@ class OrderSuccessMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public int $order;
+    public $order;
 
-    // Nhận thông tin đơn hàng truyền vào
-    public function __construct( int $order)
+    // Sửa lại chỗ này: Bỏ chữ int, thay bằng Order
+    public function __construct(Order $order)
     {
         $this->order = $order;
     }
