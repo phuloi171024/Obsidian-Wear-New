@@ -203,28 +203,101 @@ class ProductController extends Controller
      * Thêm ảnh chi tiết cho sản phẩm
      * POST /admin/products/{id}/images
      */
-    public function uploadImages(Request $request,int $id)
-    {
-        $product = Product::findOrFail($id);
+    /**
+ * Thêm nhiều ảnh gallery cho sản phẩm.
+ * Tối đa 8 ảnh gallery cho mỗi sản phẩm.
+ */
+public function uploadImages(Request $request, int $id)
+{
+    $product = Product::findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'images'         => 'required|array|min:1',
-            'images.*'       => 'required|string',
-        ]);
+    $request->validate(
+        [
+            'images' => [
+                'required',
+                'array',
+                'min:1',
+                'max:8',
+            ],
+            'images.*' => [
+                'required',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:5120',
+            ],
+        ],
+        [
+            'images.required' =>
+                'Vui lòng chọn ít nhất một ảnh.',
+            'images.array' =>
+                'Danh sách ảnh không hợp lệ.',
+            'images.max' =>
+                'Mỗi lần chỉ được chọn tối đa 8 ảnh.',
+            'images.*.image' =>
+                'Tệp được chọn phải là hình ảnh.',
+            'images.*.mimes' =>
+                'Ảnh phải có định dạng JPEG, JPG, PNG hoặc WEBP.',
+            'images.*.max' =>
+                'Mỗi ảnh không được vượt quá 5MB.',
+        ]
+    );
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+    $files = $request->file('images', []);
+    $currentImageCount = $product->images()->count();
 
-        foreach ($request->images as $imageUrl) {
-            $product->images()->create(['image_path' => $imageUrl]);
-        }
+    if (
+        $currentImageCount + count($files) > 8
+    ) {
+        $remaining = max(
+            0,
+            8 - $currentImageCount
+        );
 
         return response()->json([
-            'message' => 'Thêm ảnh thành công!',
-            'images'  => $product->images,
-        ]);
+            'status' => false,
+            'message' =>
+                "Sản phẩm đã có {$currentImageCount} ảnh. " .
+                "Bạn chỉ có thể thêm tối đa {$remaining} ảnh nữa.",
+        ], 422);
     }
+
+    try {
+        $createdImages = [];
+
+        foreach ($files as $file) {
+            $uploadedFileUrl = Cloudinary::upload(
+                $file->getRealPath(),
+                [
+                    'folder' =>
+                        'obsidian_wear/products/gallery',
+                ]
+            )->getSecurePath();
+
+            $createdImages[] =
+                $product->images()->create([
+                    'image_path' => $uploadedFileUrl,
+                ]);
+        }
+
+        $product->load('images');
+
+        return response()->json([
+            'status' => true,
+            'message' =>
+                'Thêm ảnh gallery thành công!',
+            'images' => $product->images,
+            'uploaded_images' => $createdImages,
+        ], 201);
+    } catch (\Throwable $exception) {
+        report($exception);
+
+        return response()->json([
+            'status' => false,
+            'message' =>
+                'Có lỗi xảy ra khi tải ảnh lên Cloudinary!',
+        ], 500);
+    }
+}
 
     /**
      * Xoá ảnh chi tiết của sản phẩm

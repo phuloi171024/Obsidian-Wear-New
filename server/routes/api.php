@@ -285,6 +285,17 @@ Route::middleware([
             '/products',
             AdminProductController::class
         );
+        // Thêm nhiều ảnh gallery cho sản phẩm
+Route::post(
+    '/products/{id}/images',
+    [AdminProductController::class, 'uploadImages']
+);
+
+// Xóa một ảnh gallery
+Route::delete(
+    '/products/{id}/images/{imageId}',
+    [AdminProductController::class, 'deleteImage']
+);
 
         Route::post(
             '/products/{id}/variants',
