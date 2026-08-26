@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/api";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./ProductPage.css";
@@ -52,7 +53,7 @@ export default function QuanPage() {
         // Lấy danh sách yêu thích
         const token = localStorage.getItem("access_token");
         if (token) {
-          const favRes = await fetch("http://localhost:8000/api/user/wishlist", {
+          const favRes = await fetch(`${API_BASE_URL}/user/wishlist`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const favData = await favRes.json();
@@ -82,7 +83,7 @@ export default function QuanPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/user/wishlist/toggle", {
+      const res = await fetch(`${API_BASE_URL}/user/wishlist/toggle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,7 +152,7 @@ export default function QuanPage() {
         return;
       }
 
-      const res = await fetch("http://localhost:8000/api/cart/add", {
+      const res = await fetch(`${API_BASE_URL}/cart/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -263,7 +264,7 @@ export default function QuanPage() {
                       <div className="card-info">
                         <h4 className="product-name">{product.name}</h4>
                         <div className="product-price">
-                          {Number(product.price).toLocaleString("vi-VN")} đ
+                          {Number(product.current_price || product.price).toLocaleString("vi-VN")} đ
                         </div>
                       </div>
                     </Link>

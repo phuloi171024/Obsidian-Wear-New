@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/api";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./ProductPage.css";
@@ -10,14 +11,24 @@ import { FiHeart } from "react-icons/fi";
 export default function ProductPage() {
   const navigate = useNavigate();
   const location = useLocation();
-const queryParams = new URLSearchParams(location.search);
-const categoryId = queryParams.get("category_id");
+  const queryParams = new URLSearchParams(location.search);
+  const categoryId = queryParams.get("category_id");
+  const brandId = queryParams.get("brand_id");
+  const sportType = queryParams.get("sport_type");
+  const onSale = queryParams.get("on_sale");
+  const dealLabel = queryParams.get("deal_label");
   // Lấy từ khóa search từ trên thanh URL xuống
   const searchParams = new URLSearchParams(location.search);
   const searchKeyword = searchParams.get("search") || "";
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    total: 0,
+  });
 
   // Bộ lọc State
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -36,6 +47,21 @@ const categoryId = queryParams.get("category_id");
       setPriceFilter("all");
     }
   }, [searchKeyword]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    categoryId,
+    brandId,
+    sportType,
+    onSale,
+    dealLabel,
+    selectedCategory,
+    selectedBrands,
+    priceFilter,
+    sortOption,
+    searchKeyword,
+  ]);
   // =========================================================
 
   // State quản lý Popup
@@ -62,10 +88,20 @@ const categoryId = queryParams.get("category_id");
       try {
         setLoading(true);
 
-        const filters = { sort: sortOption };
+        const filters = {
+          sort: sortOption,
+          page: currentPage,
+          per_page: 24,
+        };
 
         // THÊM TỪ KHÓA TÌM KIẾM VÀO BỘ LỌC GỬI XUỐNG LARAVEL
         if (searchKeyword) filters.search = searchKeyword;
+
+        if (categoryId) filters.category_id = categoryId;
+        if (brandId) filters.brand_id = brandId;
+        if (sportType) filters.sport_type = sportType;
+        if (onSale === "1") filters.on_sale = 1;
+        if (dealLabel) filters.deal_label = dealLabel;
 
         if (selectedCategory) filters.category = selectedCategory;
 
@@ -81,14 +117,15 @@ const categoryId = queryParams.get("category_id");
           filters.min_price = 2000000;
         }
 
-        const data = await productService.getProducts(filters);
+        const result = await productService.getProductsPage(filters);
 
-        setProducts(data);
+        setProducts(result.items);
+        setPagination(result.meta);
 
         // === GỌI API LẤY DANH SÁCH YÊU THÍCH ĐỂ HIỆN TIM ĐỎ ===
         const token = localStorage.getItem("access_token");
         if (token) {
-          const favRes = await fetch("http://localhost:8000/api/user/wishlist", {
+          const favRes = await fetch(`${API_BASE_URL}/user/wishlist`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const favData = await favRes.json();
@@ -104,7 +141,19 @@ const categoryId = queryParams.get("category_id");
     };
 
     fetchFilteredProducts();
-  }, [selectedCategory, selectedBrands, priceFilter, sortOption, searchKeyword]);
+  }, [
+    categoryId,
+    brandId,
+    sportType,
+    onSale,
+    dealLabel,
+    selectedCategory,
+    selectedBrands,
+    priceFilter,
+    sortOption,
+    searchKeyword,
+    currentPage,
+  ]);
 
   // === HÀM MỚI: BẤM NÚT YÊU THÍCH TRÊN TỪNG SẢN PHẨM ===
   const handleToggleWishlist = async (e, productId) => {
@@ -119,7 +168,7 @@ const categoryId = queryParams.get("category_id");
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/user/wishlist/toggle", {
+      const res = await fetch(`${API_BASE_URL}/user/wishlist/toggle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -203,7 +252,7 @@ const categoryId = queryParams.get("category_id");
       // nên giữ nguyên hành vi cũ: thêm 1 sản phẩm
       const quantity = 1;
 
-      const res = await fetch("http://localhost:8000/api/cart/add", {
+      const res = await fetch(`${API_BASE_URL}/cart/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -486,7 +535,7 @@ const categoryId = queryParams.get("category_id");
                         <h4 className="product-name">{product.name}</h4>
 
                         <div className="product-price">
-                          {Number(product.price).toLocaleString("vi-VN")} đ
+                          {Number(product.current_price || product.price).toLocaleString("vi-VN")} đ
                         </div>
                       </div>
                     </Link>
@@ -517,6 +566,36 @@ const categoryId = queryParams.get("category_id");
                     : "Không tìm thấy sản phẩm nào phù hợp với bộ lọc."}
                 </div>
               )}
+            </div>
+          )}
+
+          {!loading && pagination.last_page > 1 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "10px",
+                marginTop: "28px",
+              }}
+            >
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((page) => page - 1)}
+              >
+                Trang trước
+              </button>
+              <span>
+                Trang {pagination.current_page} / {pagination.last_page}
+              </span>
+              <button
+                type="button"
+                disabled={currentPage >= pagination.last_page}
+                onClick={() => setCurrentPage((page) => page + 1)}
+              >
+                Trang sau
+              </button>
             </div>
           )}
         </section>

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/api";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./CartPage.css";
@@ -41,7 +42,7 @@ export default function CartPage() {
   const fetchCart = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/api/cart", { headers: getHeaders() });
+      const res = await fetch(`${API_BASE_URL}/cart`, { headers: getHeaders() });
       const data = await res.json();
       if (res.ok && data.success) {
         setCartItems(data.data);
@@ -63,7 +64,7 @@ export default function CartPage() {
 // 2. GỌI API LẤY DANH SÁCH MÃ TỪ DB (ĐÃ NÂNG CẤP BỘ LỌC)
   const fetchCoupons = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/coupons", { headers: getHeaders() });
+      const res = await fetch(`${API_BASE_URL}/coupons`, { headers: getHeaders() });
       const data = await res.json();
       if (res.ok && data.success) {
         const now = new Date();
@@ -98,7 +99,7 @@ export default function CartPage() {
 
   try {
     const res = await fetch(
-      `http://localhost:8000/api/cart/update/${id}`,
+      `${API_BASE_URL}/cart/update/${id}`,
       {
         method: "PUT",
         headers: getHeaders(),
@@ -139,7 +140,7 @@ export default function CartPage() {
   const confirmRemove = async () => {
     if (!itemToDelete) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/cart/remove/${itemToDelete}`, {
+      const res = await fetch(`${API_BASE_URL}/cart/remove/${itemToDelete}`, {
         method: "DELETE",
         headers: getHeaders()
       });
@@ -162,7 +163,7 @@ export default function CartPage() {
 
   // --- TÍNH TOÁN TIỀN TỰ ĐỘNG ---
   const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.product_variant?.product?.price || 0;
+    const price = item.product_variant?.product?.current_price || item.product_variant?.product?.price || 0;
     return sum + (price * item.quantity);
   }, 0);
   
@@ -180,7 +181,7 @@ export default function CartPage() {
 
     try {
       setIsApplying(true);
-      const res = await fetch("http://localhost:8000/api/coupons/apply", {
+      const res = await fetch(`${API_BASE_URL}/coupons/apply`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({
@@ -273,7 +274,7 @@ export default function CartPage() {
                       <h3>{item.product_variant?.product?.name}</h3>
                       <p>Size: {item.product_variant?.size}</p>
                       <p>Màu: {item.product_variant?.color}</p>
-                      <span>{new Intl.NumberFormat('vi-VN').format(item.product_variant?.product?.price)} đ</span>
+                      <span>{new Intl.NumberFormat('vi-VN').format(item.product_variant?.product?.current_price || item.product_variant?.product?.price)} đ</span>
                     </div>
                   </div>
                   <div className="quantity">
@@ -282,7 +283,7 @@ export default function CartPage() {
                     <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
                   </div>
                   <div className="total-price">
-                    {new Intl.NumberFormat('vi-VN').format(item.product_variant?.product?.price * item.quantity)} đ
+                    {new Intl.NumberFormat('vi-VN').format((item.product_variant?.product?.current_price || item.product_variant?.product?.price) * item.quantity)} đ
                   </div>
                   <FiTrash2 className="delete-icon" onClick={() => promptRemove(item.id)} />
                 </div>

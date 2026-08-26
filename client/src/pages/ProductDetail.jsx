@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/api";
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
@@ -50,7 +51,7 @@ export default function ProductDetail() {
         if (token) {
           try {
             const wishlistRes = await fetch(
-              "http://localhost:8000/api/user/wishlist",
+              `${API_BASE_URL}/user/wishlist`,
               {
                 headers: {
                   Accept: "application/json",
@@ -100,7 +101,7 @@ export default function ProductDetail() {
 
         // === GỌI API LẤY DANH SÁCH ĐÁNH GIÁ TỪ DATABASE ===
         try {
-          const reviewRes = await fetch(`http://localhost:8000/api/products/${id}/reviews`, {
+          const reviewRes = await fetch(`${API_BASE_URL}/products/${id}/reviews`, {
             method: "GET",
             headers: {
               "Accept": "application/json" // Báo cho Laravel biết đây là gọi API
@@ -221,7 +222,7 @@ export default function ProductDetail() {
       setFavoriteLoading(true);
 
       const res = await fetch(
-        "http://localhost:8000/api/user/wishlist/toggle",
+        `${API_BASE_URL}/user/wishlist/toggle`,
         {
           method: "POST",
           headers: {
@@ -363,7 +364,7 @@ export default function ProductDetail() {
 
       // Gọi API mới
       const res = await fetch(
-        "http://localhost:8000/api/cart/add",
+        `${API_BASE_URL}/cart/add`,
         {
           method: "POST",
           headers: {
@@ -442,79 +443,120 @@ export default function ProductDetail() {
       }, 400);
     }
   };
+const handleReviewSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
+  if (!newReview.comment.trim()) {
+    toast.error("Vui lòng điền nội dung đánh giá!");
+    return;
+  }
 
-    if (!newReview.comment.trim()) {
-      toast.error("Vui lòng điền nội dung đánh giá!");
-      return;
-    }
+  const token = localStorage.getItem("access_token");
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      toast.error("Vui lòng đăng nhập để đánh giá sản phẩm!");
-      navigate("/login");
-      return;
-    }
+  if (!token) {
+    toast.error("Vui lòng đăng nhập để đánh giá sản phẩm!");
+    navigate("/login");
+    return;
+  }
 
-    try {
-      setSubmittingReview(true);
-      const res = await fetch(`http://localhost:8000/api/products/${product.id}/reviews`, {
+  try {
+    setSubmittingReview(true);
+
+    const res = await fetch(
+      `${API_BASE_URL}/products/${product.id}/reviews`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           rating: Number(newReview.rating),
-          comment: newReview.comment,
+          comment: newReview.comment.trim(),
         }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.status) {
-        toast.success(data.message || "Cảm ơn bạn đã gửi đánh giá!");
-        setReviews([data.review, ...reviews]);
-        setNewReview({ rating: 5, comment: "" });
-      } else {
-        toast.error(data.message || "Không thể gửi đánh giá!");
       }
-    } catch (error) {
-      toast.error("Lỗi kết nối máy chủ!");
-    } finally {
-      setSubmittingReview(false);
+    );
+
+    const data = await res.json();
+
+    if (res.ok && data.status) {
+      /*
+       * Không thêm review pending vào danh sách.
+       * Review chỉ xuất hiện sau khi admin duyệt.
+       */
+      toast.success(
+        data.message ||
+          "Đánh giá đã được gửi và đang chờ quản trị viên duyệt."
+      );
+
+      setNewReview({
+        rating: 5,
+        comment: "",
+      });
+    } else {
+      const validationMessage = data.errors
+        ? Object.values(data.errors).flat()[0]
+        : null;
+
+      toast.error(
+        validationMessage ||
+          data.message ||
+          "Không thể gửi đánh giá!"
+      );
     }
-  };
+  } catch (error) {
+    toast.error("Lỗi kết nối máy chủ!");
+  } finally {
+    setSubmittingReview(false);
+  }
+};
 
   // ================= TÍNH NĂNG MỚI: BÁO CÁO BÌNH LUẬN RÁC =================
-  const handleReportReview = async (reviewId) => {
-    if (!window.confirm("Bạn có chắc chắn muốn báo cáo bình luận này là vi phạm/rác không?")) return;
+ const handleReportReview = async (reviewId) => {
+  const token = localStorage.getItem("access_token");
 
-    try {
-      const res = await fetch(`http://localhost:8000/api/reviews/${reviewId}/report`, {
-        method: 'POST',
+  if (!token) {
+    toast.error("Vui lòng đăng nhập để báo cáo đánh giá!");
+    navigate("/login");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "Bạn có chắc chắn muốn báo cáo đánh giá này không?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/reviews/${reviewId}/report`,
+      {
+        method: "POST",
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          // Bỏ comment dòng Authorization dưới đây nếu em bắt buộc khách phải đăng nhập mới được bấm báo cáo
-          // 'Authorization': `Bearer ${localStorage.getItem('access_token')}` 
-        }
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok) {
-        toast.success(data.message || "Đã gửi báo cáo thành công!");
-      } else {
-        toast.error("Không thể báo cáo bình luận này.");
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       }
-    } catch (error) {
-      toast.error("Lỗi kết nối máy chủ!");
+    );
+
+    const data = await res.json();
+
+    if (res.ok && data.status) {
+      toast.success(
+        data.message || "Đã gửi báo cáo thành công!"
+      );
+    } else {
+      toast.error(
+        data.message || "Không thể báo cáo đánh giá này!"
+      );
     }
-  };
+  } catch (error) {
+    toast.error("Lỗi kết nối máy chủ!");
+  }
+};
 
   // ================= TÍNH NĂNG MỚI: ĐỔI MÀU ẢNH SẢN PHẨM =================
   const handleColorChange = (selectedCol) => {
@@ -612,7 +654,7 @@ export default function ProductDetail() {
 
           <div className="product-price">
             {Number(
-              product.price
+              product.current_price || product.price
             ).toLocaleString(
               "vi-VN"
             )}{" "}

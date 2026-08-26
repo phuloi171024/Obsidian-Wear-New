@@ -27,13 +27,29 @@ export default function ForgotPassword() {
         const data = await authService.forgotPassword(email);
         if (data.status) setStatus("sent");
     } catch (err) {
-        setStatus("idle");
-        if (err.response && err.response.data.message) {
-            setError(err.response.data.message);
-        } else {
-            setError("Có lỗi xảy ra khi gửi mail. Vui lòng thử lại!");
-        }
-    }
+  setStatus("idle");
+
+  const data = err.response?.data;
+  const httpStatus = err.response?.status;
+
+  if (httpStatus === 429) {
+    setError("Em đã gửi yêu cầu quá nhiều lần. Vui lòng đợi 10 phút!");
+  } else if (data?.errors?.email?.[0]) {
+    setError(data.errors.email[0]);
+  } else if (data?.message) {
+    setError(data.message);
+  } else if (!err.response) {
+    setError("Không kết nối được backend. Hãy kiểm tra Laravel đang chạy!");
+  } else {
+    setError("Máy chủ không thể gửi email. Vui lòng thử lại!");
+  }
+
+  console.error("Forgot password error:", {
+    status: httpStatus,
+    data,
+    error: err,
+  });
+}
   };
 
   const alertStyle = {
@@ -44,7 +60,7 @@ export default function ForgotPassword() {
   return (
     <div className="auth-page">
       <div className="auth-box">
-        <img src="/src/public/images/logo.png" alt="logo" className="auth-logo" />
+        <img src="/images/logo.png" alt="logo" className="auth-logo" />
         <h2>Quên mật khẩu</h2>
 
         {status === "sent" ? (
@@ -61,7 +77,7 @@ export default function ForgotPassword() {
                 <label>E-mail</label>
                 <div className="input-wrapper">
                   <FiMail className="input-icon" />
-                  <input type="email" placeholder="email@cuaban.com" value={email} onChange={handleChange} />
+                  <input type="email" autoComplete="email" placeholder="email@cuaban.com" value={email} onChange={handleChange} />
                 </div>
                 {error && <p style={{ color: "#dc2626", fontSize: "13px", marginTop: "6px" }}>{error}</p>}
               </div>

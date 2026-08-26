@@ -7,7 +7,7 @@ export default function Banner(){
         <section className="banner">
 
             <img
-            src="src/public/images/banner.png"
+            src="/images/banner.png"
             alt="Banner"
             />
 

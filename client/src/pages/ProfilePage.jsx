@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/api";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./OrdersPage.css";
@@ -64,7 +65,7 @@ export default function ProfilePage() {
       try {
         setIsLoading(true);
 
-        const profileRes = await fetch("http://localhost:8000/api/user/profile", {
+        const profileRes = await fetch(`${API_BASE_URL}/user/profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -73,7 +74,7 @@ export default function ProfilePage() {
           }
         });
 
-        const addrRes = await fetch("http://localhost:8000/api/user/addresses", {
+        const addrRes = await fetch(`${API_BASE_URL}/user/addresses`, {
           method: "GET",
           headers: {
             "Accept": "application/json",
@@ -129,7 +130,7 @@ export default function ProfilePage() {
     const token = localStorage.getItem("access_token");
 
     try {
-      const response = await fetch("http://localhost:8000/api/user/profile", {
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -150,7 +151,15 @@ export default function ProfilePage() {
           localStorage.setItem("user_info", JSON.stringify(data.data || data));
         }
       } else {
-        toast.error(data.message || "Cập nhật thất bại!");
+  const validationMessage = data.errors
+    ? Object.values(data.errors).flat()[0]
+    : null;
+
+  toast.error(
+    validationMessage ||
+      data.message ||
+      "Cập nhật thông tin thất bại!"
+  );
       }
     } catch (error) {
       console.error("Lỗi kết nối:", error);
@@ -188,8 +197,8 @@ export default function ProfilePage() {
     const token = localStorage.getItem("access_token");
     const method = addrForm.id ? "PUT" : "POST";
     const url = addrForm.id 
-      ? `http://localhost:8000/api/user/addresses/${addrForm.id}`
-      : `http://localhost:8000/api/user/addresses`;
+      ? `${API_BASE_URL}/user/addresses/${addrForm.id}`
+      : `${API_BASE_URL}/user/addresses`;
 
     // CẬP NHẬT PAYLOAD
     const payload = {
@@ -221,7 +230,7 @@ export default function ProfilePage() {
         toast.success(addrForm.id ? "Cập nhật địa chỉ thành công!" : "Thêm địa chỉ thành công!");
         
         // Refresh
-        const addrRes = await fetch("http://localhost:8000/api/user/addresses", {
+        const addrRes = await fetch(`${API_BASE_URL}/user/addresses`, {
           headers: { "Accept": "application/json", "Authorization": `Bearer ${token.trim()}` }
         });
         const addrData = await addrRes.json();
@@ -247,7 +256,7 @@ export default function ProfilePage() {
     if (!window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) return;
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/user/addresses/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/user/addresses/${id}`, {
         method: "DELETE",
         headers: { "Accept": "application/json", "Authorization": `Bearer ${token.trim()}` }
       });
@@ -260,44 +269,87 @@ export default function ProfilePage() {
     }
   };
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    if (pwdForm.new_password !== pwdForm.new_password_confirmation) {
-      toast.error("Mật khẩu xác nhận không khớp!");
-      return;
-    }
-    if (pwdForm.new_password.length < 8) {
-      toast.error("Mật khẩu mới phải từ 8 ký tự trở lên!");
+ const handleChangePassword = async (e) => {
+  e.preventDefault();
+
+  if (pwdForm.new_password.length < 8) {
+    toast.error("Mật khẩu mới phải có ít nhất 8 ký tự!");
+    return;
+  }
+
+  if (pwdForm.new_password !== pwdForm.new_password_confirmation) {
+    toast.error("Xác nhận mật khẩu mới không khớp!");
+    return;
+  }
+
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    toast.error("Phiên đăng nhập đã hết hạn!");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    setIsSubmittingPwd(true);
+
+    const response = await fetch(
+      `${API_BASE_URL}/user/password`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          current_password: pwdForm.current_password,
+          new_password: pwdForm.new_password,
+          new_password_confirmation:
+            pwdForm.new_password_confirmation,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const validationMessage = data.errors
+        ? Object.values(data.errors).flat()[0]
+        : null;
+
+      toast.error(
+        validationMessage ||
+          data.message ||
+          "Không thể đổi mật khẩu!"
+      );
       return;
     }
 
-    const token = localStorage.getItem("access_token");
-    try {
-      setIsSubmittingPwd(true);
-      const res = await fetch("http://localhost:8000/api/user/password", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": `Bearer ${token.trim()}`
-        },
-        body: JSON.stringify(pwdForm)
-      });
-      const data = await res.json();
-      
-      if (res.ok && (data.status || data.success)) {
-        toast.success("Đổi mật khẩu thành công!");
-        setShowPwdModal(false);
-        setPwdForm({ current_password: "", new_password: "", new_password_confirmation: "" });
-      } else {
-        toast.error(data.message || "Mật khẩu cũ không chính xác!");
-      }
-    } catch (error) {
-      toast.error("Lỗi kết nối máy chủ!");
-    } finally {
-      setIsSubmittingPwd(false);
-    }
-  };
+    setShowPwdModal(false);
+    setPwdForm({
+      current_password: "",
+      new_password: "",
+      new_password_confirmation: "",
+    });
+
+    // Backend đã xóa toàn bộ Sanctum token.
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user_info");
+
+    toast.success(
+      data.message ||
+        "Đổi mật khẩu thành công. Vui lòng đăng nhập lại!"
+    );
+
+    navigate("/login", { replace: true });
+  } catch (error) {
+    console.error("Lỗi đổi mật khẩu:", error);
+    toast.error("Không thể kết nối đến máy chủ!");
+  } finally {
+    setIsSubmittingPwd(false);
+  }
+};
 
   if (isLoading) {
     return <div style={{ textAlign: "center", padding: "100px" }}>Đang tải thông tin...</div>;
@@ -492,15 +544,41 @@ export default function ProfilePage() {
             <form onSubmit={handleChangePassword} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                 <label style={{ fontSize: "14px", fontWeight: "500" }}>Mật khẩu hiện tại *</label>
-                <input type="password" required value={pwdForm.current_password} onChange={(e) => setPwdForm({...pwdForm, current_password: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
+                <input
+                  type="password"
+                  name="current_password"
+                  autoComplete="current-password"
+                  required
+                  value={pwdForm.current_password}
+                  onChange={(e) => setPwdForm({...pwdForm, current_password: e.target.value})}
+                  style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }}
+                />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                 <label style={{ fontSize: "14px", fontWeight: "500" }}>Mật khẩu mới *</label>
-                <input type="password" required minLength={8} value={pwdForm.new_password} onChange={(e) => setPwdForm({...pwdForm, new_password: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
+                <input
+                  type="password"
+                  name="new_password"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  value={pwdForm.new_password}
+                  onChange={(e) => setPwdForm({...pwdForm, new_password: e.target.value})}
+                  style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }}
+                />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                 <label style={{ fontSize: "14px", fontWeight: "500" }}>Xác nhận mật khẩu mới *</label>
-                <input type="password" required minLength={8} value={pwdForm.new_password_confirmation} onChange={(e) => setPwdForm({...pwdForm, new_password_confirmation: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
+                <input
+                  type="password"
+                  name="new_password_confirmation"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  value={pwdForm.new_password_confirmation}
+                  onChange={(e) => setPwdForm({...pwdForm, new_password_confirmation: e.target.value})}
+                  style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }}
+                />
               </div>
               <button disabled={isSubmittingPwd} type="submit" style={{ background: "#4f46e5", color: "#fff", border: "none", padding: "12px", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", marginTop: "10px", opacity: isSubmittingPwd ? 0.7 : 1 }}>
                 {isSubmittingPwd ? "Đang xử lý..." : "Xác nhận đổi mật khẩu"}

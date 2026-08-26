@@ -31,7 +31,9 @@ class BrandController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name'   => 'required|string|max:255|unique:brands,name',
+            'logo_url' => 'nullable|string|max:2048',
             'status' => 'boolean',
+            'is_featured' => 'boolean',
         ]);
 
         if ($validator->fails()) {
@@ -41,7 +43,9 @@ class BrandController extends Controller
         $brand = Brand::create([
             'name'   => $request->name,
             'slug'   => Str::slug($request->name),
+            'logo_url' => $request->logo_url,
             'status' => $request->get('status', true),
+            'is_featured' => $request->boolean('is_featured'),
         ]);
 
         return response()->json([
@@ -70,7 +74,9 @@ class BrandController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name'   => 'sometimes|string|max:255|unique:brands,name,' . $brand->id,
+            'logo_url' => 'nullable|string|max:2048',
             'status' => 'sometimes|boolean',
+            'is_featured' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -81,7 +87,13 @@ class BrandController extends Controller
             $request->merge(['slug' => Str::slug($request->name)]);
         }
 
-        $brand->update($request->only('name', 'slug', 'status'));
+        $brand->update($request->only(
+            'name',
+            'slug',
+            'logo_url',
+            'status',
+            'is_featured'
+        ));
 
         return response()->json([
             'message' => 'Cập nhật thương hiệu thành công!',

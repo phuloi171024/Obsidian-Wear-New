@@ -1,26 +1,41 @@
 import "./Newsletter.css";
+import { FiArrowRight } from "react-icons/fi";
 
-export default function Newsletter() {
+export default function Promotion() {
   return (
     <section className="newsletter">
+      <div className="newsletter-container">
 
-      <h2>Đăng ký nhận thông tin khuyến mãi</h2>
+        <div className="newsletter-content">
+          <span className="newsletter-label">
+            OBSIDIAN WEAR
+          </span>
 
-      <p>
-        Đăng ký để nhận thông tin về sản phẩm mới và các chương trình khuyến mãi đặc biệt.
-      </p>
+          <h2>
+            NHẬN ƯU ĐÃI MỚI NHẤT
+          </h2>
 
-      <div className="newsletter-form">
+          <p>
+            Đăng ký để nhận thông tin về sản phẩm mới,
+            bộ sưu tập mới và những chương trình ưu đãi đặc biệt.
+          </p>
+        </div>
 
-        <input
-          type="email"
-          placeholder="Email của bạn"
-        />
+        <div className="newsletter-form">
+          <div className="newsletter-input-wrapper">
+            <input
+              type="email"
+              placeholder="Email của bạn"
+            />
+          </div>
 
-        <button>Đăng ký</button>
+          <button type="button">
+            <span>ĐĂNG KÝ</span>
+            <FiArrowRight />
+          </button>
+        </div>
 
       </div>
-
     </section>
   );
 }

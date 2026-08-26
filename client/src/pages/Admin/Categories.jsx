@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useMemo, useState, useEffect } from "react";
 import {
   FiPlus,
@@ -40,7 +41,7 @@ export default function Categories() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/api/admin/categories", {
+      const res = await fetch(`${API_BASE_URL}/admin/categories`, {
         headers: {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -133,8 +134,8 @@ export default function Categories() {
     const token = localStorage.getItem("access_token");
     const isUpdating = editing !== null;
     const url = isUpdating 
-      ? `http://localhost:8000/api/admin/categories/${editing}` 
-      : `http://localhost:8000/api/admin/categories`;
+      ? `${API_BASE_URL}/admin/categories/${editing}` 
+      : `${API_BASE_URL}/admin/categories`;
     const method = isUpdating ? "PUT" : "POST";
 
     // Chuẩn bị dữ liệu gửi xuống Backend
@@ -177,7 +178,7 @@ export default function Categories() {
 
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/categories/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
         method: "DELETE",
         headers: {
           "Accept": "application/json",

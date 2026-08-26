@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class CouponController extends Controller
 {
@@ -34,7 +35,10 @@ class CouponController extends Controller
      */
     public function store(Request $request)
     {
-        // Thêm Validator cho đầy đủ các trường từ React gửi lên
+        $request->merge([
+            'code' => strtoupper(trim((string) $request->input('code'))),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'code'            => 'required|string|max:50|unique:coupons,code',
             'discount_type'   => 'required|string|in:fixed,percent,shipping',
@@ -42,20 +46,23 @@ class CouponController extends Controller
             'min_order_value' => 'nullable|numeric|min:0',
             'usage_limit'     => 'nullable|integer|min:1',
             'expires_at'      => 'nullable|date',
+            'end_date'        => 'nullable|date',
             'status'          => 'boolean',
+        ], [
+            'discount_value.max' => 'Mã phần trăm không được vượt quá 100%.',
         ]);
+
+        $validator->sometimes(
+            'discount_value',
+            'max:100',
+            fn ($input) => $input->discount_type === 'percent'
+        );
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Tự động in hoa mã code
-        if ($request->filled('code')) {
-            $request->merge(['code' => strtoupper($request->code)]);
-        }
-
-        // Lưu TOÀN BỘ dữ liệu vào Database
-        $coupon = Coupon::create($request->all());
+        $coupon = Coupon::create($validator->validated());
 
         return response()->json([
             'message' => 'Tạo mã giảm giá thành công!',
@@ -81,27 +88,41 @@ class CouponController extends Controller
     {
         $coupon = Coupon::findOrFail($id);
 
+        if ($request->has('code')) {
+            $request->merge([
+                'code' => strtoupper(trim((string) $request->input('code'))),
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
-            'code'            => 'sometimes|string|max:50|unique:coupons,code,' . $coupon->id,
+            'code'            => [
+                'sometimes',
+                'string',
+                'max:50',
+                Rule::unique('coupons', 'code')->ignore($coupon->id),
+            ],
             'discount_type'   => 'sometimes|string|in:fixed,percent,shipping',
             'discount_value'  => 'sometimes|numeric|min:0',
             'min_order_value' => 'nullable|numeric|min:0',
             'usage_limit'     => 'nullable|integer|min:1',
             'expires_at'      => 'nullable|date',
+            'end_date'        => 'nullable|date',
             'status'          => 'sometimes|boolean',
+        ], [
+            'discount_value.max' => 'Mã phần trăm không được vượt quá 100%.',
         ]);
+
+        $validator->sometimes(
+            'discount_value',
+            'max:100',
+            fn ($input) => ($input->discount_type ?? $coupon->discount_type) === 'percent'
+        );
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Tự động in hoa mã code
-        if ($request->filled('code')) {
-            $request->merge(['code' => strtoupper($request->code)]);
-        }
-
-        // LƯU Ý: Đã thay $request->only() bằng $request->all() để lưu đủ dữ liệu
-        $coupon->update($request->all());
+        $coupon->update($validator->validated());
 
         return response()->json([
             'message' => 'Cập nhật mã giảm giá thành công!',

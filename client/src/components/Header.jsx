@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/api";
 import "./Header.css";
 import { Link, useNavigate } from "react-router-dom";
 import { FiSearch, FiUser, FiShoppingCart, FiLogOut, FiHeart, FiTrash2, FiX } from "react-icons/fi";
@@ -71,7 +72,7 @@ export default function Header() {
 
     try {
       setLoadingWishlist(true);
-      const res = await fetch("http://localhost:8000/api/user/wishlist", {
+      const res = await fetch(`${API_BASE_URL}/user/wishlist`, {
         headers: {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -99,7 +100,7 @@ export default function Header() {
   const handleRemoveFavorite = async (productId) => {
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch("http://localhost:8000/api/user/wishlist/toggle", {
+      const res = await fetch(`${API_BASE_URL}/user/wishlist/toggle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -120,25 +121,18 @@ export default function Header() {
   };
 
   return (
-    <>
-      <header className="header">
-        <Link to="/" className="logo">
-          <img src="/src/public/images/logo.png" alt="Logo" />
-        </Link>
+  <>
+    <div className="ash-topbar ash-topbar-primary">
+      🚛 MIỄN PHÍ SHIP cho đơn hàng từ 3.399.000Đ++ | CAM KẾT 100% CHÍNH HÃNG
+    </div>
 
-        <nav className="navbar">
-          <ul className="nav-menu">
-            <li><Link to="/">Trang chủ</Link></li>
-            <li><Link to="/products">Sản phẩm</Link></li>
-            <li><Link to="/products/pants">Quần</Link></li>
-            <li><Link to="/products/ao">Áo</Link></li>
-            <li><Link to="/products/phu-kien">Túi</Link></li>
-            <li><Link to="/products/giay">Giày</Link></li>
-          </ul>
-        </nav>
+    <div className="ash-topbar ash-topbar-secondary">
+      Quý Khách ĐƯỢC ĐỒNG KIỂM TRƯỚC KHI THANH TOÁN
+    </div>
 
-        <div className="header-right">
-          <div className="search-box">
+    <header className="header ash-main-header">
+
+      <div className="search-box">
             <input 
               type="text" 
               placeholder="Bạn đang tìm kiếm gì?" 
@@ -152,6 +146,45 @@ export default function Header() {
               style={{ cursor: "pointer" }} 
             />
           </div>
+
+  {/* LOGO CHÍNH GIỮA */}
+  <Link to="/" className="logo ash-logo">
+    <img
+      src="/logo.png"
+      alt="Logo"
+    />
+  </Link>
+
+  <nav className="navbar">
+  <ul className="nav-menu">
+  <li>
+    <Link to="/">TRANG CHỦ</Link>
+  </li>
+
+  <li>
+    <Link to="/products">SẢN PHẨM</Link>
+  </li>
+
+  <li>
+    <Link to="/products/pants">QUẦN</Link>
+  </li>
+
+  <li>
+    <Link to="/products/ao">ÁO</Link>
+  </li>
+
+  <li>
+    <Link to="/products/phu-kien">TÚI</Link>
+  </li>
+
+  <li>
+    <Link to="/products/giay">GIÀY</Link>
+  </li>
+</ul>
+</nav>
+
+        <div className="header-right">
+          
 
           {/* User Menu Dropdown */}
           <div className="user-menu-wrapper">

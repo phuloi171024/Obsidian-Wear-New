@@ -3,88 +3,175 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Product;
 use App\Models\Review;
-use App\Models\Order;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class ReviewController extends Controller
 {
-    // 1. Lấy danh sách đánh giá của 1 sản phẩm để hiển thị lên ReactJS
+    /**
+     * Danh sách đánh giá đã được admin duyệt.
+     */
     public function index(int $productId)
     {
-        $reviews = Review::with('user:id,name')
+        $reviews = Review::query()
+            ->with('user:id,name')
             ->where('product_id', $productId)
-            ->orderBy('created_at', 'desc')
+            ->where('status', 'approved')
+            ->latest()
             ->get();
 
-        $formattedReviews = $reviews->map(function($r) {
+        $formattedReviews = $reviews->map(function (Review $review) {
             return [
-                'id' => $r->id,
-                'name' => $r->user ? $r->user->name : 'Khách hàng',
-                'rating' => $r->rating,
-                'comment' => $r->comment,
-                'date' => $r->created_at->format('d/m/Y')
+                'id' => $review->id,
+                'name' => $review->user?->name ?? 'Khách hàng',
+                'rating' => $review->rating,
+                'comment' => $review->comment,
+                'date' => $review->created_at->format('d/m/Y'),
             ];
         });
 
         return response()->json([
             'status' => true,
-            'data' => $formattedReviews
-        ], 200);
+            'data' => $formattedReviews,
+        ]);
     }
 
-    // 2. Thêm đánh giá mới
+    /**
+     * Gửi đánh giá mới.
+     */
     public function store(Request $request, int $productId)
     {
+        $validated = $request->validate([
+            'rating' => [
+                'required',
+                'integer',
+                'between:1,5',
+            ],
+            'comment' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+        ]);
+
         $user = $request->user();
 
-        // KIỂM TRA NGOẠI LỆ: User đã mua sản phẩm này và đơn hàng đã "completed" (Hoàn tất) chưa?
-        $hasBought = Order::where('user_id', $user->id)
-            ->where('status', 'completed')
-            ->whereHas('items.productVariant', function ($query) use ($productId) {
-                $query->where('product_id', $productId);
-            })->exists();
+        $productExists = Product::query()
+            ->where('id', $productId)
+            ->where('status', true)
+            ->exists();
+
+        if (!$productExists) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sản phẩm không tồn tại hoặc đã bị ẩn!',
+            ], 404);
+        }
+
+        /*
+         * Kiểm tra lịch sử mua hàng trực tiếp bằng ID.
+         * Cách này vẫn hoạt động khi biến thể cũ đã bị xóa mềm.
+         */
+        $hasBought = DB::table('orders')
+            ->join(
+                'order_items',
+                'orders.id',
+                '=',
+                'order_items.order_id'
+            )
+            ->join(
+                'product_variants',
+                'order_items.product_variant_id',
+                '=',
+                'product_variants.id'
+            )
+            ->where('orders.user_id', $user->id)
+            ->where('orders.status', 'completed')
+            ->where('product_variants.product_id', $productId)
+            ->whereNull('orders.deleted_at')
+            ->whereNull('order_items.deleted_at')
+            ->exists();
 
         if (!$hasBought) {
             return response()->json([
                 'status' => false,
-                'message' => 'Bạn phải mua và nhận hàng thành công mới được đánh giá sản phẩm này!'
+                'message' => 'Bạn phải mua và nhận hàng thành công mới được đánh giá sản phẩm này!',
             ], 403);
         }
 
-        // Tạo đánh giá lưu vào database
+        $alreadyReviewed = Review::query()
+            ->where('user_id', $user->id)
+            ->where('product_id', $productId)
+            ->exists();
+
+        if ($alreadyReviewed) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Bạn đã đánh giá sản phẩm này rồi!',
+            ], 422);
+        }
+
         $review = Review::create([
             'user_id' => $user->id,
             'product_id' => $productId,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-            'status' => 'pending', // Mặc định là chờ duyệt
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'] ?? null,
+            'status' => 'pending',
+            'report_count' => 0,
         ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Cảm ơn bạn đã gửi đánh giá!',
+            'message' => 'Đánh giá đã được gửi và đang chờ quản trị viên duyệt.',
             'review' => [
                 'id' => $review->id,
-                'name' => $user->name,
                 'rating' => $review->rating,
                 'comment' => $review->comment,
-                'date' => $review->created_at->format('d/m/Y')
-            ]
+                'status' => $review->status,
+            ],
         ], 201);
     }
 
-    // 3. Khách hàng báo cáo bình luận rác
-    public function report(int $id)
+    /**
+     * Báo cáo một đánh giá đã được duyệt.
+     */
+    public function report(Request $request, int $id)
     {
-        $review = Review::findOrFail($id);
-        
-        // Tăng số lượt báo cáo lên 1
+        $review = Review::query()
+            ->where('status', 'approved')
+            ->findOrFail($id);
+
+        $cacheKey = sprintf(
+            'review_report:%d:%d',
+            $request->user()->id,
+            $review->id
+        );
+
+        /*
+         * Cache::add chỉ thành công khi key chưa tồn tại.
+         * Một tài khoản chỉ báo cáo một review trong 24 giờ.
+         */
+        $firstReport = Cache::add(
+            $cacheKey,
+            true,
+            now()->addDay()
+        );
+
+        if (!$firstReport) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Bạn đã báo cáo đánh giá này rồi!',
+            ], 422);
+        }
+
         $review->increment('report_count');
 
         return response()->json([
             'status' => true,
-            'message' => 'Cảm ơn bạn đã báo cáo. Quản trị viên sẽ kiểm tra bình luận này!'
+            'message' => 'Cảm ơn bạn đã báo cáo. Quản trị viên sẽ kiểm tra đánh giá này!',
         ]);
     }
 }

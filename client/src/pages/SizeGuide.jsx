@@ -29,7 +29,7 @@ export default function SizeGuide() {
                 <div className="size-image-box">
 
       <img
-        src="../src/public/images/aophongcotton.png"
+        src="../images/aophongcotton.png"
         alt="Áo"
         className="size-product"
       />
@@ -108,7 +108,7 @@ export default function SizeGuide() {
                 <div className="size-image-box">
 
       <img
-        src="../src/public/images/quanshortthethao.png"
+        src="../images/quanshortthethao.png"
         alt="Quần"
         className="size-product"
       />

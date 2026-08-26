@@ -22,3 +22,57 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Chặn tất cả biến thể của .env
+.env.*
+!.env.example
+
+# Dữ liệu runtime Laravel
+/storage/logs/*
+!/storage/logs/.gitignore
+
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+# Backend Laravel
+/server/.env
+/server/.env.*
+!/server/.env.example
+
+/server/vendor/
+
+/server/storage/logs/*
+!/server/storage/logs/.gitignore
+
+/server/storage/framework/sessions/*
+!/server/storage/framework/sessions/.gitignore
+
+/server/storage/framework/cache/*
+!/server/storage/framework/cache/.gitignore
+
+/server/storage/framework/views/*
+!/server/storage/framework/views/.gitignore
+
+# Frontend
+/client/node_modules/
+/client/dist/
+
+# Không đưa file ZIP lên Git
+/*.zip
+# Dependencies and production builds
+/server/vendor/
+/client/node_modules/
+/client/dist/
+
+# Local archives and backups
+*.zip
+*.rar
+
+# Environment secrets
+.env
+.env.*
+!.env.example

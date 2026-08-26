@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaMapMarkerAlt, FaCheck } from 'react-icons/fa';
-import Header from '../components/Header';
 import Footer from '../components/Footer';
 import toast, { Toaster } from "react-hot-toast";
+import { API_BASE_URL } from "../config/api";
+
 
 export default function PaymentPage() {
   const [activeTab, setActiveTab] = useState('cod');
@@ -22,10 +23,13 @@ export default function PaymentPage() {
   useEffect(() => {
     const fetchCartAndOrderInfo = async () => {
       const token = localStorage.getItem("access_token") || localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        navigate('/login');
+        return;
+      }
 
       try {
-        const res = await fetch("http://localhost:8000/api/cart", {
+        const res = await fetch(`${API_BASE_URL}/cart`, {
           method: "GET",
           headers: {
             "Accept": "application/json",
@@ -37,7 +41,7 @@ export default function PaymentPage() {
         if (res.ok && data.success && Array.isArray(data.data)) {
           // 1. Tính tổng tiền hàng gốc
           const subtotal = data.data.reduce((sum, item) => {
-            const price = item.product_variant?.product?.price || item.product_variant?.price || 0;
+            const price = item.product_variant?.product?.current_price || item.product_variant?.product?.price || item.product_variant?.price || 0;
             return sum + (price * item.quantity);
           }, 0);
 
@@ -46,9 +50,34 @@ export default function PaymentPage() {
           const baseShippingFee = data.data.length > 0 ? (totalQuantity >= 3 ? 0 : 30000) : 0;
 
           // 3. Lấy mã giảm giá từ LocalStorage để trừ đi
-          const appliedVouchers = JSON.parse(localStorage.getItem("applied_vouchers") || "{}");
-          const productDiscount = appliedVouchers.product ? Number(appliedVouchers.product.discount_value) : 0;
-          const shippingDiscount = appliedVouchers.shipping ? Math.min(Number(appliedVouchers.shipping.discount_value), baseShippingFee) : 0;
+          let appliedVouchers = {};
+          try {
+            appliedVouchers = JSON.parse(
+              localStorage.getItem("applied_vouchers") || "{}"
+            );
+          } catch {
+            localStorage.removeItem("applied_vouchers");
+          }
+
+          const selectedVoucher =
+            appliedVouchers.selected ||
+            appliedVouchers.product ||
+            appliedVouchers.shipping ||
+            null;
+
+          const productDiscount = selectedVoucher?.type === "product"
+            ? Number(
+                selectedVoucher.discount_amount ??
+                  selectedVoucher.discount_value ??
+                  0
+              )
+            : 0;
+          const shippingDiscount = selectedVoucher?.type === "shipping"
+            ? Math.min(
+                Number(selectedVoucher.discount_value || 0),
+                baseShippingFee
+              )
+            : 0;
 
           // 4. Tính tổng tiền cuối cùng (Giá gốc + Ship - Giảm giá)
           const finalShippingFee = baseShippingFee - shippingDiscount;
@@ -61,14 +90,21 @@ export default function PaymentPage() {
             total: formattedTotal,     // Hiển thị ra màn hình (VD: 370.000)
             rawTotal: Number(finalTotal), // Đẩy xuống DB cho Backend
           }));
+        } else if (res.status === 401) {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("token");
+          navigate('/login');
+        } else {
+          toast.error(data.message || "Không thể tải giỏ hàng!");
         }
       } catch (error) {
         console.error("Lỗi lấy thông tin giỏ hàng:", error);
+        toast.error("Không thể tải thông tin thanh toán!");
       }
     };
 
     fetchCartAndOrderInfo();
-  }, []);
+  }, [navigate]);
 
 // API ĐẶT HÀNG VÀ THANH TOÁN
   const handleConfirmOrder = async () => {
@@ -85,15 +121,33 @@ export default function PaymentPage() {
 
     //  Lấy ID địa chỉ từ LocalStorage 
     const addressId = localStorage.getItem("selected_address_id");
-    const appliedVouchers = JSON.parse(localStorage.getItem("applied_vouchers") || "{}");
-    // Lấy ID của voucher sản phẩm 
-    const couponId = appliedVouchers.product?.id || appliedVouchers.shipping?.id || null;
+    if (!addressId) {
+      toast.error("Bạn chưa chọn địa chỉ giao hàng!");
+      navigate("/shipping-info");
+      return;
+    }
+
+    let appliedVouchers = {};
+    try {
+      appliedVouchers = JSON.parse(
+        localStorage.getItem("applied_vouchers") || "{}"
+      );
+    } catch {
+      localStorage.removeItem("applied_vouchers");
+    }
+
+    const selectedVoucher =
+      appliedVouchers.selected ||
+      appliedVouchers.product ||
+      appliedVouchers.shipping ||
+      null;
+    const couponId = selectedVoucher?.id || null;
 
     try {
       setLoading(true);
       
       // 1. LUÔN LUÔN LƯU ĐƠN HÀNG VÀO DATABASE TRƯỚC
-     const orderRes = await fetch("http://localhost:8000/api/orders", {
+     const orderRes = await fetch(`${API_BASE_URL}/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,38 +156,32 @@ export default function PaymentPage() {
         },
         body: JSON.stringify({
           payment_method: activeTab,
-          total_price: order.rawTotal,
-          address_id: addressId || null, 
-          note: note,   
-          coupon_id: couponId                  
+          address_id: Number(addressId),
+          note: note.trim() || null,
+          coupon_id: couponId ? Number(couponId) : null,
         })
       });
 
       const orderData = await orderRes.json();
-
       if (!orderRes.ok || !orderData.status) {
-        // Bắt riêng lỗi 400 (Giỏ hàng trống do đã bấm tạo đơn trước đó)
-        if (orderRes.status === 400) {
-          toast.error("Đơn hàng đã được ghi nhận trước đó hoặc giỏ hàng rỗng!");
-          toast.success("Đang đưa bạn đến danh sách đơn hàng...", { duration: 3000 });
-          setLoading(false);
-          setTimeout(() => {
-            navigate("/orders"); // Chuyển khách về trang Lịch sử đơn hàng
-          }, 1500);
-          return;
-        }
+        const validationMessages = orderData.errors
+          ? Object.values(orderData.errors).flat().join("\n")
+          : null;
 
-        toast.error(orderData.message || "Có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại!");
-        setLoading(false);
+        toast.error(
+          validationMessages ||
+          orderData.message ||
+          "Không thể tạo đơn hàng!"
+        );
         return;
       }
       
       const realOrderId = orderData.order_id;
       
       // 2. XỬ LÝ THEO PHƯƠNG THỨC THANH TOÁN
-      if (activeTab === 'sepay' || activeTab === 'vnpay') {
+      if (activeTab === 'vnpay') {
         // GỌI API TẠO LINK VNPAY VỚI ID ĐƠN HÀNG THẬT
-        const vnpayRes = await fetch("http://localhost:8000/api/vnpay/create", {
+        const vnpayRes = await fetch(`${API_BASE_URL}/vnpay/create`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -151,15 +199,25 @@ export default function PaymentPage() {
         if (vnpayRes.ok && (vnpayData.success || vnpayData.status)) {
           const redirectUrl = vnpayData.data || vnpayData.url;
           if (redirectUrl) {
+            localStorage.removeItem("selected_address_id");
+            localStorage.removeItem("shipping_info");
+            localStorage.removeItem("applied_vouchers");
             window.location.href = redirectUrl;
             return;
           }
         }
-        toast.error("Không thể tạo liên kết thanh toán VNPay!");
+        toast.error("Đơn hàng đã tạo nhưng không thể mở VNPay. Vui lòng kiểm tra trong lịch sử đơn hàng!");
+        localStorage.removeItem("selected_address_id");
+        localStorage.removeItem("shipping_info");
+        localStorage.removeItem("applied_vouchers");
+        navigate('/orders');
         
       } else {
         // NẾU LÀ COD -> CHUYỂN HƯỚNG SANG TRANG THÀNH CÔNG LUÔN
         toast.success("Đặt hàng thành công!");
+        localStorage.removeItem("selected_address_id");
+        localStorage.removeItem("shipping_info");
+        localStorage.removeItem("applied_vouchers");
         setTimeout(() => {
           navigate(`/order-success?order_id=${realOrderId}`, { state: { order: { ...order, code: realOrderId } } });
         }, 1000);
@@ -253,8 +311,8 @@ export default function PaymentPage() {
               <span>COD</span>
             </button>
             <button 
-              onClick={() => setActiveTab('sepay')}
-              className={`flex items-center space-x-2 pb-3 px-6 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${activeTab === 'sepay' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+              onClick={() => setActiveTab('vnpay')}
+              className={`flex items-center space-x-2 pb-3 px-6 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${activeTab === 'vnpay' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
             >
               <span>VNPay</span>
             </button>
@@ -323,7 +381,7 @@ export default function PaymentPage() {
               <button
                 onClick={handleConfirmOrder}
                 disabled={loading}
-                className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm cursor-pointer"
+                className="w-full bg-[#10b981] hover:bg-[#059669] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm cursor-pointer"
               >
                 <span>{loading ? "Đang xử lý..." : activeTab === 'cod' ? "✓ Xác nhận thanh toán COD" : "✓ Thanh toán qua VNPay"}</span>
               </button>

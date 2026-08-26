@@ -2,124 +2,237 @@ import "./Footer.css";
 import { Link } from "react-router-dom";
 
 import {
-  FaFacebook,
+  FaFacebookF,
   FaInstagram,
-  FaTwitter,
   FaYoutube,
 } from "react-icons/fa";
 
-import {
-  FiMapPin,
-  FiPhone,
-  FiMail,
-} from "react-icons/fi";
-
 export default function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-container">
+    <footer className="ash-footer">
 
-        {/* Cột 1 */}
-        <div className="footer-col">
-          <h3>Về Obsidian Wear</h3>
+      <div className="ash-footer-main">
 
-          <p className="about">
-            Obsidian Wear cung cấp các sản phẩm quần áo thể thao chất lượng
-            cao với nhiều phong cách đa dạng cho nam, nữ và trẻ em.
-          </p>
+        {/* CỘT THÔNG TIN */}
+        <div className="ash-footer-column ash-footer-company">
 
-          <div className="social">
-            <a href="#"><FaFacebook /></a>
-            <a href="#"><FaInstagram /></a>
-            <a href="#"><FaTwitter /></a>
-            <a href="#"><FaYoutube /></a>
-          </div>
+          <h3>THÔNG TIN CỬA HÀNG</h3>
 
-          <h4>Phương Thức Thanh Toán</h4>
-
-          <div className="payment">
-            <img src="/src/public/images/visa.png" alt="Visa" />
-            <img src="/src/public/images/mastercard.png" alt="MasterCard" />
-            <img src="/src/public/images/jcb.png" alt="JCB" />
-            <img src="/src/public/images/vnpay.png" alt="VNPay" />
-            <img src="/src/public/images/momo.png" alt="MoMo" />
-          </div>
-        </div>
-
-        {/* Cột 2: Đã gắn Link chuyển trang */}
-        <div className="footer-col">
-          <h3>Danh Mục</h3>
-
-          <ul>
-            <li>
-              <Link to="/products/ao" className="footer-link">Áo thể thao</Link>
-            </li>
-            <li>
-              <Link to="/products/pants" className="footer-link">Quần thể thao</Link>
-            </li>
-            <li>
-              <Link to="/products/giay" className="footer-link">Giày thể thao</Link>
-            </li>
-            <li>
-              <Link to="/products/phu-kien" className="footer-link">Túi & Phụ kiện</Link>
-            </li>
-            <li>
-              <Link to="/products" className="footer-link">Tất cả sản phẩm</Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Cột 3: Đã gắn Link chuyển trang */}
-        <div className="footer-col">
-          <h3>Hỗ Trợ</h3>
-
-          <ul>
-            <li>
-              <Link to="/size-guide" className="footer-link">Hướng dẫn chọn size</Link>
-            </li>
-            <li>
-              <Link to="/contact" className="footer-link">Liên hệ với chúng tôi</Link>
-            </li>
-            <li>
-              {/* Nếu sau này em làm trang Chính sách, hãy sửa to="/" thành to="/chinh-sach" nhé */}
-              <Link to="/" className="footer-link">Câu hỏi thường gặp</Link>
-            </li>
-            <li>
-              <Link to="/" className="footer-link">Chính sách vận chuyển</Link>
-            </li>
-            <li>
-              <Link to="/" className="footer-link">Chính sách đổi trả</Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Cột 4 */}
-        <div className="footer-col">
-          <h3>Liên Hệ</h3>
+          <h4>OBSIDIAN WEAR</h4>
 
           <p>
-            <FiMapPin />
+            Thời trang thể thao chính hãng với phong cách
+            hiện đại, năng động và tối giản.
+          </p>
+
+          <p>
+            <strong>Địa chỉ:</strong>
+            <br />
             123 Nguyễn Văn Linh, Quận 7, TP.HCM
           </p>
 
           <p>
-            <FiPhone />
-            +84 123 456 789
+            <strong>Email:</strong>{" "}
+            hello@obsidianwear.vn
           </p>
 
           <p>
-            <FiMail />
-            hello@obsidianwear.vn
+            <strong>Hotline:</strong>{" "}
+            +84 123 456 789
           </p>
+
+        </div>
+
+
+        {/* CHÍNH SÁCH */}
+        <div className="ash-footer-column">
+
+          <h3>CHÍNH SÁCH</h3>
+
+          <ul>
+            <li>
+              <Link to="/products">
+                Tất cả sản phẩm
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/shipping-info">
+                Chính sách vận chuyển
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/">
+                Chính sách đổi trả
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/">
+                Phương thức thanh toán
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/">
+                Chính sách bảo mật
+              </Link>
+            </li>
+          </ul>
+
+        </div>
+
+
+        {/* HỖ TRỢ */}
+        <div className="ash-footer-column">
+
+          <h3>HỖ TRỢ KHÁCH HÀNG</h3>
+
+          <ul>
+            <li>
+              <Link to="/size-guide">
+                Hướng dẫn chọn size
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/contact">
+                Thông tin liên hệ
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/orders">
+                Kiểm tra đơn hàng
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/">
+                Câu hỏi thường gặp
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/products">
+                Hướng dẫn mua hàng
+              </Link>
+            </li>
+          </ul>
+
+        </div>
+
+
+        {/* DANH MỤC */}
+        <div className="ash-footer-column">
+
+          <h3>DANH MỤC SẢN PHẨM</h3>
+
+          <ul>
+            <li>
+              <Link to="/products/ao">
+                Áo
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/products/pants">
+                Quần
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/products/phu-kien">
+                Túi
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/products/giay">
+                Giày
+              </Link>
+            </li>
+          </ul>
+
         </div>
 
       </div>
 
-      <div className="footer-bottom">
-        <div className="copyright">
-          © 2026 OBSIDIAN WEAR. All rights reserved.
+
+      {/* FOOTER LOWER */}
+      <div className="ash-footer-lower">
+
+        <div className="ash-footer-social">
+
+          <span>THEO DÕI OBSIDIAN WEAR</span>
+
+          <div>
+            <a href="#" aria-label="Facebook">
+              <FaFacebookF />
+            </a>
+
+            <a href="#" aria-label="Instagram">
+              <FaInstagram />
+            </a>
+
+            <a href="#" aria-label="Youtube">
+              <FaYoutube />
+            </a>
+          </div>
+
         </div>
+
+
+        <div className="ash-footer-payment">
+
+          <span>PHƯƠNG THỨC THANH TOÁN</span>
+
+          <div>
+            <img
+              src="/images/visa.png"
+              alt="Visa"
+            />
+
+            <img
+              src="/images/mastercard.png"
+              alt="MasterCard"
+            />
+
+            <img
+              src="/images/jcb.png"
+              alt="JCB"
+            />
+
+            <img
+              src="/images/vnpay.png"
+              alt="VNPay"
+            />
+
+            <img
+              src="/images/momo.png"
+              alt="MoMo"
+            />
+          </div>
+
+        </div>
+
       </div>
+
+
+      {/* COPYRIGHT */}
+      <div className="ash-footer-bottom">
+
+        <span>
+          © 2026 OBSIDIAN WEAR. Mọi quyền được bảo lưu.
+        </span>
+
+        <span>
+          THỜI TRANG THỂ THAO CHÍNH HÃNG
+        </span>
+
+      </div>
+
     </footer>
   );
 }

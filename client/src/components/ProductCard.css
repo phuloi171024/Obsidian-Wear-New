@@ -1,87 +1,406 @@
-.product-card {
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.08);
-    padding: 14px;
-    transition: .25s;
-    border: 1px solid #f2f2f2;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+/* =========================================================
+   PRODUCT CARD - ASH
+========================================================= */
+
+.ash-product-card {
+  width: 100%;
+  min-width: 0;
+
+  background: #ffffff;
+
+  overflow: hidden;
 }
 
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,.12);
+.ash-product-card-link {
+  display: block;
+
+  width: 100%;
+
+  color: #111111;
+
+  text-decoration: none;
 }
 
-.product-card img {
-    width: 75%;          /* Thu nhỏ chiều ngang */
-    height: 200px;       /* Thu nhỏ chiều cao */
-    background:#fff;
-    object-fit: contain;
-    display: block;
-    margin: 10px auto 15px;
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+.ash-product-image-area {
+  position: relative;
+
+  width: 100%;
+  height: 485px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background: #f5f5f3;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
 }
 
-.product-card h3 {
-    font-size: 19px;
-    font-weight: 600;
-    color: #333;
-    margin: 8px 0;
-    line-height: 1.4;
-    height: 53px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+.ash-product-image {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  object-position: center;
+
+  transition: transform 0.35s ease;
 }
 
-.rating {
-    font-size: 13px;
-    color: #FFC107;
-    margin-bottom: 10px;
+.ash-product-card:hover .ash-product-image {
+  transform: scale(1.035);
 }
 
-.rating span {
-    color: #888;
-    font-size: 12px;
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+.ash-product-labels {
+  position: absolute;
+
+  z-index: 4;
+
+  top: 11px;
+  left: 11px;
+  right: 11px;
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 4px;
 }
 
-.price-cart{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-top:auto;
-    padding-top:12px;
+.ash-product-label {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 21px;
+
+  padding: 4px 6px;
+
+  background: #ffffff;
+
+  color: #111111;
+
+  font-size: 9px;
+  font-weight: 600;
+
+  line-height: 1.2;
+
+  box-sizing: border-box;
 }
 
-.price{
-    color:#2563eb;
-    font-size:22px;
-    font-weight:700;
+
+/* =========================================================
+   INFO
+========================================================= */
+
+.ash-product-info {
+  width: 100%;
+
+  padding: 14px 2px 10px;
+
+  box-sizing: border-box;
 }
 
-.cart-btn{
-    width:32px;
-    height:32px;
-    border:none;
-    border-radius:50%;
-    background:#f4f5f7;
-    color:#8b8b8b;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    cursor:pointer;
-    transition:.3s;
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.ash-product-brand {
+  margin-bottom: 4px;
+
+  color: #111111;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  line-height: 1.35;
+
+  text-transform: uppercase;
 }
 
-.cart-btn i{
-    font-size:13px;
+
+/* =========================================================
+   NAME
+========================================================= */
+
+.ash-product-name {
+  margin: 0 0 6px;
+
+  min-height: 42px;
+
+  color: #222222;
+
+  font-size: 13px;
+  font-weight: 400;
+
+  line-height: 1.55;
+
+  overflow: hidden;
+
+  display: -webkit-box;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  line-clamp: 2;
 }
 
-.cart-btn:hover{
-    background:#2563eb;
-    color:#fff;
+
+/* =========================================================
+   PRICE
+========================================================= */
+
+.ash-product-price-row {
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+.ash-product-price {
+  color: #111111;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ash-product-old-price {
+  color: #909090;
+
+  font-size: 12px;
+  font-weight: 400;
+
+  text-decoration: line-through;
+}
+
+
+/* =========================================================
+   COLORS
+========================================================= */
+
+.ash-product-colors {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 10px;
+}
+
+.ash-product-color-button {
+  width: 16px;
+  height: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid transparent;
+  border-radius: 50%;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.ash-product-color-button.active {
+  border-color: #111111;
+}
+
+.ash-product-color-button:hover {
+  transform: scale(1.08);
+}
+
+.ash-product-color {
+  display: block;
+
+  width: 12px;
+  height: 12px;
+
+  border: 1px solid #cfcfcf;
+  border-radius: 50%;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   NO IMAGE
+========================================================= */
+
+.ash-product-no-image {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f3f3f1;
+}
+
+.ash-product-no-image span {
+  color: #999999;
+
+  font-size: 11px;
+  font-weight: 500;
+
+  letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   BUY NOW
+========================================================= */
+
+.ash-product-buy-now {
+  position: relative;
+
+  display: inline-block;
+
+  margin-top: 12px;
+
+  padding-bottom: 3px;
+
+  color: #111111;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 0.3px;
+}
+
+.ash-product-buy-now::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 0;
+  height: 1px;
+
+  background: #111111;
+
+  transition: width 0.3s ease;
+}
+
+.ash-product-card:hover .ash-product-buy-now::after {
+  width: 100%;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .ash-product-image-area {
+    height: 420px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .ash-product-image-area {
+    height: 235px;
+
+    padding: 8px;
+  }
+
+  .ash-product-labels {
+    top: 6px;
+    left: 6px;
+    right: 6px;
+  }
+
+  .ash-product-label {
+    min-height: 16px;
+
+    padding: 2px 4px;
+
+    font-size: 7px;
+  }
+
+  .ash-product-info {
+    padding-top: 8px;
+  }
+
+  .ash-product-brand {
+    font-size: 9px;
+  }
+
+  .ash-product-name {
+    min-height: 31px;
+
+    font-size: 10px;
+  }
+
+  .ash-product-price {
+    font-size: 10px;
+  }
+
+  .ash-product-old-price {
+    font-size: 9px;
+  }
+
+  .ash-product-colors {
+    gap: 5px;
+
+    margin-top: 7px;
+  }
+
+  .ash-product-color-button {
+    width: 14px;
+    height: 14px;
+  }
+
+  .ash-product-color {
+    width: 10px;
+    height: 10px;
+  }
+
+  .ash-product-buy-now {
+    margin-top: 8px;
+
+    font-size: 9px;
+  }
+
 }

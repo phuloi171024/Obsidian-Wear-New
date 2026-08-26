@@ -8,6 +8,7 @@ use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 // NHỚ THÊM DÒNG NÀY ĐỂ DÙNG CLOUDINARY
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -58,6 +59,12 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'brand_id'    => 'required|exists:brands,id',
             'price'       => 'required|numeric|min:0',
+            'sale_price'  => 'nullable|numeric|min:0|lt:price',
+            'deal_label'  => 'nullable|string|max:255',
+            'sale_starts_at' => 'nullable|date',
+            'sale_ends_at' => 'nullable|date|after_or_equal:sale_starts_at',
+            'is_featured' => 'boolean',
+            'sport_type'  => 'nullable|in:tennis-pickleball,running,swimming,football,gym',
             'description' => 'nullable|string',
             'status'      => 'boolean',
             'thumbnail'   => 'nullable|string',
@@ -66,36 +73,43 @@ class ProductController extends Controller
             'variants.*.size'   => 'required_with:variants|string',
             'variants.*.color'  => 'required_with:variants|string',
             'variants.*.stock'  => 'required_with:variants|integer|min:0',
+            'variants.*.image'  => 'nullable|string|max:2048',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $slug = Str::slug($request->name) . '-' . Str::random(6);
+        $product = DB::transaction(function () use ($request) {
+            $product = Product::create([
+                'name'        => $request->name,
+                'slug'        => Str::slug($request->name) . '-' . Str::random(6),
+                'sku'         => $request->sku ?? strtoupper(Str::random(8)),
+                'category_id' => $request->category_id,
+                'brand_id'    => $request->brand_id,
+                'price'       => $request->price,
+                'sale_price'  => $request->sale_price,
+                'deal_label'  => $request->deal_label,
+                'sale_starts_at' => $request->sale_starts_at,
+                'sale_ends_at' => $request->sale_ends_at,
+                'is_featured' => $request->boolean('is_featured'),
+                'sport_type'  => $request->sport_type,
+                'description' => $request->description,
+                'thumbnail'   => $request->thumbnail,
+                'status'      => $request->get('status', true),
+            ]);
 
-        $product = Product::create([
-            'name'        => $request->name,
-            'slug'        => $slug,
-            'sku'         => $request->sku ?? strtoupper(Str::random(8)),
-            'category_id' => $request->category_id,
-            'brand_id'    => $request->brand_id,
-            'price'       => $request->price,
-            'description' => $request->description,
-            'thumbnail'   => $request->thumbnail,
-            'status'      => $request->get('status', true),
-        ]);
-
-        // Tạo variants nếu có
-        if ($request->filled('variants')) {
-            foreach ($request->variants as $variant) {
+            foreach ($request->input('variants', []) as $variant) {
                 $product->variants()->create([
                     'size'  => $variant['size'],
                     'color' => $variant['color'],
                     'stock' => $variant['stock'],
+                    'image' => $variant['image'] ?? null,
                 ]);
             }
-        }
+
+            return $product;
+        }, 3);
 
         return response()->json([
             'message' => 'Tạo sản phẩm thành công!',
@@ -129,6 +143,12 @@ class ProductController extends Controller
             'category_id' => 'sometimes|exists:categories,id',
             'brand_id'    => 'sometimes|exists:brands,id',
             'price'       => 'sometimes|numeric|min:0',
+            'sale_price'  => 'nullable|numeric|min:0',
+            'deal_label'  => 'nullable|string|max:255',
+            'sale_starts_at' => 'nullable|date',
+            'sale_ends_at' => 'nullable|date|after_or_equal:sale_starts_at',
+            'is_featured' => 'sometimes|boolean',
+            'sport_type'  => 'nullable|in:tennis-pickleball,running,swimming,football,gym',
             'description' => 'nullable|string',
             'status'      => 'sometimes|boolean',
             'thumbnail'   => 'nullable|string',
@@ -139,6 +159,15 @@ class ProductController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $regularPrice = (float) $request->input('price', $product->price);
+        if ($request->filled('sale_price') && (float) $request->sale_price >= $regularPrice) {
+            return response()->json([
+                'errors' => [
+                    'sale_price' => ['Giá khuyến mãi phải nhỏ hơn giá bán.'],
+                ],
+            ], 422);
+        }
+
         // Cập nhật slug nếu đổi tên
         if ($request->filled('name') && $request->name !== $product->name) {
             $request->merge(['slug' => Str::slug($request->name) . '-' . Str::random(6)]);
@@ -146,7 +175,10 @@ class ProductController extends Controller
 
         $product->update($request->only([
             'name', 'slug', 'sku', 'category_id', 'brand_id',
-            'price', 'description', 'thumbnail', 'status',
+            'price', 'sale_price', 'deal_label',
+            'sale_starts_at', 'sale_ends_at',
+            'is_featured', 'sport_type',
+            'description', 'thumbnail', 'status',
         ]));
 
         return response()->json([
@@ -300,17 +332,10 @@ class ProductController extends Controller
 
         if ($request->hasFile('image_file')) {
             try {
-                // CHỮA CHÁY: Khởi tạo trực tiếp Cloudinary bằng Link của em 
-                // Cách này sẽ bypass 100% lỗi cache .env của Laravel
-                $cloudinary = new \Cloudinary\Cloudinary('cloudinary://383195926683889:7bIeBEpS5bL44Nh_sVdnrC_j4r4@si8y1azq');
-                
-                // Gọi hàm up ảnh
-                $result = $cloudinary->uploadApi()->upload($request->file('image_file')->getRealPath(), [
-                    'folder' => 'obsidian_wear/products'
-                ]);
-
-                // Lấy đường dẫn an toàn (https)
-                $uploadedFileUrl = $result['secure_url'];
+                $uploadedFileUrl = Cloudinary::upload(
+                    $request->file('image_file')->getRealPath(),
+                    ['folder' => 'obsidian_wear/products']
+                )->getSecurePath();
 
                 // Lưu vào Database
                 $product->thumbnail = $uploadedFileUrl;
@@ -348,21 +373,18 @@ class ProductController extends Controller
 
         if ($request->hasFile('image_file')) {
             try {
-                // Khởi tạo Cloudinary bằng URL cứng giống hàm up ảnh sản phẩm của em
-                $cloudinary = new \Cloudinary\Cloudinary('cloudinary://383195926683889:7bIeBEpS5bL44Nh_sVdnrC_j4r4@si8y1azq');
-                
-                $result = $cloudinary->uploadApi()->upload($request->file('image_file')->getRealPath(), [
-                    'folder' => 'obsidian_wear/variants'
-                ]);
+                $uploadedFileUrl = Cloudinary::upload(
+                    $request->file('image_file')->getRealPath(),
+                    ['folder' => 'obsidian_wear/variants']
+                )->getSecurePath();
 
-                // Lưu link ảnh vào cột 'image' của bảng product_variants
-                $variant->image = $result['secure_url'];
+                $variant->image = $uploadedFileUrl;
                 $variant->save();
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Cập nhật ảnh biến thể thành công!',
-                    'image_url' => $result['secure_url']
+                    'image_url' => $uploadedFileUrl
                 ], 200);
 
             } catch (\Exception $e) {

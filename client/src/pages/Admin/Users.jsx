@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { FiSearch, FiEye, FiLock, FiUnlock, FiX } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
@@ -24,7 +25,7 @@ export default function Users() {
 
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/api/admin/users?page=${page}&search=${keyword}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/users?page=${page}&search=${keyword}`, {
         headers: {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -69,7 +70,7 @@ export default function Users() {
     const actionText = user.status ? "KHOÁ" : "MỞ KHÓA";
 
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/users/${user.id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/admin/users/${user.id}/status`, {
         method: "PUT",
         headers: {
           "Accept": "application/json",
@@ -97,7 +98,7 @@ export default function Users() {
     const token = localStorage.getItem("access_token");
 
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/users/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
         headers: {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`

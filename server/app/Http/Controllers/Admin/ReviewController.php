@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReviewController extends Controller
 {
@@ -37,7 +38,32 @@ class ReviewController extends Controller
 
         $perPage = min((int) $request->get('per_page', 50), 100);
 
-        return response()->json($query->paginate($perPage));
+        $topProduct = Review::query()
+            ->select('product_id', DB::raw('COUNT(*) as total'))
+            ->with('product:id,name')
+            ->groupBy('product_id')
+            ->orderByDesc('total')
+            ->first();
+
+        $paginator = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginator->items(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+            'stats' => [
+                'total' => Review::count(),
+                'today' => Review::whereDate('created_at', today())->count(),
+                'pending' => Review::whereIn(
+                    'status',
+                    ['pending', 'hidden']
+                )->count(),
+                'top_product' => $topProduct?->product?->name ?? 'Chưa có',
+                'top_count' => (int) ($topProduct?->total ?? 0),
+            ],
+        ]);
     }
 
     /**

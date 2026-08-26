@@ -13,7 +13,16 @@ class ProductImage extends Model
     protected $fillable = [
         'product_id', 
         'image_path'
-    ]; 
+    ];
+
+    protected $appends = [
+        'image_url',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path;
+    }
 
     // Ảnh này thuộc về sản phẩm nào
     public function product()

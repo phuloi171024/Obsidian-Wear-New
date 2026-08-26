@@ -11,8 +11,8 @@
 }
 
 body {
-  background: #b1acac75;
-  color: #111827; /* Thêm màu chữ xám đen mặc định để chữ sắc nét hơn */
+  background: #ffffff;
+  color: #111827;
 }
 
 .header {
@@ -6001,4 +6001,917 @@ main.max-w-4xl > .bg-white.rounded-2xl
     width: 750px !important;
     max-width: 750px !important;
   }
+}
+
+/* ==================================================
+   ASH HOME PAGE - HEADER
+================================================== */
+
+.ash-topbar {
+  width: 100%;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15px;
+  padding: 8px 15px;
+  box-sizing: border-box;
+}
+
+.ash-topbar-primary {
+  background: #111;
+  color: #fff;
+}
+
+.ash-topbar-secondary {
+  background: #f2f2f2;
+  color: #111;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+
+/* HEADER CHÍNH */
+
+.header.ash-main-header {
+  position: relative;
+  top: auto;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+
+  grid-template-areas:
+    ". logo tools"
+    "nav nav nav";
+
+  align-items: center;
+
+  min-height: 120px;
+
+  padding: 10px 42px 0;
+
+  background: #fff;
+  border-bottom: 1px solid #ededed;
+
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+
+/* LOGO */
+
+.ash-main-header .logo {
+  grid-area: logo;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  justify-self: center;
+
+  width: 140px;
+  height: 58px;
+
+  overflow: hidden;
+}
+
+.ash-main-header .logo img {
+  display: block;
+
+  width: 130px;
+  height: auto;
+
+  object-fit: contain;
+
+  filter: grayscale(1) contrast(1.25);
+}
+
+
+/* MENU */
+
+.ash-main-header .navbar {
+  grid-area: nav;
+
+  width: 100%;
+
+  align-self: end;
+}
+
+.ash-main-header .nav-menu {
+  list-style: none;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 38px;
+
+  margin: 0;
+
+  padding: 0 0 15px;
+}
+
+.ash-main-header .nav-menu li {
+  margin: 0;
+  padding: 0;
+}
+
+.ash-main-header .nav-menu a {
+  position: relative;
+
+  text-decoration: none;
+
+  color: #111;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.35px;
+
+  white-space: nowrap;
+}
+
+
+/* GẠCH CHÂN KHI HOVER */
+
+.ash-main-header .nav-menu a::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+
+  right: 100%;
+
+  bottom: -6px;
+
+  height: 1px;
+
+  background: #111;
+
+  transition: 0.25s;
+}
+
+.ash-main-header .nav-menu a:hover::after {
+  right: 0;
+}
+
+
+/* PHẦN SEARCH + USER + CART */
+
+.ash-main-header .header-right {
+  grid-area: tools;
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+/* ===== SEARCH GIỐNG ASH ===== */
+
+.ash-main-header .search-box {
+  position: absolute;
+
+  left: 42px;
+  top: 34px;
+
+  width: 280px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  background: transparent;
+
+  /* bỏ khung + gạch ngang */
+  border: none;
+  border-bottom: none;
+
+  padding: 0;
+}
+
+
+/* ICON KÍNH LÚP */
+
+.ash-main-header .search-icon {
+  position: static;
+
+  order: 1;
+
+  flex-shrink: 0;
+
+  font-size: 19px;
+  color: #111;
+
+  cursor: pointer;
+}
+
+
+/* CHỮ TÌM KIẾM */
+
+.ash-main-header .search-box input {
+  order: 2;
+
+  width: 100%;
+  height: 40px;
+
+  padding: 0;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #111;
+
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.ash-main-header .search-box input::placeholder {
+  color: #777;
+  opacity: 1;
+}
+
+
+/* KHI CLICK VÀO SEARCH CŨNG KHÔNG HIỆN VIỀN */
+
+.ash-main-header .search-box:focus,
+.ash-main-header .search-box:focus-within,
+.ash-main-header .search-box input:focus {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+
+/* USER / CART */
+
+.ash-main-header .icon-btn {
+  width: 35px;
+  height: 40px;
+
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background: transparent;
+
+  color: #111;
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+.ash-main-header .icon-btn:hover {
+  color: #555;
+}
+
+
+/* DROPDOWN USER */
+
+.ash-main-header .user-dropdown {
+  border-radius: 0;
+
+  border: 1px solid #ddd;
+
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* ==================================================
+   ASH HEADER RESPONSIVE
+================================================== */
+
+@media (max-width: 1200px) {
+
+  .header.ash-main-header {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-areas:
+    "tools-left logo tools-right"
+    "nav nav nav";
+
+  align-items: center;
+
+  min-height: 120px;
+  padding: 12px 42px 0;
+
+  background: #fff;
+  border-bottom: 1px solid #ededed;
+
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+  .ash-main-header .nav-menu {
+    gap: 23px;
+  }
+
+}
+
+
+@media (max-width: 900px) {
+
+  .ash-topbar {
+    font-size: 10px;
+
+    padding: 7px 10px;
+  }
+
+  .header.ash-main-header {
+    position: relative;
+
+    min-height: auto;
+
+    grid-template-columns: 1fr auto;
+
+    grid-template-areas:
+      "logo tools"
+      "search search"
+      "nav nav";
+
+    padding: 12px 16px 0;
+
+    gap: 8px;
+  }
+
+  .ash-main-header .header-right {
+    grid-area: tools;
+  }
+
+  .ash-main-header .search-box {
+    position: absolute;
+
+    left: 16px;
+
+    right: 16px;
+
+    top: 70px;
+
+    width: auto;
+  }
+
+  .ash-main-header .navbar {
+    margin-top: 48px;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+  }
+
+  .ash-main-header .navbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ash-main-header .nav-menu {
+    justify-content: flex-start;
+
+    width: max-content;
+
+    gap: 24px;
+
+    padding-bottom: 13px;
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .ash-main-header .logo,
+  .ash-main-header .logo img {
+    width: 92px;
+  }
+
+  .ash-main-header .icon-btn {
+    width: 32px;
+
+    height: 32px;
+  }
+
+  .ash-main-header .nav-menu a {
+    font-size: 12px;
+  }
+
+}
+
+/* ========================================
+   ASH HEADER DESKTOP
+   SEARCH TRÁI - LOGO GIỮA - ICON PHẢI
+======================================== */
+
+.header.ash-main-header {
+  position: relative;
+  min-height: 125px;
+  padding: 12px 42px 0;
+}
+
+
+/* ---------- LOGO GIỮA ---------- */
+
+.ash-main-header .ash-logo {
+  position: absolute;
+
+  left: 50%;
+  top: 5px;
+
+  transform: translateX(-50%);
+
+  width: 140px;
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 5;
+}
+
+.ash-main-header .ash-logo img {
+  display: block;
+
+  width: 130px;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+/* ---------- USER + CART BÊN PHẢI ---------- */
+
+.ash-main-header .header-right {
+  position: absolute;
+
+  right: 42px;
+  top: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 6px;
+
+  width: 76px;
+  height: 40px;
+
+  padding: 0;
+  margin: 0;
+}
+
+
+/*
+ Search đang nằm bên trong header-right,
+ nhưng position absolute sẽ đưa nó
+ sang bên trái header.
+*/
+
+.ash-main-header .header-right .search-box {
+  position: fixed;
+
+  left: 42px;
+  top: auto;
+}
+
+
+/* =========================================
+   MENU NẰM GIỮA BÊN DƯỚI LOGO
+========================================= */
+
+.ash-main-header .navbar {
+  position: absolute;
+
+  left: 50%;
+  bottom: 0;
+
+  transform: translateX(-50%);
+
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* DANH SÁCH MENU */
+
+.ash-main-header .nav-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* khoảng cách đều giữa các menu */
+  gap: 48px;
+
+  width: auto;
+
+  margin: 0 auto;
+  padding: 0 0 16px;
+
+  list-style: none;
+}
+
+
+/* TỪNG MENU */
+
+.ash-main-header .nav-menu li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+  padding: 0;
+}
+
+
+/* CHỮ MENU */
+
+.ash-main-header .nav-menu a {
+  position: relative;
+
+  display: inline-block;
+
+  padding: 0;
+
+  color: #111;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  letter-spacing: 0.3px;
+
+  line-height: 20px;
+
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+
+/* GẠCH CHÂN KHI HOVER */
+
+.ash-main-header .nav-menu a::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  bottom: -7px;
+
+  width: 0;
+  height: 1px;
+
+  background: #111;
+
+  transition: width 0.25s ease;
+}
+
+
+.ash-main-header .nav-menu a:hover::after {
+  width: 100%;
+}
+
+/* ==================================================
+   CÂN TUYỆT ĐỐI 2 BÊN HEADER
+================================================== */
+
+/* SEARCH BÊN TRÁI */
+.ash-main-header .header-right .search-box,
+.ash-main-header > .search-box {
+  left: 40px !important;
+}
+
+
+/* CỤM USER + CART BÊN PHẢI */
+.ash-main-header .header-right {
+  right: -5px !important;
+
+  width: auto !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  gap: 10px !important;
+}
+
+
+/* ICON */
+.ash-main-header .header-right .icon-btn {
+  width: 34px !important;
+  height: 40px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================================
+   HOME - GLOBAL SECTION SPACING
+========================================================= */
+
+/* tránh khoảng trắng quá lớn giữa các section */
+
+.categories-section + .ash-product-section {
+  padding-top: 20px;
+}
+
+.ash-product-section + .sports-section {
+  padding-top: 15px;
+}
+
+.sports-section + .ash-product-section {
+  padding-top: 15px;
+}
+
+.ash-product-section + .ash-brands-section {
+  padding-top: 20px;
+}
+
+.ash-brands-section + .ash-product-section {
+  padding-top: 25px;
+}
+
+.ash-product-section + .newsletter {
+  padding-top: 25px;
+}
+
+/* =========================================================
+   HOME BODY - ĐỒNG BỘ TOÀN BỘ SECTION
+========================================================= */
+
+.categories-section,
+.ash-product-section,
+.sports-section,
+.ash-brands-section,
+.newsletter {
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   ĐỘ RỘNG CHUNG
+========================================================= */
+
+.categories-inner,
+.ash-product-inner,
+.sports-inner,
+.ash-brands-container,
+.newsletter-container {
+  width: 100%;
+  max-width: 1500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+/* =========================================================
+   KHOẢNG CÁCH GIỮA CÁC SECTION
+========================================================= */
+
+.categories-section {
+  padding-top: 48px;
+  padding-bottom: 45px;
+}
+
+.ash-product-section {
+  padding-top: 42px;
+  padding-bottom: 52px;
+}
+
+.sports-section {
+  padding-top: 38px;
+  padding-bottom: 52px;
+}
+
+.ash-brands-section {
+  padding-top: 42px;
+  padding-bottom: 52px;
+}
+
+.newsletter {
+  padding-top: 38px;
+  padding-bottom: 55px;
+}
+
+
+/* =========================================================
+   TITLE CHUNG
+========================================================= */
+
+.categories-heading h2,
+.ash-section-title,
+.sports-heading h2,
+.ash-brands-heading h2 {
+  font-size: 21px;
+  font-weight: 600;
+
+  line-height: 1.3;
+
+  letter-spacing: 0.2px;
+
+  color: #111;
+}
+
+
+/* =========================================================
+   MÔ TẢ CHUNG
+========================================================= */
+
+.categories-heading p,
+.sports-heading p,
+.ash-brands-heading p {
+  margin-top: 7px;
+
+  color: #777;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   KHOẢNG CÁCH TITLE
+========================================================= */
+
+.categories-heading,
+.ash-section-heading,
+.sports-heading,
+.ash-brands-heading {
+  margin-bottom: 26px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .categories-section,
+  .ash-product-section,
+  .sports-section,
+  .ash-brands-section,
+  .newsletter {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .categories-section,
+  .ash-product-section,
+  .sports-section,
+  .ash-brands-section,
+  .newsletter {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .categories-heading h2,
+  .ash-section-title,
+  .sports-heading h2,
+  .ash-brands-heading h2 {
+    font-size: 18px;
+  }
+
+}
+
+/* =========================================================
+   HOME BODY - FINAL SPACING
+========================================================= */
+
+/* giữ nền trắng xuyên suốt body */
+
+body {
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   GIẢM KHOẢNG TRẮNG THỪA GIỮA CÁC SECTION
+========================================================= */
+
+.ash-product-section + .sports-products-section {
+  padding-top: 30px;
+}
+
+.sports-products-section + .deal-section {
+  padding-top: 32px;
+}
+
+.deal-section + .ash-featured-section {
+  padding-top: 34px;
+}
+
+.ash-featured-section + .ash-brands-section {
+  padding-top: 34px;
+}
+
+.ash-brands-section + .ash-product-section {
+  padding-top: 38px;
+}
+
+
+/* =========================================================
+   TITLE TOÀN HOME ĐỒNG BỘ
+========================================================= */
+
+.ash-section-title,
+.sports-products-heading h2,
+.deal-heading h2,
+.ash-featured-heading h2,
+.ash-brands-heading h2 {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.2px;
+}
+
+
+/* =========================================================
+   VIEW ALL ĐỒNG BỘ
+========================================================= */
+
+.ash-view-all,
+.sports-view-all,
+.deal-view-all {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
+
+
+/* =========================================================
+   DESKTOP LỚN
+========================================================= */
+
+@media (min-width: 1600px) {
+
+  .ash-product-inner,
+  .sports-products-inner,
+  .deal-inner,
+  .ash-featured-inner,
+  .ash-brands-container {
+    max-width: 1720px;
+  }
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .ash-section-title,
+  .sports-products-heading h2,
+  .deal-heading h2,
+  .ash-featured-heading h2,
+  .ash-brands-heading h2 {
+    font-size: 23px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .ash-section-title,
+  .sports-products-heading h2,
+  .deal-heading h2,
+  .ash-featured-heading h2,
+  .ash-brands-heading h2 {
+    font-size: 18px;
+  }
+
+  .ash-view-all,
+  .sports-view-all,
+  .deal-view-all {
+    font-size: 10px;
+  }
+
 }

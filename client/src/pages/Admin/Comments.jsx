@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import {
   FiSearch,
@@ -41,8 +42,8 @@ export default function Comments() {
       };
 
       const [reviewsRes, usersRes] = await Promise.all([
-        fetch("http://localhost:8000/api/admin/reviews?per_page=50", { headers }),
-        fetch("http://localhost:8000/api/admin/users?per_page=5", { headers })
+        fetch(`${API_BASE_URL}/admin/reviews?per_page=50`, { headers }),
+        fetch(`${API_BASE_URL}/admin/users?per_page=5`, { headers })
       ]);
 
       if (reviewsRes.ok) {
@@ -54,7 +55,7 @@ export default function Comments() {
           avatar: `https://i.pravatar.cc/40?img=${item.user_id || 1}`,
           user: item.user?.name || "Khách hàng",
           product: item.product?.name || `Sản phẩm #${item.product_id}`,
-          content: item.comment,
+          content: item.comment || "",
           status: item.status || 'pending',
           report_count: item.report_count || 0,
           time: new Date(item.created_at).toLocaleDateString("vi-VN")
@@ -66,12 +67,13 @@ export default function Comments() {
         setPendingComments(pending);
         setRecentComments(recent);
 
+        const backendStats = reviewData.stats || {};
         setStats({
-          total: allReviews.length,
-          today: allReviews.filter(r => new Date(r.created_at).toDateString() === new Date().toDateString()).length,
-          pending: pending.length,
-          topProduct: allReviews.length > 0 ? (allReviews[0].product?.name || "Sản phẩm nổi bật") : "Chưa có",
-          topCount: allReviews.length
+          total: backendStats.total ?? reviewData.total ?? allReviews.length,
+          today: backendStats.today ?? 0,
+          pending: backendStats.pending ?? pending.length,
+          topProduct: backendStats.top_product || "Chưa có",
+          topCount: backendStats.top_count ?? 0,
         });
       }
 
@@ -108,7 +110,7 @@ export default function Comments() {
 
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/reviews/${id}/approve`, {
+      const res = await fetch(`${API_BASE_URL}/admin/reviews/${id}/approve`, {
         method: "PUT",
         headers: { "Accept": "application/json", "Authorization": `Bearer ${token}` }
       });
@@ -139,7 +141,7 @@ export default function Comments() {
 
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/reviews/${id}/hide`, {
+      const res = await fetch(`${API_BASE_URL}/admin/reviews/${id}/hide`, {
         method: "PUT",
         headers: { "Accept": "application/json", "Authorization": `Bearer ${token}` }
       });
@@ -163,7 +165,7 @@ export default function Comments() {
 
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/reviews/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/reviews/${id}`, {
         method: "DELETE",
         headers: { "Accept": "application/json", "Authorization": `Bearer ${token}` }
       });
@@ -183,7 +185,7 @@ export default function Comments() {
   // ================= 3. LỌC DỮ LIỆU ĐỔ RA BẢNG =================
   const filteredRecent = recentComments.filter(item => 
     item.user.toLowerCase().includes(keyword.toLowerCase()) ||
-    item.content.toLowerCase().includes(keyword.toLowerCase()) ||
+    (item.content || "").toLowerCase().includes(keyword.toLowerCase()) ||
     item.product.toLowerCase().includes(keyword.toLowerCase())
   );
 
@@ -192,7 +194,7 @@ export default function Comments() {
 
   const displayedPending = sourceForPendingTable.filter(item => {
     const matchesKeyword = item.user.toLowerCase().includes(keyword.toLowerCase()) ||
-                           item.content.toLowerCase().includes(keyword.toLowerCase()) ||
+                           (item.content || "").toLowerCase().includes(keyword.toLowerCase()) ||
                            item.product.toLowerCase().includes(keyword.toLowerCase());
     
     // Chỉ hiển thị bình luận có report_count > 0 nếu đang bật chế độ Lọc

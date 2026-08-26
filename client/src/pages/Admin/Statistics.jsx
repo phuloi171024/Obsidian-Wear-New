@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import {
   FiTrendingUp,
@@ -22,13 +23,6 @@ import {
 } from "recharts";
 import toast, { Toaster } from "react-hot-toast";
 
-const categoryData = [
-  { name: "Giày chạy bộ", value: 35, color: "#1E3A8A" },
-  { name: "Áo thể thao", value: 25, color: "#EF4444" },
-  { name: "Phụ kiện", value: 20, color: "#4ADE80" },
-  { name: "Dụng cụ Gym", value: 20, color: "#60A5FA" },
-];
-
 export default function Statistics() {
   const [filter, setFilter] = useState("month");
   const [loading, setLoading] = useState(true);
@@ -38,8 +32,26 @@ export default function Statistics() {
     users: { total: 0, new_this_period: 0 },
     products: { total: 0, active: 0 },
     top_products: [],
-    revenue_chart: []
+    revenue_chart: [],
+    category_stats: [],
   });
+
+  const categoryColors = [
+    "#1E3A8A",
+    "#EF4444",
+    "#4ADE80",
+    "#60A5FA",
+    "#A855F7",
+    "#F59E0B",
+  ];
+
+  const categoryData = (statsData.category_stats || []).map(
+    (item, index) => ({
+      ...item,
+      value: Number(item.value || 0),
+      color: categoryColors[index % categoryColors.length],
+    })
+  );
 
   // Gọi API lấy dữ liệu thống kê theo bộ lọc thời gian
   useEffect(() => {
@@ -49,7 +61,7 @@ export default function Statistics() {
 
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:8000/api/admin/dashboard?filter=${filter}`, {
+        const res = await fetch(`${API_BASE_URL}/admin/dashboard?filter=${filter}`, {
           headers: {
             "Accept": "application/json",
             "Authorization": `Bearer ${token}`
@@ -169,7 +181,7 @@ export default function Statistics() {
               <Pie data={categoryData} innerRadius={70} outerRadius={105} dataKey="value">
                 {categoryData.map((item, index) => (<Cell key={index} fill={item.color} />))}
               </Pie>
-              <Legend formatter={(value, entry) => `${value} ${entry.payload.value}%`} />
+              <Legend formatter={(value, entry) => `${value}: ${entry.payload.value}`} />
             </PieChart>
           </ResponsiveContainer>
         </div>

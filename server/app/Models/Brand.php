@@ -13,8 +13,18 @@ class Brand extends Model
     protected $fillable = [
         'name', 
         'slug', 
-        'status'
-    ]; 
+        'logo_url',
+        'status',
+        'is_featured',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => 'boolean',
+            'is_featured' => 'boolean',
+        ];
+    }
 
     // Một thương hiệu có nhiều sản phẩm
     public function products()

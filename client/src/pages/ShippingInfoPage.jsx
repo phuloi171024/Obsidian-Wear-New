@@ -4,14 +4,12 @@ import {
   FaShoppingCart,
   FaMapMarkerAlt,
   FaCheck,
-  FaSearch,
-  FaRegUser,
-  FaShoppingBag,
 } from "react-icons/fa";
 import { FiChevronRight } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
-
+import { API_BASE_URL } from "../config/api";
 import Footer from "../components/Footer";
+
 
 export default function ShippingInfoPage() {
   const navigate = useNavigate();
@@ -21,6 +19,8 @@ export default function ShippingInfoPage() {
     name: "",
     phone: "",
     address: "",
+    ward: "",
+    district: "",
     city: "",
   });
   const [errors, setErrors] = useState({});
@@ -46,7 +46,7 @@ export default function ShippingInfoPage() {
 
   // Lấy token bảo mật
   const getHeaders = () => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token") || localStorage.getItem("token");
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
@@ -61,8 +61,8 @@ export default function ShippingInfoPage() {
         setLoading(true);
         // Chạy song song 2 API: Lấy giỏ hàng và Lấy sổ địa chỉ
         const [cartRes, addressRes] = await Promise.all([
-          fetch("http://localhost:8000/api/cart", { headers: getHeaders() }),
-          fetch("http://localhost:8000/api/user/addresses", { headers: getHeaders() })
+          fetch(`${API_BASE_URL}/cart`, { headers: getHeaders() }),
+          fetch(`${API_BASE_URL}/user/addresses`, { headers: getHeaders() })
         ]);
 
         // 1.1 Xử lý Giỏ hàng
@@ -81,17 +81,26 @@ export default function ShippingInfoPage() {
           
           if (addrs.length > 0) {
             // Sắp xếp ưu tiên địa chỉ mặc định lên đầu
-            const sortedAddrs = addrs.sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0));
+            const sortedAddrs = [...addrs].sort(
+  (a, b) => Number(b.is_default) - Number(a.is_default)
+);
             setSavedAddresses(sortedAddrs);
 
             // Tự động điền địa chỉ mặc định (hoặc địa chỉ đầu tiên) vào Form
             const defaultAddr = sortedAddrs[0];
-            setSelectedAddressId(defaultAddr.id);
+        setSelectedAddressId(String(defaultAddr.id));
+
+localStorage.setItem(
+  "selected_address_id",
+  String(defaultAddr.id)
+);
             setForm({
               name: defaultAddr.receiver_name || "",
               phone: defaultAddr.phone || "",
               // Gộp Số nhà, Tên đường, Phường, Quận vào ô Địa chỉ
-              address: `${defaultAddr.street}, ${defaultAddr.ward}, ${defaultAddr.district}`,
+              address: defaultAddr.street || "",
+              ward: defaultAddr.ward || "",
+              district: defaultAddr.district || "",
               city: defaultAddr.province || "",
             });
           }
@@ -105,11 +114,30 @@ export default function ShippingInfoPage() {
     };
 
     // Kiểm tra xem trang trước có lưu mã giảm giá không
-    const savedVouchers = JSON.parse(localStorage.getItem("applied_vouchers"));
-    if (savedVouchers) {
-      if (savedVouchers.product) setAppliedProductVoucher(savedVouchers.product);
-      if (savedVouchers.shipping) setAppliedShippingVoucher(savedVouchers.shipping);
+    try {
+  const savedVouchers = JSON.parse(
+    localStorage.getItem("applied_vouchers") || "{}"
+  );
+
+  const selectedVoucher =
+    savedVouchers.selected ||
+    savedVouchers.product ||
+    savedVouchers.shipping ||
+    null;
+
+  if (selectedVoucher) {
+    if (selectedVoucher.type === "shipping") {
+      setAppliedShippingVoucher(selectedVoucher);
+      setAppliedProductVoucher(null);
+    } else {
+      setAppliedProductVoucher(selectedVoucher);
+      setAppliedShippingVoucher(null);
     }
+  }
+} catch (error) {
+  console.error("Dữ liệu voucher trong localStorage không hợp lệ:", error);
+  localStorage.removeItem("applied_vouchers");
+}
 
     fetchCartAndAddresses();
   }, [navigate]);
@@ -117,34 +145,53 @@ export default function ShippingInfoPage() {
   // ==========================================
   // [THÊM MỚI] HÀM XỬ LÝ KHI CHỌN ĐỊA CHỈ TỪ DROPDOWN
   // ==========================================
-  const handleSelectAddress = (e) => {
-    const id = e.target.value;
-    setSelectedAddressId(id);
+const handleSelectAddress = (e) => {
+  const id = e.target.value;
 
-    if (!id) {
-      // Nếu khách hàng chọn "Nhập địa chỉ mới" -> Xóa trắng form
-      setForm({ name: "", phone: "", address: "", city: "" });
-      return;
-    }
+  setSelectedAddressId(id);
 
-    // Tìm địa chỉ được chọn và tự động dán thông tin
-    const addr = savedAddresses.find((a) => a.id.toString() === id);
-    if (addr) {
-      setForm({
-        name: addr.receiver_name || "",
-        phone: addr.phone || "",
-        address: `${addr.street}, ${addr.ward}, ${addr.district}`,
-        city: addr.province || "",
-      });
-      setErrors({}); // Xóa thông báo lỗi nếu có
-    }
-  };
+  if (!id) {
+    localStorage.removeItem("selected_address_id");
+
+    setForm({
+      name: "",
+      phone: "",
+      address: "",
+      ward: "",
+      district: "",
+      city: "",
+    });
+
+    return;
+  }
+
+  const addr = savedAddresses.find(
+    (item) => String(item.id) === String(id)
+  );
+
+  if (!addr) {
+    toast.error("Không tìm thấy địa chỉ đã chọn!");
+    return;
+  }
+
+  setForm({
+    name: addr.receiver_name || "",
+    phone: addr.phone || "",
+    address: addr.street || "",
+    ward: addr.ward || "",
+    district: addr.district || "",
+    city: addr.province || "",
+  });
+
+  localStorage.setItem("selected_address_id", String(id));
+  setErrors({});
+};
 
   // 2. GỌI API LẤY DANH SÁCH MÃ TỪ DB
 // 2. GỌI API LẤY DANH SÁCH MÃ TỪ DB (ĐÃ NÂNG CẤP BỘ LỌC)
   const fetchCoupons = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/coupons", { headers: getHeaders() });
+      const res = await fetch(`${API_BASE_URL}/coupons`, { headers: getHeaders() });
       const data = await res.json();
       if (res.ok && data.success) {
         const now = new Date();
@@ -183,7 +230,7 @@ export default function ShippingInfoPage() {
 
     try {
       setIsApplying(true);
-      const res = await fetch("http://localhost:8000/api/coupons/apply", {
+      const res = await fetch(`${API_BASE_URL}/coupons/apply`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({
@@ -199,8 +246,10 @@ export default function ShippingInfoPage() {
 
         if (couponData.type === "shipping") {
           setAppliedShippingVoucher(couponData);
+          setAppliedProductVoucher(null);
         } else {
           setAppliedProductVoucher(couponData);
+          setAppliedShippingVoucher(null);
         }
 
         setInputVoucher("");
@@ -221,8 +270,9 @@ export default function ShippingInfoPage() {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-    // Nếu user tự gõ thông tin, bỏ chọn dropdown "Sổ địa chỉ"
+    // Nội dung đã thay đổi nên sẽ lưu thành địa chỉ mới khi tiếp tục.
     setSelectedAddressId("");
+    localStorage.removeItem("selected_address_id");
   };
 
   // --- HÀM KIỂM TRA LỖI (VALIDATE) ---
@@ -239,7 +289,15 @@ export default function ShippingInfoPage() {
     }
     
     if (!form.address.trim()) {
-      newErrors.address = "Vui lòng nhập địa chỉ nhận hàng";
+      newErrors.address = "Vui lòng nhập số nhà và tên đường";
+    }
+
+    if (!form.ward.trim()) {
+      newErrors.ward = "Vui lòng nhập phường/xã";
+    }
+
+    if (!form.district.trim()) {
+      newErrors.district = "Vui lòng nhập quận/huyện";
     }
     
     if (!form.city.trim()) {
@@ -251,7 +309,7 @@ export default function ShippingInfoPage() {
 
   // --- TÍNH TOÁN TIỀN TỰ ĐỘNG ---
   const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.product_variant?.product?.price || 0;
+    const price = item.product_variant?.product?.current_price || item.product_variant?.product?.price || 0;
     return sum + (price * item.quantity);
   }, 0);
   
@@ -261,29 +319,79 @@ export default function ShippingInfoPage() {
   const baseShippingFee = cartItems.length > 0 ? (totalQuantity >= 3 ? 0 : 30000) : 0;
   
   // Tiền giảm giá
-  const productDiscount = appliedProductVoucher ? appliedProductVoucher.discount_value : 0;
-  const shippingDiscount = appliedShippingVoucher ? Math.min(appliedShippingVoucher.discount_value, baseShippingFee) : 0;
+  const productDiscount = appliedProductVoucher
+    ? Number(appliedProductVoucher.discount_amount ?? appliedProductVoucher.discount_value ?? 0)
+    : 0;
+  const shippingDiscount = appliedShippingVoucher
+    ? Math.min(Number(appliedShippingVoucher.discount_value || 0), baseShippingFee)
+    : 0;
 
   const finalShippingFee = baseShippingFee - shippingDiscount;
   const total = Math.max(0, subtotal + finalShippingFee - productDiscount);
 
   // CHUYỂN TRANG THANH TOÁN
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = validate();
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       toast.error("Vui lòng nhập đầy đủ thông tin giao hàng!");
       return;
     }
-    
-    localStorage.setItem("shipping_info", JSON.stringify(form));
-    localStorage.setItem("applied_vouchers", JSON.stringify({
-      product: appliedProductVoucher,
-      shipping: appliedShippingVoucher
-    }));
 
-    navigate("/payment");
+    if (cartItems.length === 0) {
+      toast.error("Giỏ hàng đang trống!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      let addressId = selectedAddressId;
+
+      if (!addressId) {
+        const addressRes = await fetch(`${API_BASE_URL}/user/addresses`, {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({
+            type: "Nhà",
+            receiver_name: form.name.trim(),
+            phone: form.phone.trim(),
+            province: form.city.trim(),
+            district: form.district.trim(),
+            ward: form.ward.trim(),
+            street: form.address.trim(),
+            is_default: savedAddresses.length === 0,
+          }),
+        });
+
+        const addressData = await addressRes.json();
+
+        if (!addressRes.ok || !addressData.status) {
+          const message = addressData.errors
+            ? Object.values(addressData.errors).flat().join("\n")
+            : addressData.message;
+          throw new Error(message || "Không thể lưu địa chỉ giao hàng!");
+        }
+
+        addressId = String(addressData.data.id);
+      }
+
+      const selectedVoucher =
+        appliedProductVoucher || appliedShippingVoucher || null;
+
+      localStorage.setItem("selected_address_id", String(addressId));
+      localStorage.setItem("shipping_info", JSON.stringify(form));
+      localStorage.setItem(
+        "applied_vouchers",
+        JSON.stringify({ selected: selectedVoucher })
+      );
+
+      navigate("/payment");
+    } catch (error) {
+      toast.error(error.message || "Không thể lưu thông tin giao hàng!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [
@@ -426,13 +534,13 @@ export default function ShippingInfoPage() {
 
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
-                    Địa chỉ chi tiết (Số nhà, Tên đường, Phường/Xã) <span className="text-red-500">*</span>
+                    Số nhà, tên đường <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.address}
                     onChange={handleChange("address")}
-                    placeholder="Nhập số nhà, tên đường, phường/xã..."
+                    placeholder="Ví dụ: 123 Nguyễn Trãi"
                     className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
                       errors.address
                         ? "border-red-500 focus:border-red-500 focus:ring-red-100"
@@ -442,6 +550,48 @@ export default function ShippingInfoPage() {
                   {errors.address && (
                     <p className="text-xs text-red-500 mt-1">{errors.address}</p>
                   )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Phường/Xã <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.ward}
+                      onChange={handleChange("ward")}
+                      placeholder="Nhập phường/xã"
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
+                        errors.ward
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                          : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
+                      }`}
+                    />
+                    {errors.ward && (
+                      <p className="text-xs text-red-500 mt-1">{errors.ward}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Quận/Huyện <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.district}
+                      onChange={handleChange("district")}
+                      placeholder="Nhập quận/huyện"
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
+                        errors.district
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                          : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
+                      }`}
+                    />
+                    {errors.district && (
+                      <p className="text-xs text-red-500 mt-1">{errors.district}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -490,7 +640,7 @@ export default function ShippingInfoPage() {
                         <p className="text-sm font-medium text-gray-900 line-clamp-1">{item.product_variant?.product?.name}</p>
                         <p className="text-xs text-gray-400">Size: {item.product_variant?.size} - Số lượng: {item.quantity}</p>
                         <p className="text-sm font-semibold text-gray-900 mt-1">
-                          {new Intl.NumberFormat('vi-VN').format(item.product_variant?.product?.price * item.quantity)} đ
+                          {new Intl.NumberFormat('vi-VN').format((item.product_variant?.product?.current_price || item.product_variant?.product?.price) * item.quantity)} đ
                         </p>
                       </div>
                     </div>
@@ -580,9 +730,10 @@ export default function ShippingInfoPage() {
               {/* NÚT THANH TOÁN */}
               <button
                 onClick={handleSubmit}
-                className="w-full bg-[#f26522] hover:bg-[#e05515] text-white font-bold py-3.5 rounded-full transition shadow-md"
+                disabled={loading || cartItems.length === 0}
+                className="w-full bg-[#f26522] hover:bg-[#e05515] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-full transition shadow-md"
               >
-                TIẾN HÀNH THANH TOÁN
+                {loading ? "ĐANG XỬ LÝ..." : "TIẾN HÀNH THANH TOÁN"}
               </button>
             </div>
           </div>
@@ -648,7 +799,15 @@ export default function ShippingInfoPage() {
                             const formattedCoupon = {
                               id: coupon.id,
                               code: coupon.code,
+                              discount_type: coupon.discount_type,
                               discount_value: Number(coupon.discount_value),
+                              discount_amount:
+                                coupon.discount_type === "percent"
+                                  ? Math.min(
+                                      subtotal * (Number(coupon.discount_value) / 100),
+                                      subtotal
+                                    )
+                                  : Number(coupon.discount_value),
                               type: coupon.discount_type === "shipping" ? "shipping" : "product"
                             };
 
@@ -659,8 +818,10 @@ export default function ShippingInfoPage() {
 
                             if (voucherTab === "product") {
                               setAppliedProductVoucher(isSelected ? null : formattedCoupon);
+                              if (!isSelected) setAppliedShippingVoucher(null);
                             } else {
                               setAppliedShippingVoucher(isSelected ? null : formattedCoupon);
+                              if (!isSelected) setAppliedProductVoucher(null);
                             }
                           }}
                         />

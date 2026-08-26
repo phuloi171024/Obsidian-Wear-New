@@ -1,9 +1,10 @@
+import { API_BASE_URL } from "../config/api";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./OrdersPage.css";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiUser, FiClipboard, FiLock, FiLogOut, FiEye, FiX, FiTrash2 } from "react-icons/fi";
+import { FiUser, FiClipboard, FiLock, FiLogOut, FiEye, FiX, FiTrash2, FiCreditCard } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
 
 
@@ -17,6 +18,7 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
   // THÊM STATE: Quản lý bộ lọc và trạng thái loading khi hủy đơn
   const [filterStatus, setFilterStatus] = useState("all");
   const [cancelingId, setCancelingId] = useState(null);
+  const [payingId, setPayingId] = useState(null);
 
   // STATE: ĐỔI MẬT KHẨU
   const [showPwdModal, setShowPwdModal] = useState(false);
@@ -35,7 +37,7 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/api/orders", { headers: getHeaders() });
+      const res = await fetch(`${API_BASE_URL}/orders`, { headers: getHeaders() });
       const data = await res.json();
       if (res.ok && data.status) {
         setOrders(data.orders || []);
@@ -69,7 +71,7 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
     const token = localStorage.getItem("access_token");
     if (token) {
       try {
-        await fetch("http://localhost:8000/api/logout", {
+        await fetch(`${API_BASE_URL}/logout`, {
           method: "POST",
           headers: getHeaders()
         });
@@ -96,7 +98,7 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
 
     try {
       setIsSubmittingPwd(true);
-      const res = await fetch("http://localhost:8000/api/user/password", {
+      const res = await fetch(`${API_BASE_URL}/user/password`, {
         method: "PUT",
         headers: getHeaders(),
         body: JSON.stringify(pwdForm)
@@ -104,9 +106,12 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
       const data = await res.json();
       
       if (res.ok && (data.status || data.success)) {
-        toast.success("Đổi mật khẩu thành công!");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user_info");
+        toast.success("Đổi mật khẩu thành công. Vui lòng đăng nhập lại!");
         setShowPwdModal(false);
         setPwdForm({ current_password: "", new_password: "", new_password_confirmation: "" });
+        navigate("/login", { replace: true });
       } else {
         toast.error(data.message || "Mật khẩu cũ không chính xác!");
       }
@@ -123,7 +128,7 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
     
     try {
       setCancelingId(confirmCancelId);
-      const res = await fetch(`http://localhost:8000/api/orders/${confirmCancelId}/cancel`, {
+      const res = await fetch(`${API_BASE_URL}/orders/${confirmCancelId}/cancel`, {
         method: "PUT",
         headers: getHeaders()
       });
@@ -140,6 +145,29 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
     } finally {
       setCancelingId(null);
       setConfirmCancelId(null); // Tắt popup sau khi gọi xong
+    }
+  };
+
+  const retryVnpayPayment = async (orderId) => {
+    try {
+      setPayingId(orderId);
+      const response = await fetch(`${API_BASE_URL}/vnpay/create`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ order_id: orderId }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !(data.url || data.data)) {
+        toast.error(data.message || "Không thể tạo liên kết VNPay mới!");
+        return;
+      }
+
+      window.location.assign(data.url || data.data);
+    } catch (error) {
+      toast.error("Không thể kết nối đến máy chủ!");
+    } finally {
+      setPayingId(null);
     }
   };
 
@@ -256,6 +284,20 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
                           <button className="view-btn" onClick={() => setSelectedOrder(order)} title="Xem chi tiết">
                             <FiEye />
                           </button>
+
+                          {order.payment_method === "vnpay" &&
+                            order.status === "pending" &&
+                            order.payment_status !== "paid" && (
+                              <button
+                                type="button"
+                                className="view-btn"
+                                disabled={payingId === order.id}
+                                onClick={() => retryVnpayPayment(order.id)}
+                                title="Thanh toán lại bằng VNPay"
+                              >
+                                <FiCreditCard />
+                              </button>
+                            )}
                           
                           {/* CHỈ HIỂN THỊ NÚT HỦY KHI ĐƠN ĐANG "PENDING" */}
                           {order.status === 'pending' && (

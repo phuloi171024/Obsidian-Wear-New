@@ -1,8 +1,20 @@
+import { API_BASE_URL } from "../../config/api";
 import React, { useState, useEffect, useRef } from "react";
 import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiCheck, FiLayers, FiImage, FiUploadCloud } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import "./Admin.css";
+
+const toDateTimeLocal = (value) => {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const pad = (number) => String(number).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 export default function Products() {
   const navigate = useNavigate();
@@ -24,6 +36,12 @@ export default function Products() {
     name: "",
     sku: "",
     price: "",
+    sale_price: "",
+    deal_label: "",
+    sale_starts_at: "",
+    sale_ends_at: "",
+    sport_type: "",
+    is_featured: false,
     category_id: "",
     brand_id: "",
     description: "",
@@ -49,7 +67,7 @@ export default function Products() {
 
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/api/admin/products?page=${page}&search=${keyword}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/products?page=${page}&search=${keyword}`, {
         headers: {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -78,8 +96,8 @@ export default function Products() {
     const token = localStorage.getItem("access_token");
     try {
       const [catRes, brandRes] = await Promise.all([
-        fetch("http://localhost:8000/api/admin/categories", { headers: { "Authorization": `Bearer ${token}` } }),
-        fetch("http://localhost:8000/api/admin/brands", { headers: { "Authorization": `Bearer ${token}` } })
+        fetch(`${API_BASE_URL}/admin/categories`, { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(`${API_BASE_URL}/admin/brands`, { headers: { "Authorization": `Bearer ${token}` } })
       ]);
       if (catRes.ok) setCategories(await catRes.json());
       if (brandRes.ok) setBrands(await brandRes.json());
@@ -107,6 +125,12 @@ export default function Products() {
       name: "",
       sku: "",
       price: "",
+      sale_price: "",
+      deal_label: "",
+      sale_starts_at: "",
+      sale_ends_at: "",
+      sport_type: "",
+      is_featured: false,
       category_id: "",
       brand_id: "",
       description: "",
@@ -122,6 +146,12 @@ export default function Products() {
       name: item.name || "",
       sku: item.sku || "",
       price: item.price || "",
+      sale_price: item.sale_price || "",
+      deal_label: item.deal_label || "",
+      sale_starts_at: toDateTimeLocal(item.sale_starts_at),
+      sale_ends_at: toDateTimeLocal(item.sale_ends_at),
+      sport_type: item.sport_type || "",
+      is_featured: Boolean(item.is_featured),
       category_id: item.category_id || "",
       brand_id: item.brand_id || "",
       description: item.description || "",
@@ -143,12 +173,17 @@ export default function Products() {
       return;
     }
 
+    if (form.sale_price && Number(form.sale_price) >= Number(form.price)) {
+      toast.error("Giá khuyến mãi phải nhỏ hơn giá bán!");
+      return;
+    }
+
     const token = localStorage.getItem("access_token");
     setIsSubmitting(true);
 
     const url = editingId 
-      ? `http://localhost:8000/api/admin/products/${editingId}`
-      : `http://localhost:8000/api/admin/products`;
+      ? `${API_BASE_URL}/admin/products/${editingId}`
+      : `${API_BASE_URL}/admin/products`;
     const method = editingId ? "PUT" : "POST";
 
     try {
@@ -184,7 +219,7 @@ export default function Products() {
 
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/products/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
         method: "DELETE",
         headers: {
           "Accept": "application/json",
@@ -224,7 +259,7 @@ export default function Products() {
     try {
       const token = localStorage.getItem("access_token");
       
-      const res = await fetch(`http://localhost:8000/api/admin/products/${uploadingId}/image`, {
+      const res = await fetch(`${API_BASE_URL}/admin/products/${uploadingId}/image`, {
         method: "POST",
         headers: {
           "Accept": "application/json", // Đã bổ sung header để tránh lỗi CORS/Redirect
@@ -259,7 +294,7 @@ export default function Products() {
     setVariantModal({ show: true, product });
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/products/${product.id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/products/${product.id}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const data = await res.json();
@@ -278,7 +313,7 @@ export default function Products() {
     }
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/products/${variantModal.product.id}/variants`, {
+      const res = await fetch(`${API_BASE_URL}/admin/products/${variantModal.product.id}/variants`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -497,6 +532,80 @@ export default function Products() {
                       <option key={brand.id} value={brand.id}>{brand.name}</option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginBottom: "15px" }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Bộ môn thể thao</label>
+                  <select
+                    value={form.sport_type}
+                    onChange={(e) => setForm({ ...form, sport_type: e.target.value })}
+                    style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                  >
+                    <option value="">-- Không phân loại --</option>
+                    <option value="tennis-pickleball">Tennis &amp; Pickleball</option>
+                    <option value="running">Chạy bộ</option>
+                    <option value="swimming">Bơi lội</option>
+                    <option value="football">Bóng đá</option>
+                    <option value="gym">Gym</option>
+                  </select>
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Sản phẩm nổi bật</label>
+                  <select
+                    value={form.is_featured ? 1 : 0}
+                    onChange={(e) => setForm({ ...form, is_featured: Number(e.target.value) === 1 })}
+                    style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                  >
+                    <option value={0}>Không</option>
+                    <option value={1}>Có</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginBottom: "15px" }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Giá khuyến mãi</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Phải nhỏ hơn giá bán"
+                    value={form.sale_price}
+                    onChange={(e) => setForm({ ...form, sale_price: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Tên chương trình khuyến mãi</label>
+                  <input
+                    type="text"
+                    maxLength="255"
+                    placeholder="VD: Nike giảm đến 40%"
+                    value={form.deal_label}
+                    onChange={(e) => setForm({ ...form, deal_label: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginBottom: "15px" }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Bắt đầu khuyến mãi</label>
+                  <input
+                    type="datetime-local"
+                    value={form.sale_starts_at}
+                    onChange={(e) => setForm({ ...form, sale_starts_at: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Kết thúc khuyến mãi</label>
+                  <input
+                    type="datetime-local"
+                    value={form.sale_ends_at}
+                    onChange={(e) => setForm({ ...form, sale_ends_at: e.target.value })}
+                  />
                 </div>
               </div>
 

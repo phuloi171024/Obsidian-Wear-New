@@ -1,0 +1,237 @@
+/* =========================================================
+   CÁC BỘ MÔN THỂ THAO
+========================================================= */
+
+.sports-products-section {
+  width: 100%;
+
+  padding: 58px 22px 72px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.sports-products-inner {
+  width: 100%;
+
+  max-width: 1680px;
+
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.sports-products-heading {
+  margin-bottom: 22px;
+
+  text-align: center;
+}
+
+.sports-products-heading h2 {
+  margin: 0;
+
+  color: #111111;
+
+  font-size: 26px;
+  font-weight: 600;
+
+  line-height: 1.3;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TABS
+========================================================= */
+
+.sports-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  margin-bottom: 34px;
+}
+
+.sports-tab {
+  position: relative;
+
+  padding: 8px 22px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #777777;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: color 0.25s ease;
+}
+
+.sports-tab::after {
+  content: "";
+
+  position: absolute;
+
+  left: 22px;
+  right: 22px;
+  bottom: 0;
+
+  height: 1px;
+
+  background: #111111;
+
+  transform: scaleX(0);
+
+  transition: transform 0.25s ease;
+}
+
+.sports-tab:hover,
+.sports-tab.active {
+  color: #111111;
+}
+
+.sports-tab.active {
+  font-weight: 600;
+}
+
+.sports-tab.active::after {
+  transform: scaleX(1);
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.sports-products-grid {
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+
+/* =========================================================
+   VIEW ALL
+========================================================= */
+
+.sports-view-all-wrapper {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  margin-top: 32px;
+}
+
+.sports-view-all {
+  position: relative;
+
+  display: inline-block;
+
+  padding-bottom: 4px;
+
+  color: #111111;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  text-decoration: none;
+}
+
+.sports-view-all::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 0;
+  height: 1px;
+
+  background: #111111;
+
+  transition: width 0.3s ease;
+}
+
+.sports-view-all:hover::after {
+  width: 100%;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .sports-products-section {
+    padding: 50px 20px 60px;
+  }
+
+  .sports-products-heading h2 {
+    font-size: 23px;
+  }
+
+  .sports-products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 14px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .sports-products-section {
+    padding: 36px 12px 46px;
+  }
+
+  .sports-products-heading h2 {
+    font-size: 18px;
+  }
+
+  .sports-tabs {
+    margin-bottom: 22px;
+  }
+
+  .sports-tab {
+    padding: 7px 9px;
+
+    font-size: 9px;
+  }
+
+  .sports-tab::after {
+    left: 9px;
+    right: 9px;
+  }
+
+  .sports-products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .sports-view-all {
+    font-size: 10px;
+  }
+
+}

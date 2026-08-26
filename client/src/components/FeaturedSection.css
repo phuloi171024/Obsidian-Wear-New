@@ -1,0 +1,312 @@
+/* =========================================================
+   FEATURED SECTION - ASH
+========================================================= */
+
+.ash-featured-section {
+  width: 100%;
+
+  padding: 62px 22px 78px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.ash-featured-inner {
+  width: 100%;
+
+  max-width: 1680px;
+
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.ash-featured-heading {
+  margin-bottom: 34px;
+
+  text-align: center;
+}
+
+.ash-featured-heading h2 {
+  margin: 0;
+
+  color: #111111;
+
+  font-size: 26px;
+  font-weight: 600;
+
+  line-height: 1.3;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   ROW
+========================================================= */
+
+.ash-featured-row {
+  display: grid;
+
+  grid-template-columns: 1.05fr 1.95fr;
+
+  gap: 8px;
+
+  width: 100%;
+}
+
+.ash-featured-row + .ash-featured-row {
+  margin-top: 8px;
+}
+
+.ash-featured-row--reverse {
+  grid-template-columns: 1.3fr 1fr;
+}
+
+
+/* =========================================================
+   BANNER
+========================================================= */
+
+.ash-featured-banner {
+  position: relative;
+
+  display: block;
+
+  min-height: 590px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      #272727,
+      #555555
+    );
+
+  color: #ffffff;
+
+  text-decoration: none;
+}
+/* Banner Palladium */
+.ash-featured-banner--one {
+  background-image:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.65),
+      rgba(0, 0, 0, 0.05)
+    ),
+    url("/images/featured-palladium.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Banner Running */
+.ash-featured-banner--two {
+  background-image:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.65),
+      rgba(0, 0, 0, 0.05)
+    ),
+    url("/images/featured-running.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.ash-featured-banner-overlay {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.55),
+      rgba(0, 0, 0, 0.05)
+    );
+}
+
+
+/* =========================================================
+   BANNER CONTENT
+========================================================= */
+
+.ash-featured-banner-content {
+  position: absolute;
+
+  left: 40px;
+  right: 40px;
+  bottom: 40px;
+
+  z-index: 2;
+}
+
+.ash-featured-small {
+  display: block;
+
+  margin-bottom: 12px;
+
+  color: rgba(255, 255, 255, 0.68);
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 1.8px;
+}
+
+.ash-featured-banner-content h3 {
+  margin: 0 0 20px;
+
+  color: #ffffff;
+
+  font-size: 42px;
+  font-weight: 600;
+
+  line-height: 1.08;
+}
+
+
+/* =========================================================
+   EXPLORE
+========================================================= */
+
+.ash-featured-explore {
+  position: relative;
+
+  display: inline-block;
+
+  padding-bottom: 4px;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  letter-spacing: 0.3px;
+}
+
+.ash-featured-explore::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 0;
+  height: 1px;
+
+  background: #ffffff;
+
+  transition: width 0.3s ease;
+}
+
+.ash-featured-banner:hover .ash-featured-explore::after {
+  width: 100%;
+}
+
+
+/* =========================================================
+   PRODUCTS
+========================================================= */
+
+.ash-featured-products {
+  display: grid;
+
+  min-width: 0;
+
+  gap: 8px;
+}
+
+.ash-featured-products--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ash-featured-products--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ash-featured-products .ash-product-image-area {
+  height: 465px;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .ash-featured-section {
+    padding: 50px 20px 62px;
+  }
+
+  .ash-featured-heading h2 {
+    font-size: 23px;
+  }
+
+  .ash-featured-row,
+  .ash-featured-row--reverse {
+    grid-template-columns: 1fr;
+  }
+
+  .ash-featured-banner {
+    min-height: 450px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .ash-featured-section {
+    padding: 36px 12px 46px;
+  }
+
+  .ash-featured-heading {
+    margin-bottom: 22px;
+  }
+
+  .ash-featured-heading h2 {
+    font-size: 18px;
+  }
+
+  .ash-featured-banner {
+    min-height: 390px;
+  }
+
+  .ash-featured-banner-content {
+    left: 20px;
+    right: 20px;
+    bottom: 22px;
+  }
+
+  .ash-featured-banner-content h3 {
+    font-size: 28px;
+  }
+
+  .ash-featured-products--three,
+  .ash-featured-products--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .ash-featured-products .ash-product-image-area {
+    height: 235px;
+  }
+
+}

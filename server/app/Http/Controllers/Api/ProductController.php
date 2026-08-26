@@ -5,29 +5,61 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Brand;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProductController extends Controller
 {
+    public function categories()
+    {
+        $categories = Category::query()
+            ->where('status', true)
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $categories,
+        ]);
+    }
+
+    private function activeSaleQuery(Builder $query): Builder
+    {
+        return $query
+            ->whereNotNull('sale_price')
+            ->whereColumn('sale_price', '<', 'price')
+            ->where(function (Builder $dateQuery) {
+                $dateQuery
+                    ->whereNull('sale_starts_at')
+                    ->orWhere('sale_starts_at', '<=', now());
+            })
+            ->where(function (Builder $dateQuery) {
+                $dateQuery
+                    ->whereNull('sale_ends_at')
+                    ->orWhere('sale_ends_at', '>=', now());
+            });
+    }
+
     /**
-     * 1. Dữ liệu Trang chủ (Sản phẩm mới nhất & Danh mục)
+     * 1. Dữ liệu động cho trang chủ.
      */
     public function home()
     {
-        // 1. Sản phẩm mới nhất (Logic thật: lấy sản phẩm mới nhất dựa vào created_at)
-        $newestProducts = Product::with(['category', 'brand', 'images', 'variants'])
+        $relations = ['category', 'brand', 'images', 'variants'];
+
+        $newestProducts = Product::with($relations)
             ->where('status', true)
             ->latest()
             ->take(8)
             ->get();
 
-        // 2. [ĐÃ CẬP NHẬT CHUẨN 100%]: Sản phẩm bán chạy (Logic thật tính từ đơn hàng)
-        $bestSellingProducts = Product::with(['category', 'brand', 'images', 'variants'])
+        $bestSellingProducts = Product::with($relations)
             ->where('products.status', true)
             ->select('products.*')
-            // Sử dụng truy vấn con (Subquery) để tính tổng số lượng đã bán của sản phẩm này
-            ->addSelect(\Illuminate\Support\Facades\DB::raw('(
+            ->addSelect(DB::raw('(
                 SELECT COALESCE(SUM(oi.quantity), 0)
                 FROM order_items oi
                 JOIN product_variants pv ON pv.id = oi.product_variant_id
@@ -35,19 +67,82 @@ class ProductController extends Controller
                 WHERE pv.product_id = products.id 
                 AND o.status = "completed"
             ) as total_sold'))
-            ->orderByDesc('total_sold') // Sắp xếp giảm dần theo số lượng đã bán
-            ->latest()                  // Nếu có nhiều sản phẩm chưa bán được cái nào (tổng = 0), ưu tiên hiện sản phẩm mới
+            ->orderByDesc('total_sold')
+            ->latest()
             ->take(8)
             ->get();
 
-        $featuredCategories = Category::where('status', true)->take(6)->get();
+        $featuredProducts = Product::with($relations)
+            ->where('status', true)
+            ->where('is_featured', true)
+            ->latest()
+            ->take(8)
+            ->get();
+
+        $sportLabels = [
+            'tennis-pickleball' => 'Tennis & Pickleball',
+            'running' => 'Chạy Bộ',
+            'swimming' => 'Bơi Lội',
+            'football' => 'Bóng Đá',
+            'gym' => 'Gym',
+        ];
+
+        $sportSections = collect($sportLabels)
+            ->map(function (string $label, string $key) use ($relations) {
+                return [
+                    'key' => $key,
+                    'label' => $label,
+                    'products' => Product::with($relations)
+                        ->where('status', true)
+                        ->where('sport_type', $key)
+                        ->latest()
+                        ->take(8)
+                        ->get(),
+                ];
+            })
+            ->values();
+
+        $dealProductsQuery = Product::with($relations)
+            ->where('status', true);
+        $dealProducts = $this->activeSaleQuery($dealProductsQuery)
+            ->orderByRaw('((price - sale_price) / NULLIF(price, 0)) DESC')
+            ->latest()
+            ->take(40)
+            ->get();
+
+        $deals = $dealProducts
+            ->groupBy(fn (Product $product) => $product->deal_label ?: 'Ưu đãi hiện tại')
+            ->map(fn ($products, string $label) => [
+                'key' => str($label)->slug()->toString(),
+                'label' => $label,
+                'products' => $products->take(8)->values(),
+            ])
+            ->values();
+
+        $featuredCategories = Category::query()
+            ->where('status', true)
+            ->withCount(['products' => fn ($query) => $query->where('status', true)])
+            ->orderByDesc('products_count')
+            ->take(6)
+            ->get();
+
+        $featuredBrands = Brand::query()
+    ->where('status', true)
+    ->where('is_featured', true)
+    ->orderBy('name')
+    ->take(8)
+    ->get();
 
         return response()->json([
             'status' => true,
             'data' => [
                 'newest_products' => $newestProducts,
                 'best_selling_products' => $bestSellingProducts,
+                'featured_products' => $featuredProducts,
                 'featured_categories' => $featuredCategories,
+                'sport_sections' => $sportSections,
+                'deals' => $deals,
+                'featured_brands' => $featuredBrands,
             ]
         ], 200);
     }
@@ -91,6 +186,22 @@ class ProductController extends Controller
             $query->where('brand_id', $request->brand_id);
         }
 
+        if ($request->filled('sport_type')) {
+            $query->where('sport_type', $request->sport_type);
+        }
+
+        if ($request->boolean('featured')) {
+            $query->where('is_featured', true);
+        }
+
+        if ($request->boolean('on_sale')) {
+            $this->activeSaleQuery($query);
+        }
+
+        if ($request->filled('deal_label')) {
+            $query->where('deal_label', $request->deal_label);
+        }
+
         // D. Lọc theo Khoảng giá
         if ($request->has('min_price') && is_numeric($request->min_price)) {
             $query->where('price', '>=', $request->min_price);
@@ -129,13 +240,21 @@ class ProductController extends Controller
             $query->latest();
         }
 
-        // G. TRẢ VỀ MẢNG DỮ LIỆU THẲNG THAY VÌ PHÂN TRANG OBJECT
-        // Đổi từ paginate() sang get() để React đếm .length > 0 dễ dàng
-        $products = $query->get();
+        $perPage = max(
+            1,
+            min((int) $request->input('per_page', 24), 100)
+        );
+        $products = $query->paginate($perPage)->withQueryString();
 
         return response()->json([
             'status' => true,
-            'data' => $products
+            'data' => $products->items(),
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+            ],
         ], 200);
     }
 

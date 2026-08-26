@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import {
   FiSearch,
@@ -50,7 +51,7 @@ export default function DiscountCodes() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/api/admin/coupons", {
+      const res = await fetch(`${API_BASE_URL}/admin/coupons`, {
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
@@ -129,7 +130,7 @@ export default function DiscountCodes() {
 
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/coupons/bulk`, {
+      const res = await fetch(`${API_BASE_URL}/admin/coupons/bulk`, {
         method: "DELETE",
         headers: {
           "Accept": "application/json",
@@ -195,7 +196,7 @@ export default function DiscountCodes() {
     setIsSubmitting(true);
     const token = localStorage.getItem("access_token");
     const isEdit = Boolean(formData.id);
-    const url = isEdit ? `http://localhost:8000/api/admin/coupons/${formData.id}` : `http://localhost:8000/api/admin/coupons`;
+    const url = isEdit ? `${API_BASE_URL}/admin/coupons/${formData.id}` : `${API_BASE_URL}/admin/coupons`;
     const method = isEdit ? "PUT" : "POST";
 
     let finalDate = null;
@@ -246,7 +247,7 @@ export default function DiscountCodes() {
     if (!window.confirm("Bạn có chắc chắn muốn xóa mã giảm giá này?")) return;
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/coupons/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/coupons/${id}`, {
         method: "DELETE",
         headers: { "Accept": "application/json", "Authorization": `Bearer ${token}` }
       });

@@ -1,27 +1,34 @@
 import axios from "axios";
+import {
+  API_BASE_URL,
+} from "../config/api";
+import {
+  attachUnauthorizedInterceptor,
+} from "./authInterceptor";
 
 const axiosClient = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-// Tự động gắn access_token vào mọi request
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
+    const token =
+      localStorage.getItem("access_token");
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization =
+        `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error)
 );
+
+attachUnauthorizedInterceptor(axiosClient);
 
 export default axiosClient;

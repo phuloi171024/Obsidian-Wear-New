@@ -12,8 +12,13 @@ class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'color',
+        'image',
         'size',
         'stock',
+    ];
+
+    protected $appends = [
+        'image_url',
     ];
 
     protected function casts(): array
@@ -26,6 +31,11 @@ class ProductVariant extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image;
     }
 
     public function cartItems()

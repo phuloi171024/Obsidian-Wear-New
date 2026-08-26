@@ -1,11 +1,19 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
+import { attachUnauthorizedInterceptor } from "../utils/authInterceptor";
+export { API_BASE_URL };
 
-const API_BASE_URL = "http://127.0.0.1:8000/api";
-
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
+});
+attachUnauthorizedInterceptor(api);
 export const authService = {
-  // Đăng nhập truyền thống
   login: async (email, password) => {
-    const response = await axios.post(`${API_BASE_URL}/login`, {
+    const response = await api.post("/login", {
       email,
       password,
     });
@@ -13,46 +21,60 @@ export const authService = {
     return response.data;
   },
 
-  // Đăng ký
   register: async (userData) => {
-    const response = await axios.post(`${API_BASE_URL}/register`, userData);
+    const response = await api.post("/register", userData);
 
     return response.data;
   },
 
-  // Lấy URL đăng nhập Google
+  // Cho phép backend đặt cookie HttpOnly chứa OAuth state.
   getGoogleLoginUrl: async () => {
-    const response = await axios.get(`${API_BASE_URL}/auth/google`);
+    const response = await api.get("/auth/google", {
+      withCredentials: true,
+    });
 
     return response.data;
   },
 
-  // Đăng xuất
+  // Đổi google_code dùng một lần lấy Sanctum token.
+  exchangeGoogleCode: async (code) => {
+    const response = await api.post("/auth/google/exchange", {
+      code,
+    });
+
+    return response.data;
+  },
+
   logout: async () => {
     const token = localStorage.getItem("access_token");
 
     try {
-      // Nếu không có token thì không gọi API logout
       if (!token) {
         return null;
       }
 
-      const response = await axios.post(
-        `${API_BASE_URL}/logout`,
+      const response = await api.post(
+        "/logout",
         {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            Accept: "application/json",
           },
         },
       );
 
       return response.data;
     } finally {
-      // Luôn xóa token local dù API logout thành công hay thất bại
       localStorage.removeItem("access_token");
       localStorage.removeItem("user_info");
     }
+  },
+
+  forgotPassword: async (email) => {
+    const response = await api.post("/forgot-password", {
+      email,
+    });
+
+    return response.data;
   },
 };

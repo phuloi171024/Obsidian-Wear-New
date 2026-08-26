@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
@@ -13,7 +14,7 @@ const handleLogin = async (e) => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/login", {
+      const res = await fetch(`${API_BASE_URL}/admin/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +61,7 @@ const handleLogin = async (e) => {
       <Toaster position="top-right" />
       <div style={{ width: "100%", maxWidth: "420px", background: "#fff", padding: "40px", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
-          <img src="/src/public/images/logo.png" alt="Logo" style={{ height: "60px", width: "auto", objectFit: "contain", marginBottom: "10px" }} />
+          <img src="/images/logo.png" alt="Logo" style={{ height: "60px", width: "auto", objectFit: "contain", marginBottom: "10px" }} />
           <h2 style={{ color: "#111827", marginTop: "15px", marginBottom: "5px", fontSize: "24px" }}>Quản trị viên</h2>
           <p style={{ color: "#6b7280", margin: 0, fontSize: "14px" }}>Đăng nhập vào bảng điều khiển Obsidian</p>
         </div>

@@ -1,6 +1,5 @@
 import axios from "axios";
-
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+import { API_BASE_URL } from "../config/api";
 
 export const productService = {
   // 1. Lấy dữ liệu trang chủ
@@ -32,6 +31,24 @@ export const productService = {
       console.error("Lỗi lấy danh sách sản phẩm:", error);
       throw error;
     }
+  },
+
+  getProductsPage: async (filters = {}) => {
+    const response = await axios.get(`${API_BASE_URL}/products`, {
+      params: filters,
+    });
+
+    const result = response.data || {};
+
+    return {
+      items: Array.isArray(result.data) ? result.data : [],
+      meta: result.meta || {
+        current_page: 1,
+        last_page: 1,
+        per_page: 24,
+        total: 0,
+      },
+    };
   },
 
   // 3. Lấy chi tiết sản phẩm

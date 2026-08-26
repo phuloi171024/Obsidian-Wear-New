@@ -18,6 +18,11 @@ class CouponController extends Controller
 
         $coupons = Coupon::query()
             ->where('status', true)
+            ->where(function ($query) {
+                $query
+                    ->whereNull('usage_limit')
+                    ->orWhereColumn('used_count', '<', 'usage_limit');
+            })
             ->where(function ($query) use ($now) {
                 $query
                     ->where(function ($q) use ($now) {

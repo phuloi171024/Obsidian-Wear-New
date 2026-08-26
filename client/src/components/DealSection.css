@@ -1,0 +1,233 @@
+/* =========================================================
+   DEAL TỐT TRONG THÁNG
+========================================================= */
+
+.deal-section {
+  width: 100%;
+
+  padding: 62px 22px 76px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.deal-inner {
+  width: 100%;
+
+  max-width: 1680px;
+
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.deal-heading {
+  margin-bottom: 22px;
+
+  text-align: center;
+}
+
+.deal-heading h2 {
+  margin: 0;
+
+  color: #111111;
+
+  font-size: 26px;
+  font-weight: 600;
+
+  line-height: 1.3;
+}
+
+
+/* =========================================================
+   TABS
+========================================================= */
+
+.deal-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  margin-bottom: 34px;
+}
+
+.deal-tab {
+  position: relative;
+
+  padding: 8px 20px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #777777;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.deal-tab::after {
+  content: "";
+
+  position: absolute;
+
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+
+  height: 1px;
+
+  background: #111111;
+
+  transform: scaleX(0);
+
+  transition: transform 0.25s ease;
+}
+
+.deal-tab:hover,
+.deal-tab.active {
+  color: #111111;
+}
+
+.deal-tab.active {
+  font-weight: 600;
+}
+
+.deal-tab.active::after {
+  transform: scaleX(1);
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.deal-grid {
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+
+/* =========================================================
+   VIEW ALL
+========================================================= */
+
+.deal-view-all-wrapper {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  margin-top: 32px;
+}
+
+.deal-view-all {
+  position: relative;
+
+  display: inline-block;
+
+  padding-bottom: 4px;
+
+  color: #111111;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  text-decoration: none;
+}
+
+.deal-view-all::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 0;
+  height: 1px;
+
+  background: #111111;
+
+  transition: width 0.3s ease;
+}
+
+.deal-view-all:hover::after {
+  width: 100%;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .deal-section {
+    padding: 50px 20px 62px;
+  }
+
+  .deal-heading h2 {
+    font-size: 23px;
+  }
+
+  .deal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 14px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .deal-section {
+    padding: 36px 12px 46px;
+  }
+
+  .deal-heading h2 {
+    font-size: 18px;
+  }
+
+  .deal-tabs {
+    margin-bottom: 22px;
+  }
+
+  .deal-tab {
+    padding: 7px 8px;
+
+    font-size: 8px;
+  }
+
+  .deal-tab::after {
+    left: 8px;
+    right: 8px;
+  }
+
+  .deal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .deal-view-all {
+    font-size: 10px;
+  }
+
+}

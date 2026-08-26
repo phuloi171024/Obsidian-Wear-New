@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -33,34 +33,62 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function updatePassword(Request $request)
-    {
-        // 1. Kiểm tra dữ liệu Frontend gửi lên
-        $request->validate([
-            'current_password' => 'required',
-            // Đảm bảo mật khẩu mới phải >= 6 ký tự (có thể tùy chỉnh)
-            'new_password' => 'required|min:6' 
-        ]);
+ public function updatePassword(Request $request)
+{
+    $validated = $request->validate([
+        'current_password' => [
+            'required',
+            'string',
+        ],
+        'new_password' => [
+            'required',
+            'string',
+            'min:8',
+            'confirmed',
+        ],
+    ], [
+        'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+        'new_password.required' => 'Vui lòng nhập mật khẩu mới.',
+        'new_password.min' => 'Mật khẩu mới phải có ít nhất 8 ký tự.',
+        'new_password.confirmed' => 'Xác nhận mật khẩu mới không khớp.',
+    ]);
 
-        $user = $request->user();
+    $user = $request->user();
 
-        // 2. Kiểm tra mật khẩu hiện tại có đúng không
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'status' => false, 
-                'message' => 'Mật khẩu hiện tại không chính xác!'
-            ], 400);
-        }
-
-        // 3. Nếu đúng, tiến hành mã hóa và lưu mật khẩu mới
-        $user->password = Hash::make($request->new_password);
-        $user->save();
-
+    // Tài khoản Google chưa từng thiết lập mật khẩu.
+    if (empty($user->password)) {
         return response()->json([
-            'status' => true, 
-            'message' => 'Cập nhật mật khẩu thành công!'
-        ], 200);
+            'status' => false,
+            'message' => 'Tài khoản Google chưa có mật khẩu. Vui lòng dùng chức năng quên mật khẩu để thiết lập mật khẩu.',
+        ], 422);
     }
+
+    if (!Hash::check($validated['current_password'], $user->password)) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Mật khẩu hiện tại không chính xác!',
+        ], 422);
+    }
+
+    if (Hash::check($validated['new_password'], $user->password)) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Mật khẩu mới phải khác mật khẩu hiện tại!',
+        ], 422);
+    }
+
+    $user->password = Hash::make($validated['new_password']);
+    $user->save();
+
+    // Thu hồi toàn bộ phiên đăng nhập sau khi đổi mật khẩu.
+    $user->tokens()->delete();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại!',
+        'logout_required' => true,
+    ]);
+}
 
     /**
      * Cập nhật thông tin cá nhân và lưu địa chỉ vào bảng addresses
@@ -127,5 +155,25 @@ class UserController extends Controller
                 'address' => $updatedAddress ? $updatedAddress->address : '', // Đã sửa thành address
             ]
         ], 200);
+        
+
+        $validated = $request->validate([
+    'name' => [
+        'required',
+        'string',
+        'max:255',
+    ],
+    'phone' => [
+        'nullable',
+        'string',
+        'max:15',
+        Rule::unique('users', 'phone')->ignore($user->id),
+    ],
+], [
+    'name.required' => 'Vui lòng nhập họ và tên.',
+    'name.max' => 'Họ và tên không được vượt quá 255 ký tự.',
+    'phone.max' => 'Số điện thoại không được vượt quá 15 ký tự.',
+    'phone.unique' => 'Số điện thoại này đã được sử dụng bởi tài khoản khác.',
+]);
     }
 }

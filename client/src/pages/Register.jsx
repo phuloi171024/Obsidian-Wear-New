@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/api";
 import "./Auth.css";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -26,17 +27,25 @@ export default function Register() {
 
 const handleGoogleLogin = async () => {
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/auth/google");
+    const response = await fetch(
+      `${API_BASE_URL}/auth/google`,
+      {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
     const data = await response.json();
 
-   if (response.ok && data.status === true) {
-        toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
-        setTimeout(() => navigate("/login"), 1500); 
-      } else {
-      toast.error("Không thể tải trang đăng nhập Google!");
+    if (response.ok && data.status === true && data.url) {
+      window.location.href = data.url;
+    } else {
+      toast.error("Không thể mở trang đăng ký Google!");
     }
   } catch (error) {
-    toast.error("Lỗi kết nối đến máy chủ!");
+    toast.error("Không thể kết nối đến máy chủ!");
   }
 };
 
@@ -68,7 +77,7 @@ const handleGoogleLogin = async () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/register", {
+      const response = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +122,7 @@ const handleGoogleLogin = async () => {
 
       <div className="auth-box">
         <Link to="/">
-          <img src="/src/public/images/logo.png" alt="Logo" className="auth-logo" />
+          <img src="/images/logo.png" alt="Logo" className="auth-logo" />
         </Link>
 
         <h2>Đăng ký tài khoản</h2>

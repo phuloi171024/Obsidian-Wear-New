@@ -16,11 +16,60 @@ class Product extends Model
         'name', 
         'slug', 
         'sku', 
-        'price', 
+        'price',
+        'sale_price',
+        'deal_label',
+        'sale_starts_at',
+        'sale_ends_at',
         'thumbnail', 
         'description', 
-        'status'
-    ]; 
+        'status',
+        'is_featured',
+        'sport_type',
+    ];
+
+    protected $appends = [
+        'is_on_sale',
+        'current_price',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+            'sale_price' => 'decimal:2',
+            'status' => 'boolean',
+            'is_featured' => 'boolean',
+            'sale_starts_at' => 'datetime',
+            'sale_ends_at' => 'datetime',
+        ];
+    }
+
+    public function getIsOnSaleAttribute(): bool
+    {
+        if ($this->sale_price === null || (float) $this->sale_price >= (float) $this->price) {
+            return false;
+        }
+
+        $now = now();
+
+        if ($this->sale_starts_at && $now->lt($this->sale_starts_at)) {
+            return false;
+        }
+
+        if ($this->sale_ends_at && $now->gt($this->sale_ends_at)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getCurrentPriceAttribute(): float
+    {
+        return $this->is_on_sale
+            ? (float) $this->sale_price
+            : (float) $this->price;
+    }
 
     // Sản phẩm thuộc về 1 danh mục
     public function category()

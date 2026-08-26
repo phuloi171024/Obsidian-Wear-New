@@ -1,109 +1,194 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiLock, FiMail } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import toast, { Toaster } from "react-hot-toast";
+import { authService } from "../services/authService";
 import "./Auth.css";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); 
-  
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // 1. Xử lý khi Google trả kết quả (Token) về URL
+  // Trao đổi google_code dùng một lần để nhận Sanctum token.
   useEffect(() => {
-    const token = searchParams.get("token");
-    const error = searchParams.get("error");
+    const googleCode = searchParams.get("google_code");
+    const errorCode = searchParams.get("error");
 
-    if (token) {
-      localStorage.setItem("access_token", token);
-      window.dispatchEvent(new Event("loginSuccess")); 
-      toast.success("Đăng nhập Google thành công!");
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
+    if (errorCode) {
+      const errorMessages = {
+        account_disabled: "Tài khoản của bạn đã bị khóa!",
+        invalid_oauth_state:
+          "Phiên đăng nhập Google không hợp lệ hoặc đã hết hạn. Vui lòng thử lại!",
+        google_account_mismatch:
+          "Email này đã được liên kết với một tài khoản Google khác!",
+        google_login_failed:
+          "Xác thực Google thất bại. Vui lòng thử lại!",
+      };
+
+      toast.error(
+        errorMessages[errorCode] ||
+          "Xác thực Google thất bại. Vui lòng thử lại!"
+      );
+
+      navigate("/login", { replace: true });
+      return;
     }
 
-    if (error) {
-      toast.error("Đăng nhập Google thất bại! Vui lòng thử lại.");
+    if (!googleCode) {
+      return;
     }
-  }, [searchParams, navigate]);
 
-  // 2. Hàm gọi API Đăng nhập truyền thống
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+    // Ngăn React StrictMode trao đổi cùng một mã hai lần.
+    const exchangeMarker = `google_exchange_${googleCode}`;
 
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-      });
+    if (sessionStorage.getItem(exchangeMarker)) {
+      return;
+    }
 
-      const data = await response.json();
+    sessionStorage.setItem(exchangeMarker, "processing");
 
-      if (response.ok && (data.access_token || data.token)) {
-        const token = data.access_token || data.token;
-        localStorage.setItem("access_token", token);
-        
+    const exchangeGoogleCode = async () => {
+      try {
+        const data = await authService.exchangeGoogleCode(googleCode);
+
+        if (!data?.access_token) {
+          throw new Error(
+            data?.message || "Không thể hoàn tất xác thực Google!"
+          );
+        }
+
+        localStorage.setItem("access_token", data.access_token);
+
         if (data.data) {
           localStorage.setItem("user_info", JSON.stringify(data.data));
         }
 
         window.dispatchEvent(new Event("loginSuccess"));
-        toast.success(data.message || "Đăng nhập thành công!");
-        
+
+        toast.success(
+          data.is_new_user
+            ? "Đăng ký bằng Google thành công!"
+            : "Đăng nhập Google thành công!"
+        );
+
         setTimeout(() => {
-          navigate("/");
+          navigate("/", { replace: true });
         }, 1000);
-      } else {
-        toast.error(data.message || "Email hoặc mật khẩu không chính xác!");
+      } catch (error) {
+        sessionStorage.removeItem(exchangeMarker);
+
+        const message =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Xác thực Google thất bại!";
+
+        toast.error(message);
+        navigate("/login", { replace: true });
       }
+    };
+
+    exchangeGoogleCode();
+  }, [searchParams, navigate]);
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
+    if (isLoading) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const data = await authService.login(email, password);
+      const token = data?.access_token || data?.token;
+
+      if (!token) {
+        throw new Error(
+          data?.message || "Email hoặc mật khẩu không chính xác!"
+        );
+      }
+
+      localStorage.setItem("access_token", token);
+
+      if (data.data) {
+        localStorage.setItem("user_info", JSON.stringify(data.data));
+      }
+
+      window.dispatchEvent(new Event("loginSuccess"));
+      toast.success(data.message || "Đăng nhập thành công!");
+
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 1000);
     } catch (error) {
-      console.error("Lỗi kết nối:", error);
-      toast.error("Không thể kết nối đến máy chủ!");
+      console.error("Lỗi đăng nhập:", error);
+
+      const validationMessage = error?.response?.data?.errors
+        ? Object.values(error.response.data.errors).flat()[0]
+        : null;
+
+      toast.error(
+        validationMessage ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Không thể kết nối đến máy chủ!"
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 3. Xử lý chuyển hướng đến Google Login (Đã sửa để hiện bảng chọn tài khoản)
   const handleGoogleLogin = async () => {
-  try {
-    const response = await fetch("http://127.0.0.1:8000/api/auth/google");
-    const data = await response.json();
-
-    if (response.ok && data.status === true) {
-      // Chuyển hướng sang link của Google (data.url) chứ không phải link API
-      window.location.href = data.url;
-    } else {
-      toast.error("Không thể tải trang đăng nhập Google!");
+    if (isGoogleLoading) {
+      return;
     }
-  } catch (error) {
-    toast.error("Lỗi kết nối đến máy chủ!");
-  }
-};
+
+    try {
+      setIsGoogleLoading(true);
+
+      const data = await authService.getGoogleLoginUrl();
+
+      if (!data?.status || !data?.url) {
+        throw new Error(
+          data?.message || "Không thể tải trang đăng nhập Google!"
+        );
+      }
+
+      window.location.assign(data.url);
+    } catch (error) {
+      console.error("Lỗi Google Login:", error);
+
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Không thể kết nối đến máy chủ!"
+      );
+
+      setIsGoogleLoading(false);
+    }
+  };
 
   return (
     <>
       <Toaster position="top-right" />
-      
+
       <div className="auth-page">
         <div className="auth-box">
           <Link to="/">
-            <img 
-              src="/src/public/images/logo.png" 
-              alt="Logo" 
+            <img
+              src="/images/logo.png"
+              alt="Obsidian Wear"
               className="auth-logo"
-              onError={(e) => { e.target.style.display = 'none'; }} 
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
             />
           </Link>
 
@@ -111,33 +196,50 @@ export default function Login() {
 
           <form onSubmit={handleLogin}>
             <div className="form-group">
-              <label>Email *</label>
+              <label htmlFor="login-email">Email *</label>
+
               <div className="input-wrapper">
                 <FiMail className="input-icon" />
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
+                <input
+                  id="login-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@example.com"
-                  required 
+                  required
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Mật khẩu *</label>
+              <label htmlFor="login-password">Mật khẩu *</label>
+
               <div className="input-wrapper">
                 <FiLock className="input-icon" />
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
+                <input
+                  id="login-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                   placeholder="Nhập mật khẩu của bạn"
-                  required 
+                  required
                 />
-                <span 
-                  className="eye-icon" 
-                  onClick={() => setShowPassword(!showPassword)}
+
+                <span
+                  className="eye-icon"
+                  onClick={() => setShowPassword((current) => !current)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      setShowPassword((current) => !current);
+                    }
+                  }}
                 >
                   {showPassword ? <FiEyeOff /> : <FiEye />}
                 </span>
@@ -148,10 +250,15 @@ export default function Login() {
               <label className="checkbox" style={{ margin: 0 }}>
                 <input type="checkbox" /> Ghi nhớ đăng nhập
               </label>
+
               <Link to="/forgot-password">Quên mật khẩu?</Link>
             </div>
 
-            <button type="submit" disabled={isLoading} className="auth-submit">
+            <button
+              type="submit"
+              disabled={isLoading || isGoogleLoading}
+              className="auth-submit"
+            >
               {isLoading ? "Đang xử lý..." : "Đăng nhập"}
             </button>
           </form>
@@ -160,9 +267,14 @@ export default function Login() {
             <span>Hoặc đăng nhập với</span>
           </div>
 
-          <button type="button" className="google-login-btn" onClick={handleGoogleLogin}>
+          <button
+            type="button"
+            className="google-login-btn"
+            onClick={handleGoogleLogin}
+            disabled={isLoading || isGoogleLoading}
+          >
             <FcGoogle style={{ fontSize: "20px", marginRight: "10px" }} />
-            Tiếp tục với Google
+            {isGoogleLoading ? "Đang chuyển hướng..." : "Tiếp tục với Google"}
           </button>
 
           <div className="auth-footer">

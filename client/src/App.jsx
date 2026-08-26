@@ -1,72 +1,80 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import Header from './components/Header'; 
+import React, { lazy, Suspense } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
+import Header from "./components/Header";
 
-// Import các trang Client & Tài khoản
+// Import các trang Client & tài khoản
 import Home from "./pages/Home";
-import ProductPage from "./pages/ProductPage";
-import ProductDetail from "./pages/ProductDetail";
-import AoPage from "./pages/AoPage";
-import GiayPage from "./pages/GiayPage";
-import QuanPage from "./pages/QuanPage";
-import TuiPage from "./pages/TuiPage";
-import Register from './pages/Register';
-import Login from './pages/Login';
-import ForgotPassword from './pages/ForgotPassword';
-import Contact from "./pages/Contact/Contact";
-import SizeGuide from "./pages/SizeGuide";
-import ProfilePage from "./pages/ProfilePage";
-import CartPage from "./pages/CartPage";
-import ShippingInfoPage from "./pages/ShippingInfoPage";
-import PaymentPage from "./pages/PaymentPage";
-import OrderSuccessPage from "./pages/OrderSuccessPage";
-import OrdersPage from "./pages/OrdersPage";
+const ProductPage = lazy(() => import("./pages/ProductPage"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const AoPage = lazy(() => import("./pages/AoPage"));
+const GiayPage = lazy(() => import("./pages/GiayPage"));
+const QuanPage = lazy(() => import("./pages/QuanPage"));
+const TuiPage = lazy(() => import("./pages/TuiPage"));
+const Register = lazy(() => import("./pages/Register"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Contact = lazy(() => import("./pages/Contact/Contact"));
+const SizeGuide = lazy(() => import("./pages/SizeGuide"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
+const ShippingInfoPage = lazy(() => import("./pages/ShippingInfoPage"));
+const PaymentPage = lazy(() => import("./pages/PaymentPage"));
+const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
+const CheckoutFailedPage = lazy(() => import("./pages/CheckoutFailedPage"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AdminLogin = lazy(() => import("./pages/Admin/AdminLogin"));
+const AdminLayout = lazy(() => import("./pages/Admin/AdminLayout"));
+const Dashboard = lazy(() => import("./pages/Admin/Dashboard"));
+const Orders = lazy(() => import("./pages/Admin/Orders"));
+const Products = lazy(() => import("./pages/Admin/Products"));
+const Categories = lazy(() => import("./pages/Admin/Categories"));
+const Users = lazy(() => import("./pages/Admin/Users"));
+const Statistics = lazy(() => import("./pages/Admin/Statistics"));
+const Comments = lazy(() => import("./pages/Admin/Comments"));
+const Variants = lazy(() => import("./pages/Admin/Variants"));
+const DiscountCodes = lazy(() => import("./pages/Admin/DiscountCodes"));
+const Brands = lazy(() => import("./pages/Admin/Brands"));
 
-// Import các trang Admin
-import AdminLogin from "./pages/Admin/AdminLogin";
-import AdminLayout from "./pages/Admin/AdminLayout";
-import Dashboard from "./pages/Admin/Dashboard";
-import Orders from "./pages/Admin/Orders";
-import Products from "./pages/Admin/Products";
-import Categories from "./pages/Admin/Categories";
-import Users from "./pages/Admin/Users";
-import Statistics from "./pages/Admin/Statistics";
-import Comments from "./pages/Admin/Comments";
-import Variants from "./pages/Admin/Variants";
-import DiscountCodes from "./pages/Admin/DiscountCodes";
-import Brands from "./pages/Admin/Brands";
-
-// IMPORT "NGƯỜI GÁC CỔNG" CHO TRANG ADMIN
+// Người gác cổng cho trang Admin
 import AdminRoute from "./components/AdminRoute";
 
-// ==========================================
-// 1. TRẠM KIỂM SOÁT BẢO MẬT (ROUTE GUARDS)
-// ==========================================
-
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("access_token");
+  const isAuthenticated =
+    localStorage.getItem("access_token") || localStorage.getItem("token");
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
 
 const GuestRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("access_token");
+  const isAuthenticated =
+    localStorage.getItem("access_token") || localStorage.getItem("token");
+
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
+
   return children;
 };
-
-// ==========================================
-// 2. ẨN HEADER Ở TRANG ADMIN
-// ==========================================
 
 function ConditionalHeader() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
-  if (isAdminRoute) return null;
+
+  if (isAdminRoute) {
+    return null;
+  }
+
   return <Header />;
 }
 
@@ -75,8 +83,9 @@ function App() {
     <BrowserRouter>
       <ConditionalHeader />
 
+      <Suspense fallback={<div style={{ padding: "40px", textAlign: "center" }}>Đang tải...</div>}>
       <Routes>
-        {/* NHÓM 1: PUBLIC */}
+        {/* Public */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductPage />} />
         <Route path="/product/:id" element={<ProductDetail />} />
@@ -86,27 +95,106 @@ function App() {
         <Route path="/products/phu-kien" element={<TuiPage />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/size-guide" element={<SizeGuide />} />
+<Route
+  path="/reset-password"
+  element={<ResetPassword />}
+/>
+        {/* Chỉ dành cho khách chưa đăng nhập */}
+        <Route
+          path="/register"
+          element={
+            <GuestRoute>
+              <Register />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <GuestRoute>
+              <ForgotPassword />
+            </GuestRoute>
+          }
+        />
 
-        {/* NHÓM 2: GUEST ONLY */}
-        <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
-        <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
-        <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
-
-        {/* NHÓM 3: PRIVATE - Bắt buộc PHẢI ĐĂNG NHẬP */}
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
-        <Route path="/shipping-info" element={<ProtectedRoute><ShippingInfoPage /></ProtectedRoute>} />
-        <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
-        <Route path="/order-success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
-        <Route path="/checkout/success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
-        <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
-
-        {/* NHÓM 4: ADMIN */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        {/* Bắt buộc đăng nhập */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shipping-info"
+          element={
+            <ProtectedRoute>
+              <ShippingInfoPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment"
+          element={
+            <ProtectedRoute>
+              <PaymentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order-success"
+          element={
+            <ProtectedRoute>
+              <OrderSuccessPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout/success"
+          element={
+            <ProtectedRoute>
+              <OrderSuccessPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout/failed"
+          element={
+            <ProtectedRoute>
+              <CheckoutFailedPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <OrdersPage />
+            </ProtectedRoute>
+          }
+        />
         
-        {/* ==========================================
-            KHU VỰC ADMIN ĐÃ ĐƯỢC BẢO VỆ BỞI ADMINROUTE
-            ========================================== */}
+
+        {/* Admin */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
@@ -121,8 +209,8 @@ function App() {
             <Route path="brands" element={<Brands />} />
           </Route>
         </Route>
-
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

@@ -1,46 +1,278 @@
-.policy{
-    max-width:1200px;
-    margin:35px auto;
-    background:#fff;
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    border:1px solid #ececec;
+/* =========================================================
+   SPORTS BANNER SECTION
+========================================================= */
+
+.sports-section {
+  width: 100%;
+  padding: 55px 32px 70px;
+  background: #ffffff;
+  box-sizing: border-box;
 }
 
-.policy-item{
-    display:flex;
-    align-items:center;
-    gap:18px;
-    padding:28px 25px;
-    border-right:1px solid #ececec;
-    transition:.3s;
+.sports-inner {
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
 }
 
-.policy-item:last-child{
-    border-right:none;
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+.sports-heading {
+  margin-bottom: 30px;
+  text-align: center;
 }
 
-.policy-item:hover{
-    background:#fafafa;
+.sports-heading h2 {
+  margin: 0;
+
+  color: #111;
+
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  text-transform: uppercase;
 }
 
-.policy-icon{
-    font-size:42px;
-    color:#0056b3;
-    flex-shrink:0;
+.sports-heading p {
+  margin: 8px 0 0;
+
+  color: #777;
+
+  font-size: 13px;
 }
 
-.policy-item h3{
-    margin:0;
-    font-size:15px;
-    font-weight:700;
-    color:#111;
-    line-height:22px;
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.sports-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 12px;
 }
 
-.policy-item p{
-    margin-top:6px;
-    font-size:13px;
-    color:#777;
-    line-height:20px;
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.sports-card {
+  position: relative;
+
+  display: block;
+
+  width: 100%;
+  height: 520px;
+
+  overflow: hidden;
+
+  color: #fff;
+
+  text-decoration: none;
+
+  background: #ddd;
+}
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+.sports-card-image {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+  object-position: center;
+
+  transition: transform 0.5s ease;
+}
+
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+.sports-overlay {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.65) 0%,
+      rgba(0, 0, 0, 0.2) 45%,
+      rgba(0, 0, 0, 0.05) 100%
+    );
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.sports-content {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 2;
+
+  padding: 28px 28px 30px;
+
+  box-sizing: border-box;
+}
+
+.sports-content h3 {
+  margin: 0;
+
+  font-size: 24px;
+  font-weight: 600;
+
+  line-height: 1.2;
+
+  color: #fff;
+}
+
+.sports-content p {
+  margin: 8px 0 18px;
+
+  color: rgba(255, 255, 255, 0.88);
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   KHÁM PHÁ
+========================================================= */
+
+.sports-link {
+  position: relative;
+
+  display: inline-block;
+
+  padding-bottom: 5px;
+
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 0.4px;
+}
+
+.sports-link::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 0;
+  height: 1px;
+
+  background: #fff;
+
+  transition: width 0.3s ease;
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.sports-card:hover .sports-card-image {
+  transform: scale(1.055);
+}
+
+.sports-card:hover .sports-link::after {
+  width: 100%;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1000px) {
+
+  .sports-section {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .sports-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sports-card {
+    height: 470px;
+  }
+
+  .sports-card:last-child {
+    grid-column: 1 / -1;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .sports-section {
+    padding: 40px 12px 50px;
+  }
+
+  .sports-heading {
+    margin-bottom: 22px;
+  }
+
+  .sports-heading h2 {
+    font-size: 18px;
+  }
+
+  .sports-heading p {
+    font-size: 12px;
+  }
+
+  .sports-grid {
+    grid-template-columns: 1fr;
+
+    gap: 8px;
+  }
+
+  .sports-card,
+  .sports-card:last-child {
+    grid-column: auto;
+
+    height: 430px;
+  }
+
+  .sports-content {
+    padding: 22px;
+  }
+
+  .sports-content h3 {
+    font-size: 21px;
+  }
+
 }

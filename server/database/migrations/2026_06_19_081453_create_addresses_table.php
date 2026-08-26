@@ -6,26 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-public function up()
-{
-    Schema::create('addresses', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained()->onDelete('cascade');
-        $table->string('type')->default('Nhà'); // Thêm cột Loại địa chỉ
-        $table->string('phone')->nullable(); // Thêm cột Số điện thoại
-        $table->string('address'); // Đổi address_line thành address cho dễ nhớ
-        $table->boolean('is_default')->default(false);
-        $table->timestamps();
-        $table->softDeletes();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('addresses', function (Blueprint $table) {
+            $table->id();
 
-    /**
-     * Reverse the migrations.
-     */
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
+
+            $table->string('receiver_name')->nullable();
+            $table->string('type')->default('Nhà');
+            $table->string('phone')->nullable();
+            $table->string('province', 100)->nullable();
+            $table->string('district', 100)->nullable();
+            $table->string('ward', 100)->nullable();
+            $table->string('street')->nullable();
+            $table->boolean('is_default')->default(false);
+
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+
     public function down(): void
     {
         Schema::dropIfExists('addresses');

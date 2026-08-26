@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiBox, FiUsers, FiDollarSign, FiShoppingCart } from "react-icons/fi";
@@ -31,9 +32,9 @@ export default function Dashboard() {
         };
 
         const [dashRes, ordersRes, usersRes] = await Promise.all([
-          fetch("http://localhost:8000/api/admin/dashboard", { headers }),
-          fetch("http://localhost:8000/api/admin/orders?per_page=5", { headers }),
-          fetch("http://localhost:8000/api/admin/users?per_page=5", { headers })
+          fetch(`${API_BASE_URL}/admin/dashboard`, { headers }),
+          fetch(`${API_BASE_URL}/admin/orders?per_page=5`, { headers }),
+          fetch(`${API_BASE_URL}/admin/users?per_page=5`, { headers })
         ]);
 
         if (dashRes.ok) {

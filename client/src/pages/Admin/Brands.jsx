@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiCheck } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
@@ -18,6 +19,8 @@ export default function Brands() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
+    logo_url: "",
+    is_featured: false,
     status: 1, // 1 là Hoạt động, 0 là Ẩn
   });
 
@@ -28,7 +31,7 @@ export default function Brands() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/api/admin/brands", {
+      const res = await fetch(`${API_BASE_URL}/admin/brands`, {
         headers: {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -65,19 +68,24 @@ export default function Brands() {
   // ================= 3. XỬ LÝ THÊM/SỬA (MODAL) =================
   const openAddModal = () => {
     setEditingId(null);
-    setForm({ name: "", status: 1 });
+    setForm({ name: "", logo_url: "", is_featured: false, status: 1 });
     setShowModal(true);
   };
 
   const openEditModal = (brand) => {
     setEditingId(brand.id);
-    setForm({ name: brand.name, status: brand.status ? 1 : 0 });
+    setForm({
+      name: brand.name,
+      logo_url: brand.logo_url || "",
+      is_featured: Boolean(brand.is_featured),
+      status: brand.status ? 1 : 0,
+    });
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
-    setForm({ name: "", status: 1 });
+    setForm({ name: "", logo_url: "", is_featured: false, status: 1 });
   };
 
   const saveBrand = async () => {
@@ -89,8 +97,8 @@ export default function Brands() {
     const token = localStorage.getItem("access_token");
     const method = editingId ? "PUT" : "POST";
     const url = editingId 
-      ? `http://localhost:8000/api/admin/brands/${editingId}` 
-      : `http://localhost:8000/api/admin/brands`;
+      ? `${API_BASE_URL}/admin/brands/${editingId}` 
+      : `${API_BASE_URL}/admin/brands`;
 
     setIsSubmitting(true);
     try {
@@ -103,6 +111,8 @@ export default function Brands() {
         },
         body: JSON.stringify({
           name: form.name,
+          logo_url: form.logo_url || null,
+          is_featured: form.is_featured,
           status: form.status === 1 || form.status === "1" ? true : false
         })
       });
@@ -133,7 +143,7 @@ export default function Brands() {
 
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/brands/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/brands/${id}`, {
         method: "DELETE",
         headers: {
           "Accept": "application/json",
@@ -274,6 +284,27 @@ export default function Brands() {
                 >
                   <option value={1}>Hoạt động</option>
                   <option value={0}>Ẩn</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Đường dẫn logo</label>
+                <input
+                  type="text"
+                  placeholder="VD: /images/nike.png hoặc URL Cloudinary"
+                  value={form.logo_url}
+                  onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Hiển thị nổi bật trên trang chủ</label>
+                <select
+                  value={form.is_featured ? 1 : 0}
+                  onChange={(e) => setForm({ ...form, is_featured: Number(e.target.value) === 1 })}
+                >
+                  <option value={0}>Không</option>
+                  <option value={1}>Có</option>
                 </select>
               </div>
             </div>

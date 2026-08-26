@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect, useRef } from "react";
 import {
   FiSearch,
@@ -49,16 +50,36 @@ export default function Variants() {
 
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/api/admin/products?per_page=1000&search=${keyword}`, {
-        headers: {
-          "Accept": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      const data = await res.json();
+      const productsList = [];
+      let apiPage = 1;
+      let lastApiPage = 1;
 
-      if (res.ok) {
-        const productsList = Array.isArray(data) ? data : (data.data || []);
+      do {
+        const params = new URLSearchParams({
+          per_page: "100",
+          page: String(apiPage),
+          search: keyword,
+        });
+        const res = await fetch(
+          `${API_BASE_URL}/admin/products?${params.toString()}`,
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Không thể tải sản phẩm");
+        }
+
+        productsList.push(...(Array.isArray(data) ? data : data.data || []));
+        lastApiPage = Number(data.last_page || 1);
+        apiPage += 1;
+      } while (apiPage <= lastApiPage);
+
         let allVariantsList = [];
         let totalCount = 0;
         let sellingCount = 0;
@@ -111,7 +132,6 @@ export default function Variants() {
         });
         
         setCurrentPage(1);
-      }
     } catch (error) {
       toast.error("Không thể tải danh sách biến thể!");
     } finally {
@@ -147,7 +167,7 @@ export default function Variants() {
     try {
       const token = localStorage.getItem("access_token");
       
-      const res = await fetch(`http://localhost:8000/api/admin/products/${uploadingVariant.productId}/variants/${uploadingVariant.variantId}/image`, {
+      const res = await fetch(`${API_BASE_URL}/admin/products/${uploadingVariant.productId}/variants/${uploadingVariant.variantId}/image`, {
         method: "POST",
         headers: {
           "Accept": "application/json",
@@ -182,7 +202,7 @@ export default function Variants() {
 
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/products/${productId}/variants/${variantId}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/products/${productId}/variants/${variantId}`, {
         method: "DELETE",
         headers: {
           "Accept": "application/json",
@@ -216,7 +236,7 @@ export default function Variants() {
     const token = localStorage.getItem("access_token");
 
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/products/${item.productId}/variants/${item.id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/products/${item.productId}/variants/${item.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

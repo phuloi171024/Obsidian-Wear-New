@@ -1,8 +1,8 @@
 // src/services/cartService.js
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
-// Thay đổi cổng 8000 nếu Laravel của em chạy ở cổng khác
-const API_URL = "http://127.0.0.1:8000/api";
+const API_URL = API_BASE_URL;
 
 // Hàm cấu hình Header chứa Token đăng nhập
 const getAuthHeader = () => {

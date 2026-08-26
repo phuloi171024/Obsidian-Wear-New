@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -57,26 +57,48 @@ class UserController extends Controller
      * Khoá / Mở khoá tài khoản
      * PUT /admin/users/{id}/status
      */
-    public function toggleStatus( int $id)
-    {
-        $user = User::findOrFail($id);
+ public function toggleStatus(int $id)
+{
+    try {
+        $user = DB::transaction(function () use ($id) {
+            $user = User::query()
+                ->whereKey($id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        // Không cho phép khoá tài khoản admin
-        if ($user->role === 'admin') {
-            return response()->json([
-                'message' => 'Không thể khoá tài khoản admin!',
-            ], 403);
-        }
+            if ($user->role === 'admin') {
+                throw new \RuntimeException(
+                    'Không thể khóa tài khoản admin!'
+                );
+            }
 
-        $user->update(['status' => !$user->status]);
+            $newStatus = !$user->status;
 
-        $statusText = $user->status ? 'mở khoá' : 'khoá';
+            $user->update([
+                'status' => $newStatus,
+            ]);
+
+            if (!$newStatus) {
+                $user->tokens()->delete();
+            }
+
+            return $user;
+        });
 
         return response()->json([
-            'message' => "Đã {$statusText} tài khoản thành công!",
-            'user'    => $user,
+            'status' => true,
+            'message' => $user->status
+                ? 'Đã mở khóa tài khoản thành công!'
+                : 'Đã khóa tài khoản và đăng xuất khỏi tất cả thiết bị!',
+            'user' => $user,
         ]);
+    } catch (\RuntimeException $exception) {
+        return response()->json([
+            'status' => false,
+            'message' => $exception->getMessage(),
+        ], 403);
     }
+}
 
     /**
      * Cập nhật thông tin người dùng (chỉ admin mới làm được)

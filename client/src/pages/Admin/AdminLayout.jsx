@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
@@ -47,7 +48,7 @@ export default function AdminLayout() {
     const token = localStorage.getItem("access_token");
     if (token) {
       try {
-        await fetch("http://localhost:8000/api/logout", {
+        await fetch(`${API_BASE_URL}/logout`, {
           method: "POST",
           headers: {
             "Accept": "application/json",
@@ -74,7 +75,7 @@ export default function AdminLayout() {
       <aside className="admin-sidebar">
         {/* LOGO */}
         <div className="admin-logo">
-          <img src="/src/public/images/logo.png" alt="Obsidian Wear" />
+          <img src="/images/logo.png" alt="Obsidian Wear" />
           <div className="admin-logo-text">
             <h2>OBSIDIAN WEAR</h2>
           </div>
