@@ -4,6 +4,7 @@ import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiCheck, FiLayers, FiImage, F
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import "./Admin.css";
+import ProductGalleryModal from "../../components/ProductGalleryModal";
 
 const toDateTimeLocal = (value) => {
   if (!value) return "";
@@ -23,7 +24,7 @@ export default function Products() {
   const [brands, setBrands] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const [galleryProduct, setGalleryProduct] = useState(null);
   // Phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -336,6 +337,20 @@ export default function Products() {
   const formatVND = (amount) => {
     return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
   };
+  const handleGalleryUpdated = (updatedProduct) => {
+    setProducts((currentProducts) =>
+      currentProducts.map((product) =>
+        product.id === updatedProduct.id
+          ? {
+              ...product,
+              images: updatedProduct.images,
+            }
+          : product
+      )
+    );
+
+    setGalleryProduct(updatedProduct);
+  };
 
   return (
     <div className="admin-page">
@@ -435,6 +450,14 @@ export default function Products() {
                         style={{ background: "#e0e7ff", color: "#3b82f6" }}
                       >
                         <FiLayers />
+                      </button>
+                      <button
+                        className="view-btn"
+                        title="Quản lý ảnh gallery"
+                        onClick={() => setGalleryProduct(item)}
+                        style={{ background: "#ecfdf5", color: "#059669" }}
+                      >
+                        <FiImage />
                       </button>
                       <button className="view-btn" title="Chỉnh sửa" onClick={() => openEditModal(item)}>
                         <FiEdit2 />
@@ -704,6 +727,15 @@ export default function Products() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ================= POPUP QUẢN LÝ ẢNH GALLERY ================= */}
+      {galleryProduct && (
+        <ProductGalleryModal
+          product={galleryProduct}
+          onClose={() => setGalleryProduct(null)}
+          onUpdated={handleGalleryUpdated}
+        />
       )}
 
     </div>
