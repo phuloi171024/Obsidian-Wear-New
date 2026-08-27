@@ -10,8 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-// NHỚ THÊM DÒNG NÀY ĐỂ DÙNG CLOUDINARY
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProductController extends Controller
 {
@@ -200,104 +198,81 @@ class ProductController extends Controller
     }
 
     /**
-     * Thêm ảnh chi tiết cho sản phẩm
+     * Thêm nhiều ảnh gallery cho sản phẩm.
+     * Tối đa 8 ảnh gallery cho mỗi sản phẩm.
      * POST /admin/products/{id}/images
      */
-    /**
- * Thêm nhiều ảnh gallery cho sản phẩm.
- * Tối đa 8 ảnh gallery cho mỗi sản phẩm.
- */
-public function uploadImages(Request $request, int $id)
-{
-    $product = Product::findOrFail($id);
+    public function uploadImages(Request $request, int $id)
+    {
+        $product = Product::findOrFail($id);
 
-    $request->validate(
-        [
-            'images' => [
-                'required',
-                'array',
-                'min:1',
-                'max:8',
+        $request->validate(
+            [
+                'images' => ['required', 'array', 'min:1', 'max:8'],
+                'images.*' => [
+                    'required',
+                    'image',
+                    'mimes:jpeg,jpg,png,webp',
+                    'max:5120',
+                ],
             ],
-            'images.*' => [
-                'required',
-                'image',
-                'mimes:jpeg,jpg,png,webp',
-                'max:5120',
-            ],
-        ],
-        [
-            'images.required' =>
-                'Vui lòng chọn ít nhất một ảnh.',
-            'images.array' =>
-                'Danh sách ảnh không hợp lệ.',
-            'images.max' =>
-                'Mỗi lần chỉ được chọn tối đa 8 ảnh.',
-            'images.*.image' =>
-                'Tệp được chọn phải là hình ảnh.',
-            'images.*.mimes' =>
-                'Ảnh phải có định dạng JPEG, JPG, PNG hoặc WEBP.',
-            'images.*.max' =>
-                'Mỗi ảnh không được vượt quá 5MB.',
-        ]
-    );
-
-    $files = $request->file('images', []);
-    $currentImageCount = $product->images()->count();
-
-    if (
-        $currentImageCount + count($files) > 8
-    ) {
-        $remaining = max(
-            0,
-            8 - $currentImageCount
+            [
+                'images.required' => 'Vui lòng chọn ít nhất một ảnh.',
+                'images.array' => 'Danh sách ảnh không hợp lệ.',
+                'images.max' => 'Mỗi lần chỉ được chọn tối đa 8 ảnh.',
+                'images.*.image' => 'Tệp được chọn phải là hình ảnh.',
+                'images.*.mimes' => 'Ảnh phải có định dạng JPEG, JPG, PNG hoặc WEBP.',
+                'images.*.max' => 'Mỗi ảnh không được vượt quá 5MB.',
+            ]
         );
 
-        return response()->json([
-            'status' => false,
-            'message' =>
-                "Sản phẩm đã có {$currentImageCount} ảnh. " .
-                "Bạn chỉ có thể thêm tối đa {$remaining} ảnh nữa.",
-        ], 422);
-    }
+        $files = $request->file('images', []);
+        $currentImageCount = $product->images()->count();
 
-    try {
-        $createdImages = [];
+        if ($currentImageCount + count($files) > 8) {
+            $remaining = max(0, 8 - $currentImageCount);
 
-        foreach ($files as $file) {
-            $uploadedFileUrl = Cloudinary::upload(
-                $file->getRealPath(),
-                [
-                    'folder' =>
-                        'obsidian_wear/products/gallery',
-                ]
-            )->getSecurePath();
-
-            $createdImages[] =
-                $product->images()->create([
-                    'image_path' => $uploadedFileUrl,
-                ]);
+            return response()->json([
+                'status' => false,
+                'message' =>
+                    "Sản phẩm đã có {$currentImageCount} ảnh. " .
+                    "Bạn chỉ có thể thêm tối đa {$remaining} ảnh nữa.",
+            ], 422);
         }
 
-        $product->load('images');
+        try {
+            $createdImages = [];
 
-        return response()->json([
-            'status' => true,
-            'message' =>
-                'Thêm ảnh gallery thành công!',
-            'images' => $product->images,
-            'uploaded_images' => $createdImages,
-        ], 201);
-    } catch (\Throwable $exception) {
-        report($exception);
+            foreach ($files as $file) {
+                $uploadResult = cloudinary()
+                    ->uploadApi()
+                    ->upload($file->getRealPath(), [
+                        'folder' => 'obsidian_wear/products/gallery',
+                        'resource_type' => 'image',
+                    ]);
 
-        return response()->json([
-            'status' => false,
-            'message' =>
-                'Có lỗi xảy ra khi tải ảnh lên Cloudinary!',
-        ], 500);
+                $createdImages[] = $product->images()->create([
+                    'image_path' => $uploadResult['secure_url'],
+                ]);
+            }
+
+            $product->load('images');
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Thêm ảnh gallery thành công!',
+                'images' => $product->images,
+                'uploaded_images' => $createdImages,
+            ], 201);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra khi tải ảnh lên Cloudinary!',
+            ], 500);
+        }
     }
-}
 
     /**
      * Xoá ảnh chi tiết của sản phẩm
@@ -384,10 +359,6 @@ public function uploadImages(Request $request, int $id)
      * [THÊM MỚI] Cập nhật ảnh đại diện (thumbnail) cho sản phẩm
      * POST /admin/products/{id}/image
      */
-    /**
-     * [THÊM MỚI] Cập nhật ảnh đại diện (thumbnail) cho sản phẩm
-     * POST /admin/products/{id}/image
-     */
     public function updateImage(Request $request, int $id)
     {
         $product = Product::find($id);
@@ -405,10 +376,15 @@ public function uploadImages(Request $request, int $id)
 
         if ($request->hasFile('image_file')) {
             try {
-                $uploadedFileUrl = Cloudinary::upload(
-                    $request->file('image_file')->getRealPath(),
-                    ['folder' => 'obsidian_wear/products']
-                )->getSecurePath();
+                $file = $request->file('image_file');
+                $uploadResult = cloudinary()
+                    ->uploadApi()
+                    ->upload($file->getRealPath(), [
+                        'folder' => 'obsidian_wear/products',
+                        'resource_type' => 'image',
+                    ]);
+
+                $uploadedFileUrl = $uploadResult['secure_url'];
 
                 // Lưu vào Database
                 $product->thumbnail = $uploadedFileUrl;
@@ -446,10 +422,15 @@ public function uploadImages(Request $request, int $id)
 
         if ($request->hasFile('image_file')) {
             try {
-                $uploadedFileUrl = Cloudinary::upload(
-                    $request->file('image_file')->getRealPath(),
-                    ['folder' => 'obsidian_wear/variants']
-                )->getSecurePath();
+                $file = $request->file('image_file');
+                $uploadResult = cloudinary()
+                    ->uploadApi()
+                    ->upload($file->getRealPath(), [
+                        'folder' => 'obsidian_wear/variants',
+                        'resource_type' => 'image',
+                    ]);
+
+                $uploadedFileUrl = $uploadResult['secure_url'];
 
                 $variant->image = $uploadedFileUrl;
                 $variant->save();
