@@ -788,6 +788,7 @@ export default function ProductDetail() {
 
     return (
       image.image_url ||
+      image.image_path ||
       image.image ||
       image.thumbnail ||
       ""
@@ -823,6 +824,7 @@ export default function ProductDetail() {
               (variant) =>
                 variant.image ||
                 variant.image_url ||
+                variant.image_path ||
                 variant.thumbnail
             ),
           ].filter(Boolean)
@@ -900,9 +902,61 @@ const variantsForCurrentColor =
 
     return (product.variants || []).filter(
       (variant) =>
-        variant.color === color
+        String(variant.color || "")
+          .trim()
+          .toLowerCase() ===
+        String(color || "")
+          .trim()
+          .toLowerCase()
     );
   }, [product, color]);
+
+
+/* =========================================================
+   ĐỔI ẢNH CHÍNH KHI CHỌN MÀU
+========================================================= */
+
+useEffect(() => {
+  if (!product || !color) {
+    return;
+  }
+
+  const selectedColorKey = String(color)
+    .trim()
+    .toLowerCase();
+
+  const variantWithImage = (
+    product.variants || []
+  ).find((variant) => {
+    const variantColorKey = String(
+      variant.color || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const variantImage = normalizeImage(
+      variant
+    );
+
+    return (
+      variantColorKey === selectedColorKey &&
+      Boolean(variantImage)
+    );
+  });
+
+  const selectedColorImage = normalizeImage(
+    variantWithImage
+  );
+
+  const fallbackImage =
+    normalizeImage(product.thumbnail) ||
+    normalizeImage(product.images?.[0]) ||
+    "/images/placeholder.png";
+
+  setDisplayImage(
+    selectedColorImage || fallbackImage
+  );
+}, [product, color]);
 
 
 /* =========================================================
