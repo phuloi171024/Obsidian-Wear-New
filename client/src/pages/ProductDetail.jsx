@@ -16,6 +16,15 @@ import toast, {
   Toaster,
 } from "react-hot-toast";
 
+const cleanVariantColorLabel = (value) =>
+  String(value ?? "")
+    .normalize("NFC")
+    .trim()
+    .replace(/\s+/g, " ");
+
+const variantColorKey = (value) =>
+  cleanVariantColorLabel(value).toLocaleLowerCase("vi-VN");
+
 
 /* =========================================================
    SIZE GUIDE DATA
@@ -546,16 +555,18 @@ export default function ProductDetail() {
 
           /* ================= COLORS ================= */
 
-          const colors = [
-            ...new Set(
-              (data.variants || [])
-                .map(
-                  (variant) =>
-                    variant.color
-                )
-                .filter(Boolean)
-            ),
-          ];
+          const colorsByKey = new Map();
+
+          (data.variants || []).forEach((variant) => {
+            const label = cleanVariantColorLabel(variant.color);
+            const key = variantColorKey(label);
+
+            if (key && !colorsByKey.has(key)) {
+              colorsByKey.set(key, label);
+            }
+          });
+
+          const colors = [...colorsByKey.values()];
 
           setAvailableColors(
             colors
@@ -900,14 +911,11 @@ const variantsForCurrentColor =
       return product.variants || [];
     }
 
+    const selectedColorKey = variantColorKey(color);
+
     return (product.variants || []).filter(
       (variant) =>
-        String(variant.color || "")
-          .trim()
-          .toLowerCase() ===
-        String(color || "")
-          .trim()
-          .toLowerCase()
+        variantColorKey(variant.color) === selectedColorKey
     );
   }, [product, color]);
 
@@ -921,25 +929,21 @@ useEffect(() => {
     return;
   }
 
-  const selectedColorKey = String(color)
-    .trim()
-    .toLowerCase();
+  const selectedColorKey = variantColorKey(color);
 
   const variantWithImage = (
     product.variants || []
   ).find((variant) => {
-    const variantColorKey = String(
-      variant.color || ""
-    )
-      .trim()
-      .toLowerCase();
+    const currentVariantColorKey = variantColorKey(
+      variant.color
+    );
 
     const variantImage = normalizeImage(
       variant
     );
 
     return (
-      variantColorKey === selectedColorKey &&
+      currentVariantColorKey === selectedColorKey &&
       Boolean(variantImage)
     );
   });
@@ -1182,9 +1186,8 @@ const isCompatibleApiSize = (
 /* =========================================================
    DANH SÁCH SIZE HIỂN THỊ CUỐI CÙNG
 
-   - Luôn có đủ bảng size chuẩn.
-   - Size API hợp lệ nhưng nằm ngoài bảng chuẩn vẫn được giữ lại.
-   - Size không có trong API sẽ được gạch chéo ở phần render.
+   Chỉ hiển thị những size có biến thể thật của màu đang chọn.
+   Bảng size chuẩn vẫn được giữ riêng trong phần hướng dẫn chọn size.
 ========================================================= */
 
 const displaySizes =
@@ -1194,13 +1197,9 @@ const displaySizes =
         isCompatibleApiSize
       );
 
-    const merged =
-      Array.from(
-        new Set([
-          ...canonicalSizes,
-          ...compatibleApiSizes,
-        ])
-      );
+    const merged = Array.from(
+      new Set(compatibleApiSizes)
+    );
 
     const letterOrder = [
       "XXS",
@@ -1281,7 +1280,6 @@ const displaySizes =
     );
   }, [
     apiSizesForCurrentColor,
-    canonicalSizes,
     sizeGuideKey,
     shoeSizeSystem,
   ]);
@@ -2604,8 +2602,8 @@ const currentStock =
                         itemColor
                       }
                       className={`ash-detail-color ${
-                        color ===
-                        itemColor
+                        variantColorKey(color) ===
+                        variantColorKey(itemColor)
                           ? "active"
                           : ""
                       }`}

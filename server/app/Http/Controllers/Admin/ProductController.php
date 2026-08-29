@@ -4,227 +4,379 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
     /**
-     * Danh sách tất cả sản phẩm (kể cả đã ẩn)
-     * GET /admin/products
+     * Chuẩn hóa tên màu để Trắng, trắng, " Trắng " không bị xem là
+     * các màu khác nhau trên giao diện.
+     */
+    private function normalizeVariantColor(mixed $value): string
+    {
+        $color = trim((string) $value);
+        $color = preg_replace('/\s+/u', ' ', $color) ?? $color;
+
+        if (class_exists(\Normalizer::class)) {
+            $color = \Normalizer::normalize(
+                $color,
+                \Normalizer::FORM_C
+            ) ?: $color;
+        }
+
+        return mb_convert_case($color, MB_CASE_TITLE, 'UTF-8');
+    }
+
+    private function normalizeVariantSize(mixed $value): string
+    {
+        $size = trim((string) $value);
+        $size = preg_replace('/\s+/u', ' ', $size) ?? $size;
+
+        return mb_strtoupper($size, 'UTF-8');
+    }
+
+    private function variantColorKey(mixed $value): string
+    {
+        return mb_strtolower(
+            $this->normalizeVariantColor($value),
+            'UTF-8'
+        );
+    }
+
+    private function normalizeVariantsInput(Request $request): void
+    {
+        if (!is_array($request->input('variants'))) {
+            return;
+        }
+
+        $variants = collect($request->input('variants'))
+            ->map(function ($variant) {
+                if (!is_array($variant)) {
+                    return $variant;
+                }
+
+                return [
+                    ...$variant,
+                    'color' => $this->normalizeVariantColor(
+                        $variant['color'] ?? ''
+                    ),
+                    'size' => $this->normalizeVariantSize(
+                        $variant['size'] ?? ''
+                    ),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $request->merge(['variants' => $variants]);
+    }
+
+    /**
+     * Danh sách sản phẩm cho Admin.
      */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'brand', 'variants', 'images']);
+        $query = Product::with([
+            'category',
+            'brand',
+            'variants',
+            'images',
+        ]);
 
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+            $search = trim((string) $request->input('search'));
+
+            $query->where(function ($subQuery) use ($search) {
+                $subQuery
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
+            $query->where('category_id', $request->input('category_id'));
         }
 
         if ($request->filled('brand_id')) {
-            $query->where('brand_id', $request->brand_id);
+            $query->where('brand_id', $request->input('brand_id'));
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status === 'active');
+            $status = filter_var(
+                $request->input('status'),
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
+
+            if ($status !== null) {
+                $query->where('status', $status);
+            }
         }
 
-        $query->orderBy('created_at', 'desc');
-        $perPage = min((int) $request->get('per_page', 15), 100);
+        $perPage = max(
+            1,
+            min((int) $request->input('per_page', 15), 500)
+        );
 
-        return response()->json($query->paginate($perPage));
+        return response()->json(
+            $query->latest()->paginate($perPage)
+        );
     }
 
     /**
-     * Tạo sản phẩm mới
-     * POST /admin/products
+     * Tạo sản phẩm và các biến thể trong cùng transaction.
      */
     public function store(Request $request)
     {
+        $this->normalizeVariantsInput($request);
+
         $validator = Validator::make($request->all(), [
-            'name'        => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'brand_id'    => 'required|exists:brands,id',
-            'price'       => 'required|numeric|min:0',
-            'sale_price'  => 'nullable|numeric|min:0|lt:price',
-            'deal_label'  => 'nullable|string|max:255',
-            'sale_starts_at' => 'nullable|date',
-            'sale_ends_at' => 'nullable|date|after_or_equal:sale_starts_at',
-            'is_featured' => 'boolean',
-            'sport_type'  => 'nullable|in:tennis-pickleball,running,swimming,football,gym',
-            'description' => 'nullable|string',
-            'status'      => 'boolean',
-            'thumbnail'   => 'nullable|string',
-            'sku'         => 'nullable|string|unique:products,sku',
-            'variants'    => 'nullable|array',
-            'variants.*.size'   => 'required_with:variants|string',
-            'variants.*.color'  => 'required_with:variants|string',
-            'variants.*.stock'  => 'required_with:variants|integer|min:0',
-            'variants.*.image'  => 'nullable|string|max:2048',
+            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'brand_id' => ['nullable', 'integer', 'exists:brands,id'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'sale_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
+            'deal_label' => ['nullable', 'string', 'max:255'],
+            'sale_starts_at' => ['nullable', 'date'],
+            'sale_ends_at' => ['nullable', 'date', 'after_or_equal:sale_starts_at'],
+            'description' => ['nullable', 'string'],
+            'status' => ['sometimes', 'boolean'],
+            'is_featured' => ['sometimes', 'boolean'],
+            'sport_type' => [
+                'nullable',
+                Rule::in([
+                    'tennis-pickleball',
+                    'running',
+                    'swimming',
+                    'football',
+                    'gym',
+                ]),
+            ],
+            'thumbnail' => ['nullable', 'string', 'max:2048'],
+            'sku' => ['nullable', 'string', 'max:255', 'unique:products,sku'],
+            'variants' => ['nullable', 'array'],
+            'variants.*.size' => [
+                'required_with:variants',
+                'string',
+                'max:255',
+            ],
+            'variants.*.color' => [
+                'required_with:variants',
+                'string',
+                'max:255',
+            ],
+            'variants.*.stock' => [
+                'required_with:variants',
+                'integer',
+                'min:0',
+            ],
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'status' => false,
+                'message' => 'Dữ liệu sản phẩm không hợp lệ.',
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
-        $product = DB::transaction(function () use ($request) {
-            $product = Product::create([
-                'name'        => $request->name,
-                'slug'        => Str::slug($request->name) . '-' . Str::random(6),
-                'sku'         => $request->sku ?? strtoupper(Str::random(8)),
-                'category_id' => $request->category_id,
-                'brand_id'    => $request->brand_id,
-                'price'       => $request->price,
-                'sale_price'  => $request->sale_price,
-                'deal_label'  => $request->deal_label,
-                'sale_starts_at' => $request->sale_starts_at,
-                'sale_ends_at' => $request->sale_ends_at,
-                'is_featured' => $request->boolean('is_featured'),
-                'sport_type'  => $request->sport_type,
-                'description' => $request->description,
-                'thumbnail'   => $request->thumbnail,
-                'status'      => $request->get('status', true),
-            ]);
+        $validated = $validator->validated();
+        $variantKeys = [];
 
-            foreach ($request->input('variants', []) as $variant) {
+        foreach ($validated['variants'] ?? [] as $index => $variant) {
+            $key = $this->variantColorKey($variant['color'])
+                .'|'.$this->normalizeVariantSize($variant['size']);
+
+            if (isset($variantKeys[$key])) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Biến thể bị trùng màu và size.',
+                    'errors' => [
+                        "variants.{$index}" => [
+                            'Tổ hợp màu và size này đã xuất hiện trong danh sách.',
+                        ],
+                    ],
+                ], 422);
+            }
+
+            $variantKeys[$key] = true;
+        }
+
+        $product = DB::transaction(function () use ($request, $validated) {
+            $product = new Product();
+            $product->forceFill([
+                'name' => $validated['name'],
+                'slug' => Str::slug($validated['name']).'-'.Str::lower(Str::random(6)),
+                'sku' => $validated['sku'] ?? strtoupper(Str::random(8)),
+                'category_id' => $validated['category_id'],
+                'brand_id' => $validated['brand_id'] ?? null,
+                'price' => $validated['price'],
+                'sale_price' => $validated['sale_price'] ?? null,
+                'deal_label' => $validated['deal_label'] ?? null,
+                'sale_starts_at' => $validated['sale_starts_at'] ?? null,
+                'sale_ends_at' => $validated['sale_ends_at'] ?? null,
+                'description' => $validated['description'] ?? null,
+                'thumbnail' => $validated['thumbnail'] ?? null,
+                'status' => $request->has('status')
+                    ? $request->boolean('status')
+                    : true,
+                'is_featured' => $request->boolean('is_featured'),
+                'sport_type' => $validated['sport_type'] ?? null,
+            ]);
+            $product->save();
+
+            foreach ($validated['variants'] ?? [] as $variant) {
                 $product->variants()->create([
-                    'size'  => $variant['size'],
-                    'color' => $variant['color'],
+                    'size' => $this->normalizeVariantSize($variant['size']),
+                    'color' => $this->normalizeVariantColor($variant['color']),
                     'stock' => $variant['stock'],
-                    'image' => $variant['image'] ?? null,
                 ]);
             }
 
             return $product;
-        }, 3);
+        });
 
         return response()->json([
+            'status' => true,
             'message' => 'Tạo sản phẩm thành công!',
-            'product' => $product->load(['category', 'brand', 'variants', 'images']),
+            'product' => $product->load([
+                'category',
+                'brand',
+                'variants',
+                'images',
+            ]),
         ], 201);
     }
 
-    /**
-     * Chi tiết sản phẩm
-     * GET /admin/products/{id}
-     */
     public function show(int $id)
     {
-        $product = Product::withTrashed()
-            ->with(['category', 'brand', 'variants', 'images', 'reviews.user'])
-            ->findOrFail($id);
+        $product = Product::with([
+            'category',
+            'brand',
+            'variants',
+            'images',
+            'reviews.user',
+        ])->findOrFail($id);
 
-        return response()->json($product);
+        return response()->json([
+            'status' => true,
+            'product' => $product,
+        ]);
     }
 
-    /**
-     * Cập nhật sản phẩm
-     * PUT /admin/products/{id}
-     */
     public function update(Request $request, int $id)
     {
         $product = Product::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name'        => 'sometimes|string|max:255',
-            'category_id' => 'sometimes|exists:categories,id',
-            'brand_id'    => 'sometimes|exists:brands,id',
-            'price'       => 'sometimes|numeric|min:0',
-            'sale_price'  => 'nullable|numeric|min:0',
-            'deal_label'  => 'nullable|string|max:255',
-            'sale_starts_at' => 'nullable|date',
-            'sale_ends_at' => 'nullable|date|after_or_equal:sale_starts_at',
-            'is_featured' => 'sometimes|boolean',
-            'sport_type'  => 'nullable|in:tennis-pickleball,running,swimming,football,gym',
-            'description' => 'nullable|string',
-            'status'      => 'sometimes|boolean',
-            'thumbnail'   => 'nullable|string',
-            'sku'         => 'nullable|string|unique:products,sku,' . $product->id,
+            'name' => ['sometimes', 'string', 'max:255'],
+            'category_id' => ['sometimes', 'integer', 'exists:categories,id'],
+            'brand_id' => ['sometimes', 'nullable', 'integer', 'exists:brands,id'],
+            'price' => ['sometimes', 'numeric', 'min:0'],
+            'sale_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'deal_label' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'sale_starts_at' => ['sometimes', 'nullable', 'date'],
+            'sale_ends_at' => ['sometimes', 'nullable', 'date'],
+            'description' => ['sometimes', 'nullable', 'string'],
+            'status' => ['sometimes', 'boolean'],
+            'is_featured' => ['sometimes', 'boolean'],
+            'sport_type' => [
+                'sometimes',
+                'nullable',
+                Rule::in([
+                    'tennis-pickleball',
+                    'running',
+                    'swimming',
+                    'football',
+                    'gym',
+                ]),
+            ],
+            'thumbnail' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'sku' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('products', 'sku')->ignore($product->id),
+            ],
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $regularPrice = (float) $request->input('price', $product->price);
-        if ($request->filled('sale_price') && (float) $request->sale_price >= $regularPrice) {
             return response()->json([
-                'errors' => [
-                    'sale_price' => ['Giá khuyến mãi phải nhỏ hơn giá bán.'],
-                ],
+                'status' => false,
+                'message' => 'Dữ liệu sản phẩm không hợp lệ.',
+                'errors' => $validator->errors(),
             ], 422);
         }
 
-        // Cập nhật slug nếu đổi tên
-        if ($request->filled('name') && $request->name !== $product->name) {
-            $request->merge(['slug' => Str::slug($request->name) . '-' . Str::random(6)]);
+        $data = $validator->validated();
+
+        if (array_key_exists('name', $data) && $data['name'] !== $product->name) {
+            $data['slug'] = Str::slug($data['name']).'-'.Str::lower(Str::random(6));
         }
 
-        $product->update($request->only([
-            'name', 'slug', 'sku', 'category_id', 'brand_id',
-            'price', 'sale_price', 'deal_label',
-            'sale_starts_at', 'sale_ends_at',
-            'is_featured', 'sport_type',
-            'description', 'thumbnail', 'status',
-        ]));
+        if (array_key_exists('status', $data)) {
+            $data['status'] = $request->boolean('status');
+        }
+
+        if (array_key_exists('is_featured', $data)) {
+            $data['is_featured'] = $request->boolean('is_featured');
+        }
+
+        $product->forceFill($data);
+        $product->save();
 
         return response()->json([
+            'status' => true,
             'message' => 'Cập nhật sản phẩm thành công!',
-            'product' => $product->load(['category', 'brand', 'variants', 'images']),
+            'product' => $product->fresh()->load([
+                'category',
+                'brand',
+                'variants',
+                'images',
+            ]),
         ]);
     }
 
-    /**
-     * Xoá mềm sản phẩm
-     * DELETE /admin/products/{id}
-     */
-    public function destroy( int $id)
+    public function destroy(int $id)
     {
         $product = Product::findOrFail($id);
         $product->delete();
 
-        return response()->json(['message' => 'Đã xoá sản phẩm thành công!']);
+        return response()->json([
+            'status' => true,
+            'message' => 'Đã xóa sản phẩm thành công!',
+        ]);
     }
 
     /**
-     * Thêm nhiều ảnh gallery cho sản phẩm.
-     * Tối đa 8 ảnh gallery cho mỗi sản phẩm.
-     * POST /admin/products/{id}/images
+     * Upload tối đa 8 ảnh gallery cho mỗi sản phẩm.
      */
     public function uploadImages(Request $request, int $id)
     {
         $product = Product::findOrFail($id);
 
-        $request->validate(
-            [
-                'images' => ['required', 'array', 'min:1', 'max:8'],
-                'images.*' => [
-                    'required',
-                    'image',
-                    'mimes:jpeg,jpg,png,webp',
-                    'max:5120',
-                ],
+        $request->validate([
+            'images' => ['required', 'array', 'min:1', 'max:8'],
+            'images.*' => [
+                'required',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:5120',
             ],
-            [
-                'images.required' => 'Vui lòng chọn ít nhất một ảnh.',
-                'images.array' => 'Danh sách ảnh không hợp lệ.',
-                'images.max' => 'Mỗi lần chỉ được chọn tối đa 8 ảnh.',
-                'images.*.image' => 'Tệp được chọn phải là hình ảnh.',
-                'images.*.mimes' => 'Ảnh phải có định dạng JPEG, JPG, PNG hoặc WEBP.',
-                'images.*.max' => 'Mỗi ảnh không được vượt quá 5MB.',
-            ]
-        );
+        ], [
+            'images.required' => 'Vui lòng chọn ít nhất một ảnh.',
+            'images.max' => 'Mỗi lần chỉ được chọn tối đa 8 ảnh.',
+            'images.*.image' => 'Tệp được chọn phải là hình ảnh.',
+            'images.*.mimes' => 'Ảnh phải có định dạng JPEG, JPG, PNG hoặc WEBP.',
+            'images.*.max' => 'Mỗi ảnh không được vượt quá 5MB.',
+        ]);
 
         $files = $request->file('images', []);
         $currentImageCount = $product->images()->count();
@@ -234,9 +386,8 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => false,
-                'message' =>
-                    "Sản phẩm đã có {$currentImageCount} ảnh. " .
-                    "Bạn chỉ có thể thêm tối đa {$remaining} ảnh nữa.",
+                'message' => "Sản phẩm đã có {$currentImageCount} ảnh. "
+                    ."Bạn chỉ có thể thêm tối đa {$remaining} ảnh nữa.",
             ], 422);
         }
 
@@ -251,17 +402,23 @@ class ProductController extends Controller
                         'resource_type' => 'image',
                     ]);
 
+                $url = $uploadResult['secure_url'] ?? null;
+
+                if (!$url) {
+                    throw new \RuntimeException(
+                        'Cloudinary không trả về secure_url.'
+                    );
+                }
+
                 $createdImages[] = $product->images()->create([
-                    'image_path' => $uploadResult['secure_url'],
+                    'image_path' => $url,
                 ]);
             }
-
-            $product->load('images');
 
             return response()->json([
                 'status' => true,
                 'message' => 'Thêm ảnh gallery thành công!',
-                'images' => $product->images,
+                'images' => $product->fresh()->load('images')->images,
                 'uploaded_images' => $createdImages,
             ], 201);
         } catch (\Throwable $exception) {
@@ -274,91 +431,141 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Xoá ảnh chi tiết của sản phẩm
-     * DELETE /admin/products/{id}/images/{imageId}
-     */
-    public function deleteImage( int $id, int $imageId)
+    public function deleteImage(int $id, int $imageId)
     {
-        $image = ProductImage::where('product_id', $id)->findOrFail($imageId);
+        $product = Product::findOrFail($id);
+        $image = $product->images()->whereKey($imageId)->firstOrFail();
         $image->delete();
 
-        return response()->json(['message' => 'Đã xoá ảnh!']);
+        return response()->json([
+            'status' => true,
+            'message' => 'Đã xóa ảnh gallery!',
+        ]);
     }
 
-    /**
-     * Thêm biến thể mới cho sản phẩm (Hàm chuẩn phục vụ API thêm biến thể)
-     * POST /admin/products/{id}/variants
-     */
     public function addVariant(Request $request, int $id)
     {
         $product = Product::findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'color' => 'required|string|max:255',
-            'size'  => 'required|string|max:255',
-            'stock' => 'required|integer|min:0',
+        $request->merge([
+            'color' => $this->normalizeVariantColor($request->input('color')),
+            'size' => $this->normalizeVariantSize($request->input('size')),
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        $validated = $request->validate([
+            'color' => ['required', 'string', 'max:255'],
+            'size' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('product_variants', 'size')
+                    ->where(function ($query) use ($id, $request) {
+                        return $query
+                            ->where('product_id', $id)
+                            ->where('color', $request->input('color'))
+                            ->whereNull('deleted_at');
+                    }),
+            ],
+            'stock' => ['required', 'integer', 'min:0'],
+        ], [
+            'size.unique' => 'Sản phẩm đã có biến thể với màu và size này.',
+        ]);
+
+        try {
+            $variant = $product->variants()->create($validated);
+        } catch (QueryException $exception) {
+            if (in_array((string) $exception->getCode(), ['23000', '23505'], true)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sản phẩm đã có biến thể với màu và size này.',
+                ], 422);
+            }
+
+            throw $exception;
         }
 
-        $variant = ProductVariant::create([
-            'product_id' => $product->id,
-            'color'      => $request->color,
-            'size'       => $request->size,
-            'stock'      => $request->stock,
-        ]);
-
         return response()->json([
+            'status' => true,
             'message' => 'Thêm biến thể thành công!',
-            'variant' => $variant
+            'variant' => $variant,
         ], 201);
     }
 
-    /**
-     * Cập nhật stock của variant
-     * PUT /admin/products/{id}/variants/{variantId}
-     */
-    public function updateVariant(Request $request, int $id, int $variantId)
-    {
-        $variant = ProductVariant::where('product_id', $id)->findOrFail($variantId);
+    public function updateVariant(
+        Request $request,
+        int $id,
+        int $variantId
+    ) {
+        $variant = ProductVariant::where('product_id', $id)
+            ->findOrFail($variantId);
 
-        $validator = Validator::make($request->all(), [
-            'size'  => 'sometimes|string',
-            'color' => 'sometimes|string',
-            'stock' => 'sometimes|integer|min:0',
+        $color = $request->has('color')
+            ? $this->normalizeVariantColor($request->input('color'))
+            : $variant->color;
+
+        $size = $request->has('size')
+            ? $this->normalizeVariantSize($request->input('size'))
+            : $variant->size;
+
+        $request->merge([
+            'color' => $color,
+            'size' => $size,
+            'stock' => $request->input('stock', $variant->stock),
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        $validated = $request->validate([
+            'color' => ['required', 'string', 'max:255'],
+            'size' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('product_variants', 'size')
+                    ->ignore($variant->id)
+                    ->where(function ($query) use ($id, $request) {
+                        return $query
+                            ->where('product_id', $id)
+                            ->where('color', $request->input('color'))
+                            ->whereNull('deleted_at');
+                    }),
+            ],
+            'stock' => ['required', 'integer', 'min:0'],
+        ], [
+            'size.unique' => 'Sản phẩm đã có biến thể với màu và size này.',
+        ]);
+
+        try {
+            $variant->update($validated);
+        } catch (QueryException $exception) {
+            if (in_array((string) $exception->getCode(), ['23000', '23505'], true)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sản phẩm đã có biến thể với màu và size này.',
+                ], 422);
+            }
+
+            throw $exception;
         }
 
-        $variant->update($request->only('size', 'color', 'stock'));
-
         return response()->json([
+            'status' => true,
             'message' => 'Cập nhật biến thể thành công!',
-            'variant' => $variant,
+            'variant' => $variant->fresh(),
         ]);
     }
 
-    /**
-     * Xoá variant
-     * DELETE /admin/products/{id}/variants/{variantId}
-     */
     public function deleteVariant(int $id, int $variantId)
     {
-        $variant = ProductVariant::where('product_id', $id)->findOrFail($variantId);
+        $variant = ProductVariant::where('product_id', $id)
+            ->findOrFail($variantId);
+
         $variant->delete();
 
-        return response()->json(['message' => 'Đã xoá biến thể!']);
+        return response()->json([
+            'status' => true,
+            'message' => 'Đã xóa biến thể!',
+        ]);
     }
 
-    /**
-     * [THÊM MỚI] Cập nhật ảnh đại diện (thumbnail) cho sản phẩm
-     * POST /admin/products/{id}/image
-     */
     public function updateImage(Request $request, int $id)
     {
         $product = Product::find($id);
@@ -366,89 +573,132 @@ class ProductController extends Controller
         if (!$product) {
             return response()->json([
                 'status' => false,
-                'message' => 'Không tìm thấy sản phẩm!'
+                'message' => 'Không tìm thấy sản phẩm!',
             ], 404);
         }
 
         $request->validate([
-            'image_file' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+            'image_file' => [
+                'required',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:5120',
+            ],
+        ], [
+            'image_file.required' => 'Vui lòng chọn ảnh.',
+            'image_file.image' => 'Tệp được chọn phải là hình ảnh.',
+            'image_file.mimes' => 'Ảnh phải có định dạng JPEG, JPG, PNG hoặc WEBP.',
+            'image_file.max' => 'Ảnh không được vượt quá 5MB.',
         ]);
 
-        if ($request->hasFile('image_file')) {
-            try {
-                $file = $request->file('image_file');
-                $uploadResult = cloudinary()
-                    ->uploadApi()
-                    ->upload($file->getRealPath(), [
-                        'folder' => 'obsidian_wear/products',
-                        'resource_type' => 'image',
-                    ]);
+        try {
+            $file = $request->file('image_file');
 
-                $uploadedFileUrl = $uploadResult['secure_url'];
+            $uploadResult = cloudinary()
+                ->uploadApi()
+                ->upload($file->getRealPath(), [
+                    'folder' => 'obsidian_wear/products',
+                    'resource_type' => 'image',
+                ]);
 
-                // Lưu vào Database
-                $product->thumbnail = $uploadedFileUrl;
-                $product->save();
+            $thumbnailUrl = $uploadResult['secure_url'] ?? null;
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Cập nhật ảnh sản phẩm thành công!',
-                    'thumbnail_url' => $uploadedFileUrl
-                ], 200);
-
-            } catch (\Exception $e) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Lỗi khi tải ảnh lên Cloudinary: ' . $e->getMessage()
-                ], 500);
+            if (!$thumbnailUrl) {
+                throw new \RuntimeException(
+                    'Cloudinary không trả về secure_url.'
+                );
             }
-        }
 
-        return response()->json([
-            'status' => false,
-            'message' => 'Vui lòng chọn một file ảnh.'
-        ], 400);
+            $product->thumbnail = $thumbnailUrl;
+            $product->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Cập nhật ảnh sản phẩm thành công!',
+                'thumbnail_url' => $thumbnailUrl,
+                'data' => $product->fresh(),
+            ]);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra khi tải ảnh lên Cloudinary!',
+            ], 500);
+        }
     }
+
     /**
-     * POST /admin/products/{id}/variants/{variantId}/image
+     * Một màu dùng chung một ảnh ở tất cả các size.
      */
-    public function updateVariantImage(Request $request, int $id, int $variantId)
-    {
-        $variant = ProductVariant::where('product_id', $id)->findOrFail($variantId);
+    public function updateVariantImage(
+        Request $request,
+        int $id,
+        int $variantId
+    ) {
+        $variant = ProductVariant::where('product_id', $id)
+            ->findOrFail($variantId);
 
         $request->validate([
-            'image_file' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+            'image_file' => [
+                'required',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:5120',
+            ],
         ]);
 
-        if ($request->hasFile('image_file')) {
-            try {
-                $file = $request->file('image_file');
-                $uploadResult = cloudinary()
-                    ->uploadApi()
-                    ->upload($file->getRealPath(), [
+        try {
+            $uploadResult = cloudinary()
+                ->uploadApi()
+                ->upload(
+                    $request->file('image_file')->getRealPath(),
+                    [
                         'folder' => 'obsidian_wear/variants',
                         'resource_type' => 'image',
-                    ]);
+                    ]
+                );
 
-                $uploadedFileUrl = $uploadResult['secure_url'];
+            $url = $uploadResult['secure_url'] ?? null;
 
-                $variant->image = $uploadedFileUrl;
-                $variant->save();
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Cập nhật ảnh biến thể thành công!',
-                    'image_url' => $uploadedFileUrl
-                ], 200);
-
-            } catch (\Exception $e) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Lỗi Cloudinary: ' . $e->getMessage()
-                ], 500);
+            if (!$url) {
+                throw new \RuntimeException(
+                    'Cloudinary không trả về secure_url.'
+                );
             }
-        }
 
-        return response()->json(['status' => false, 'message' => 'Vui lòng chọn ảnh.'], 400);
+            $selectedColorKey = $this->variantColorKey($variant->color);
+            $matchingVariants = ProductVariant::where('product_id', $id)
+                ->get()
+                ->filter(
+                    fn (ProductVariant $item) =>
+                        $this->variantColorKey($item->color) === $selectedColorKey
+                );
+
+            DB::transaction(function () use ($matchingVariants, $url) {
+                foreach ($matchingVariants as $item) {
+                    $item->image = $url;
+                    $item->save();
+                }
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Cập nhật ảnh chung cho màu '
+                    .$this->normalizeVariantColor($variant->color)
+                    .' thành công!',
+                'image_url' => $url,
+                'updated_variant_ids' => $matchingVariants
+                    ->pluck('id')
+                    ->values(),
+            ]);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra khi tải ảnh biến thể!',
+            ], 500);
+        }
     }
 }

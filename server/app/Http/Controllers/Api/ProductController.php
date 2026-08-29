@@ -236,25 +236,15 @@ class ProductController extends Controller
                     $query->latest();
                     break;
             }
-        } else {
+        }  else {
             $query->latest();
         }
 
-        $perPage = max(
-            1,
-            min((int) $request->input('per_page', 24), 100)
-        );
-        $products = $query->paginate($perPage)->withQueryString();
+        $products = $query->get();
 
         return response()->json([
             'status' => true,
-            'data' => $products->items(),
-            'meta' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-            ],
+            'data' => $products,
         ], 200);
     }
 

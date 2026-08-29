@@ -596,3 +596,749 @@
         opacity: 1;
     }
 }
+/* =========================================================
+   ASH CATEGORY PAGE - 2026-08-26
+========================================================= */
+.catalog-hero {
+    width: 100%;
+    background: #f4f4f4;
+    overflow: hidden;
+}
+.catalog-hero img {
+    width: 100%;
+    max-height: 430px;
+    object-fit: cover;
+    display: block;
+}
+.catalog-heading {
+    max-width: 1640px;
+    margin: 0 auto;
+    padding: 28px 40px 16px;
+    text-align: center;
+}
+.catalog-heading span {
+    display: block;
+    margin-bottom: 34px;
+    text-align: left;
+    font-size: 12px;
+    color: #8a8a8a;
+}
+.catalog-heading h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.3;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+.product-page.ash-category-layout {
+    max-width: 1640px;
+    margin: 42px auto 90px;
+    padding: 0 40px;
+    gap: 42px;
+    align-items: flex-start;
+}
+.ash-sidebar {
+    width: 230px;
+    min-width: 230px;
+    flex-basis: 230px;
+    border: 0;
+    border-radius: 0;
+}
+.ash-sidebar .filter-title {
+    padding: 0 0 18px;
+    border-bottom: 1px solid #ececec;
+    font-size: 13px;
+    letter-spacing: .03em;
+}
+.ash-sidebar .filter-box {
+    padding: 18px 0 !important;
+    border-bottom: 1px solid #ececec;
+}
+.ash-sidebar .filter-box h3 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 12px !important;
+}
+.ash-sidebar .filter-box label {
+    height: 30px !important;
+    min-height: 30px !important;
+    line-height: 30px;
+    font-size: 12px;
+}
+.ash-sidebar .filter-box label span {
+    line-height: 30px;
+    font-size: 12px;
+}
+.ash-sidebar .filter-box label input[type="radio"],
+.ash-sidebar .filter-box label input[type="checkbox"] {
+    width: 14px !important;
+    height: 14px !important;
+    min-width: 14px !important;
+    flex-basis: 14px;
+    accent-color: #111;
+}
+.ash-top-bar {
+    min-height: 40px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #efefef;
+    padding-bottom: 10px;
+}
+.ash-top-bar .product-count {
+    font-size: 12px;
+    color: #6f6f6f;
+}
+.catalog-sort {
+    position: relative;
+    z-index: 30;
+}
+
+.catalog-sort-trigger {
+    min-width: 196px;
+    height: 40px;
+    padding: 0 14px 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border: 1px solid #e8e8e8;
+    border-radius: 3px;
+    background: #fff;
+    color: #333;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background .18s ease;
+}
+
+.catalog-sort-trigger:hover {
+    border-color: #cfcfcf;
+    background: #fcfcfc;
+}
+
+.catalog-sort.open .catalog-sort-trigger {
+    border-color: #bdbdbd;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.catalog-sort-chevron {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-right: 1.5px solid #333;
+    border-bottom: 1.5px solid #333;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform .18s ease;
+}
+
+.catalog-sort.open .catalog-sort-chevron {
+    transform: rotate(225deg) translate(-1px, -1px);
+}
+
+.catalog-sort-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 196px;
+    padding: 6px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,.10);
+    overflow: hidden;
+}
+
+.catalog-sort-option {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: #333;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background .15s ease,
+        color .15s ease;
+}
+
+.catalog-sort-option:hover {
+    background: #f5f5f5;
+    color: #111;
+}
+
+.catalog-sort-option.active {
+    background: #111;
+    color: #fff;
+}
+.shop-product-grid.ash-five-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    column-gap: 22px;
+    row-gap: 50px;
+}
+.catalog-card {
+    min-width: 0;
+    background: #fff;
+}
+.catalog-card-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+.catalog-card-image-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.08;
+    overflow: hidden;
+    background: #f7f7f7;
+}
+.catalog-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform .35s ease;
+}
+.catalog-card:hover .catalog-card-image {
+    transform: scale(1.025);
+}
+.catalog-wishlist {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.92);
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: .2s ease;
+}
+.catalog-card:hover .catalog-wishlist,
+.catalog-wishlist.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+.catalog-wishlist.active { color: #d71920; }
+.catalog-card-actions {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: .2s ease;
+}
+.catalog-card:hover .catalog-card-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+.catalog-card-actions button {
+    height: 36px;
+    border: 1px solid #111;
+    background: rgba(255,255,255,.95);
+    color: #111;
+    font-size: 10px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+.catalog-card-actions button:last-child {
+    background: #111;
+    color: #fff;
+}
+.catalog-card-info {
+    padding: 13px 4px 0;
+    text-align: center;
+}
+.catalog-brand {
+    min-height: 16px;
+    margin-bottom: 5px;
+    font-size: 10px;
+    color: #a0a0a0;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+.catalog-name {
+    min-height: 38px;
+    margin: 0 auto 7px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #2d2d2d;
+    font-weight: 500;
+    text-transform: uppercase;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.catalog-price {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111;
+}
+.catalog-colors {
+    min-height: 28px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.catalog-color-dot {
+    width: 19px;
+    height: 19px;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+}
+.catalog-color-dot.active { border-color: #111; }
+
+.catalog-color-dot--static {
+    cursor: default;
+    pointer-events: auto;
+    border-color: #d8d8d8;
+}
+
+.catalog-color-dot--fallback span {
+    border-color: rgba(0,0,0,.08);
+}
+
+.catalog-color-dot span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,.14);
+}
+.catalog-variant-modal .color-option-buttons button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.modal-color-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,.2);
+    flex: 0 0 16px;
+}
+.option-buttons button.sold-out {
+    opacity: .35;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+@media (max-width: 980px) {
+    .product-page.ash-category-layout { display: block; }
+    .ash-sidebar { width: 100%; min-width: 0; margin-bottom: 28px; }
+    .shop-product-grid.ash-five-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+    .catalog-heading {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .catalog-heading h1 {
+        font-size: 20px;
+    }
+
+    .product-page.ash-category-layout {
+        padding: 0 16px;
+    }
+    .shop-product-grid.ash-five-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 12px; }
+    .catalog-card-actions { display: none; }
+    .catalog-wishlist { opacity: 1; transform: none; }
+}
+
+
+/* =========================================================
+   THỂ THAO - SẢN PHẨM NAM / NỮ
+========================================================= */
+.catalog-sports-showcase {
+    width: 100%;
+    padding: 26px 40px 8px;
+    background: #fff;
+}
+.catalog-sports-inner {
+    width: 100%;
+    max-width: 1640px;
+    margin: 0 auto;
+}
+.catalog-sports-inner h2 {
+    margin: 0 0 28px;
+    text-align: center;
+    color: #111;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: .03em;
+}
+.catalog-sports-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 320px));
+    justify-content: center;
+    gap: 22px;
+}
+.catalog-sports-tile {
+    position: relative;
+    display: block;
+    aspect-ratio: 1 / 1.08;
+    overflow: hidden;
+    background: #ededed;
+    text-decoration: none;
+}
+.catalog-sports-tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.36), rgba(0,0,0,.03) 55%, rgba(0,0,0,.06));
+}
+.catalog-sports-tile img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .35s ease;
+}
+.catalog-sports-tile:hover img { transform: scale(1.035); }
+.catalog-sports-tile span {
+    position: absolute;
+    z-index: 2;
+    left: 16px;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .025em;
+    text-shadow: 0 1px 6px rgba(0,0,0,.35);
+}
+
+/* Nhãn ưu đãi lấy từ coupon database */
+.catalog-promo-labels {
+    position: absolute;
+    z-index: 2;
+    top: 10px;
+    left: 10px;
+    max-width: calc(100% - 58px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    pointer-events: none;
+}
+.catalog-promo-yellow,
+.catalog-promo-red {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding: 3px 7px;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+.catalog-promo-yellow { background: #f1ff00; color: #111; }
+.catalog-promo-red { background: #e72b2b; color: #fff; }
+
+.catalog-missing-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7f7f7;
+    color: #929292;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.catalog-missing-image span {
+    padding: 9px 13px;
+    border: 1px dashed #d1d1d1;
+    background: rgba(255,255,255,.85);
+}
+
+/* Phân trang: desktop 5 sản phẩm / trang */
+.catalog-pagination {
+    width: 100%;
+    margin-top: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.catalog-pagination button,
+.catalog-page-ellipsis {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.catalog-pagination button {
+    border: 1px solid #e2e2e2;
+    background: #fff;
+    color: #333;
+    font-size: 12px;
+    cursor: pointer;
+    transition: .18s ease;
+}
+.catalog-pagination button:hover:not(:disabled),
+.catalog-page-number.active {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+}
+.catalog-pagination button:disabled { opacity: .35; cursor: not-allowed; }
+.catalog-page-ellipsis { color: #888; font-size: 13px; }
+
+@media (max-width: 980px) {
+    .catalog-sports-showcase { padding-left: 20px; padding-right: 20px; }
+    .catalog-sports-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 650px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .catalog-sports-showcase { padding: 20px 16px 4px; }
+    .catalog-sports-inner h2 { margin-bottom: 18px; font-size: 18px; }
+    .catalog-sports-grid { gap: 10px; }
+    .catalog-sports-tile span { font-size: 11px; }
+    .catalog-promo-yellow,
+    .catalog-promo-red { font-size: 8px; padding: 3px 5px; }
+    .catalog-pagination { margin-top: 32px; gap: 4px; }
+    .catalog-pagination button,
+    .catalog-page-ellipsis { width: 32px; height: 32px; }
+}
+
+/* =========================================================
+   FULL-WIDTH RESPONSIVE CATALOG
+   Dùng chung cho Sản phẩm, Áo, Quần, Túi và Giày
+========================================================= */
+.catalog-heading {
+    width: 100%;
+    max-width: none;
+    padding: 32px clamp(16px, 3.4vw, 68px) 18px;
+}
+
+.catalog-heading span {
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.catalog-heading h1 {
+    font-size: clamp(26px, 2.1vw, 38px);
+}
+
+.product-page.ash-category-layout {
+    width: 100%;
+    max-width: none;
+    margin: 38px auto 90px;
+    padding: 0 clamp(16px, 3.4vw, 68px);
+    gap: clamp(28px, 3vw, 52px);
+}
+
+.ash-sidebar {
+    width: 260px;
+    min-width: 260px;
+    flex-basis: 260px;
+}
+
+.ash-sidebar .filter-title {
+    font-size: 16px;
+}
+
+.ash-sidebar .filter-box h3,
+.ash-sidebar .filter-box label,
+.ash-sidebar .filter-box label span {
+    font-size: 14px;
+}
+
+.ash-sidebar .filter-box label,
+.ash-sidebar .filter-box label span {
+    height: 34px !important;
+    min-height: 34px !important;
+    line-height: 34px;
+}
+
+.ash-top-bar .product-count,
+.catalog-sort-trigger,
+.catalog-sort-option {
+    font-size: 14px;
+}
+
+.catalog-sort-trigger {
+    min-width: 220px;
+    height: 44px;
+}
+
+.catalog-sort-menu {
+    width: 220px;
+}
+
+.shop-product-grid.ash-five-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: clamp(16px, 1.8vw, 32px);
+    row-gap: 56px;
+}
+
+.catalog-card-image-wrap {
+    aspect-ratio: 1 / 1.05;
+}
+
+.catalog-card-info {
+    padding-top: 16px;
+}
+
+.catalog-brand {
+    font-size: 12px;
+}
+
+.catalog-name {
+    min-height: 44px;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.catalog-price {
+    font-size: 16px;
+}
+
+.catalog-promo-yellow,
+.catalog-promo-red {
+    min-height: 24px;
+    padding: 4px 8px;
+    font-size: 10px;
+}
+
+@media (min-width: 1800px) {
+    .shop-product-grid.ash-five-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1280px) {
+    .shop-product-grid.ash-five-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .product-page.ash-category-layout {
+        display: block;
+    }
+
+    .ash-sidebar {
+        width: 100%;
+        min-width: 0;
+        margin-bottom: 32px;
+    }
+
+    .shop-product-grid.ash-five-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .catalog-heading {
+        padding-top: 22px;
+    }
+
+    .catalog-heading span {
+        margin-bottom: 18px;
+        font-size: 12px;
+    }
+
+    .catalog-heading h1 {
+        font-size: 23px;
+    }
+
+    .product-page.ash-category-layout {
+        margin-top: 24px;
+    }
+
+    .ash-top-bar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .catalog-sort,
+    .catalog-sort-trigger,
+    .catalog-sort-menu {
+        width: 100%;
+    }
+
+    .shop-product-grid.ash-five-grid {
+        gap: 34px 12px;
+    }
+
+    .catalog-brand {
+        font-size: 10px;
+    }
+
+    .catalog-name {
+        min-height: 40px;
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .catalog-price {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 420px) {
+    .shop-product-grid.ash-five-grid {
+        grid-template-columns: 1fr;
+        gap: 38px;
+    }
+
+    .catalog-card-image-wrap {
+        aspect-ratio: 1 / 1;
+    }
+
+    .catalog-name {
+        min-height: auto;
+        font-size: 14px;
+    }
+
+    .catalog-price {
+        font-size: 16px;
+    }
+}

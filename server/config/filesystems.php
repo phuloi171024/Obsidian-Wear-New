@@ -35,13 +35,25 @@ return [
             'report' => false,
         ],
 
-        'cloudinary' => [
-            'driver' => 'cloudinary',
-            'key' => env('CLOUDINARY_API_KEY'),
-            'secret' => env('CLOUDINARY_API_SECRET'),
-            'cloud' => env('CLOUDINARY_CLOUD_NAME'),
-            'secure' => true,
-        ],
+       'cloudinary' => [
+    'driver' => 'cloudinary',
+
+    'url' => env('CLOUDINARY_URL'),
+
+    'key' => env(
+        'CLOUDINARY_API_KEY',
+        env('CLOUDINARY_KEY')
+    ),
+
+    'secret' => env(
+        'CLOUDINARY_API_SECRET',
+        env('CLOUDINARY_SECRET')
+    ),
+
+    'cloud' => env('CLOUDINARY_CLOUD_NAME'),
+
+    'secure' => true,
+],
 
         's3' => [
             'driver' => 's3',
