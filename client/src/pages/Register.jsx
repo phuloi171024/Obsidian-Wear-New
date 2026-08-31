@@ -37,7 +37,7 @@ const handleGoogleLogin = async () => {
       }
     );
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (response.ok && data.status === true && data.url) {
       window.location.href = data.url;
@@ -51,10 +51,16 @@ const handleGoogleLogin = async () => {
 
   // Hàm gọi API Đăng ký tài khoản
   const handleRegister = async () => {
+    if (isLoading) return;
+
     // Reset mảng lỗi mỗi lần bấm nút đăng ký
     setApiErrors({});
 
-    if (!name || !email || !password || !confirmPassword) {
+    const normalizedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = phone.trim();
+
+    if (!normalizedName || !normalizedEmail || !password || !confirmPassword) {
       toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
       return;
     }
@@ -84,32 +90,39 @@ const handleGoogleLogin = async () => {
           "Accept": "application/json"
         },
         body: JSON.stringify({
-          name: name,
-          email: email,
-          phone: phone,
+          name: normalizedName,
+          email: normalizedEmail,
+          phone: normalizedPhone || null,
           password: password
         })
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (response.ok && data.status === true) {
-        // Lưu token và điều hướng
+      if (
+        response.ok &&
+        data.status === true &&
+        data.access_token &&
+        data.data
+      ) {
         localStorage.setItem("access_token", data.access_token);
-        toast.success("Đăng ký thành công!");
-        setTimeout(() => navigate("/"), 1500);
+        localStorage.setItem("user_info", JSON.stringify(data.data));
+        window.dispatchEvent(new Event("loginSuccess"));
+        toast.success(data.message || "Đăng ký thành công!");
+        navigate("/", { replace: true });
       } else {
         // Hiển thị lỗi do Backend gửi về
         if (data.errors) {
           // Lưu toàn bộ lỗi vào State để hiển thị xuống dưới ô input
           setApiErrors(data.errors);
-          const firstError = Object.values(data.errors)[0][0];
-          toast.error(firstError);
+          const firstError = Object.values(data.errors).flat().find(Boolean);
+          toast.error(firstError || "Thông tin đăng ký không hợp lệ!");
         } else {
           toast.error(data.message || "Đăng ký thất bại!");
         }
       }
     } catch (error) {
+      console.error("Lỗi đăng ký:", error);
       toast.error("Không thể kết nối đến máy chủ!");
     } finally {
       setIsLoading(false);
@@ -133,6 +146,8 @@ const handleGoogleLogin = async () => {
             <FiUser className="input-icon" />
             <input 
               type="text" 
+              name="name"
+              autoComplete="name"
               placeholder="Nguyễn Văn A" 
               value={name}
               onChange={(e) => {
@@ -152,6 +167,8 @@ const handleGoogleLogin = async () => {
             <FiMail className="input-icon" />
             <input 
               type="email" 
+              name="email"
+              autoComplete="email"
               placeholder="email@cuaban.com" 
               value={email}
               onChange={(e) => {
@@ -171,6 +188,8 @@ const handleGoogleLogin = async () => {
             <FiPhone className="input-icon" />
             <input 
               type="tel" 
+              name="phone"
+              autoComplete="tel"
               placeholder="0123456789" 
               value={phone}
               onChange={(e) => {
@@ -189,6 +208,8 @@ const handleGoogleLogin = async () => {
             <FiLock className="input-icon" />
             <input
               type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="new-password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => {
@@ -212,6 +233,8 @@ const handleGoogleLogin = async () => {
             <FiLock className="input-icon" />
             <input
               type={showConfirmPassword ? "text" : "password"}
+              name="password_confirmation"
+              autoComplete="new-password"
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -236,6 +259,7 @@ const handleGoogleLogin = async () => {
         </label>
 
         <button 
+          type="button"
           className="auth-submit" 
           onClick={handleRegister}
           disabled={isLoading}

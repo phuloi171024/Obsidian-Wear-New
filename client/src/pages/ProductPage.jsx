@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./ProductPage.css";
 import Footer from "../components/Footer";
+import { useQuickAdd } from "../components/QuickAddProvider";
 import { productService } from "../services/productService";
 import { API_BASE_URL } from "../config/api";
 import toast, { Toaster } from "react-hot-toast";
@@ -572,7 +573,7 @@ function CatalogSortDropdown({ value, onChange }) {
   );
 }
 
-function CatalogProductCard({ product, favorite, onWishlist, onOpenVariant, coupons }) {
+function CatalogProductCard({ product, favorite, onWishlist, onQuickAdd, coupons }) {
   const colorVariants = useMemo(
     () =>
       uniqueByColor(
@@ -704,10 +705,10 @@ function CatalogProductCard({ product, favorite, onWishlist, onOpenVariant, coup
           </button>
 
           <div className="catalog-card-actions">
-            <button type="button" onClick={(event) => onOpenVariant(event, product, false)}>
+            <button type="button" onClick={(event) => onQuickAdd(event, product, selectedColor)}>
               Thêm giỏ
             </button>
-            <button type="button" onClick={(event) => onOpenVariant(event, product, true)}>
+            <button type="button" onClick={(event) => onQuickAdd(event, product, selectedColor)}>
               Mua ngay
             </button>
           </div>
@@ -788,6 +789,7 @@ function CatalogProductCard({ product, favorite, onWishlist, onOpenVariant, coup
 export default function ProductPage({ fixedCategory = "" }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { openQuickAdd } = useQuickAdd();
 
   const queryParams = new URLSearchParams(location.search);
   const searchKeyword = queryParams.get("search") || "";
@@ -807,13 +809,6 @@ export default function ProductPage({ fixedCategory = "" }) {
   const [productsPerPage, setProductsPerPage] = useState(
     () => PRODUCT_ROWS_PER_PAGE * getCatalogColumnCount()
   );
-
-  const [showModal, setShowModal] = useState(false);
-  const [activeProduct, setActiveProduct] = useState(null);
-  const [selectedColor, setSelectedColor] = useState("");
-  const [selectedSize, setSelectedSize] = useState("");
-  const [isBuyNow, setIsBuyNow] = useState(false);
-  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     const updateProductsPerPage = () => {
@@ -996,113 +991,10 @@ export default function ProductPage({ fixedCategory = "" }) {
     }
   };
 
-  const openVariantModal = (event, product, buyNow) => {
+  const handleOpenQuickAdd = (event, product, preferredColor = "") => {
     event.preventDefault();
     event.stopPropagation();
-
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      toast.error("Vui lòng đăng nhập để mua hàng!");
-      navigate("/login");
-      return;
-    }
-
-    const variants = product?.variants || [];
-    const firstAvailable = variants.find((variant) => Number(variant.stock || 0) > 0) || variants[0] || null;
-
-    setActiveProduct(product);
-    setSelectedColor(firstAvailable?.color || "");
-    setSelectedSize(firstAvailable?.size || "");
-    setIsBuyNow(Boolean(buyNow));
-    setShowModal(true);
-  };
-
-  const colorOptions = useMemo(() => uniqueByColor(activeProduct?.variants || []), [activeProduct]);
-  const variantsForSelectedColor = useMemo(() => {
-    const variants = activeProduct?.variants || [];
-    if (!selectedColor) return variants;
-    const selectedColorKey = normalizeColor(selectedColor);
-    return variants.filter(
-      (variant) => normalizeColor(variant.color) === selectedColorKey
-    );
-  }, [activeProduct, selectedColor]);
-  const sizeOptions = useMemo(() => [...new Set(variantsForSelectedColor.map((variant) => variant.size).filter(Boolean))], [variantsForSelectedColor]);
-
-  const selectedModalVariant = useMemo(() => {
-    const variants = activeProduct?.variants || [];
-
-    return (
-      variants.find(
-        (variant) =>
-          normalizeColor(variant.color) === normalizeColor(selectedColor) &&
-          variant.size === selectedSize
-      ) ||
-      variants.find(
-        (variant) =>
-          normalizeColor(variant.color) === normalizeColor(selectedColor)
-      ) ||
-      null
-    );
-  }, [activeProduct, selectedColor, selectedSize]);
-
-  const activeProductImage =
-    selectedModalVariant?.image ||
-    selectedModalVariant?.image_url ||
-    selectedModalVariant?.image_path ||
-    activeProduct?.thumbnail ||
-    activeProduct?.images?.[0]?.image_url ||
-    activeProduct?.images?.[0]?.image_path ||
-    "/images/placeholder.png";
-
-  useEffect(() => {
-    if (!showModal) return;
-    const current = variantsForSelectedColor.find((variant) => variant.size === selectedSize && Number(variant.stock || 0) > 0);
-    if (current) return;
-    const firstAvailable = variantsForSelectedColor.find((variant) => Number(variant.stock || 0) > 0) || variantsForSelectedColor[0] || null;
-    setSelectedSize(firstAvailable?.size || "");
-  }, [selectedColor, showModal, activeProduct]);
-
-  const confirmAddToCart = async () => {
-    try {
-      setAddingToCart(true);
-      const token = localStorage.getItem("access_token");
-      if (!token) { navigate("/login"); return; }
-
-      const matchedVariant = (activeProduct?.variants || []).find(
-        (variant) =>
-          normalizeColor(variant.color) === normalizeColor(selectedColor) &&
-          variant.size === selectedSize
-      );
-
-      if (!matchedVariant || Number(matchedVariant.stock || 0) <= 0) {
-        toast.error("Biến thể này hiện đã hết hàng");
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/cart/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token.trim()}`,
-        },
-        body: JSON.stringify({ product_variant_id: matchedVariant.id, quantity: 1 }),
-      });
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        toast.success(data.message || "Đã thêm sản phẩm vào giỏ hàng");
-        setShowModal(false);
-        if (isBuyNow) navigate("/cart");
-        return;
-      }
-
-      toast.error(data.message || "Không thể thêm sản phẩm vào giỏ hàng");
-    } catch (error) {
-      toast.error("Không thể kết nối đến máy chủ");
-    } finally {
-      setAddingToCart(false);
-    }
+    openQuickAdd(product, preferredColor);
   };
 
   useEffect(() => {
@@ -1228,7 +1120,7 @@ export default function ProductPage({ fixedCategory = "" }) {
                   product={product}
                   favorite={favoriteIds.includes(product.id)}
                   onWishlist={handleToggleWishlist}
-                  onOpenVariant={openVariantModal}
+                  onQuickAdd={handleOpenQuickAdd}
                   coupons={coupons}
                 />
               ))}
@@ -1277,70 +1169,6 @@ export default function ProductPage({ fixedCategory = "" }) {
           )}
         </section>
       </main>
-
-      {showModal && activeProduct && (
-        <div className="custom-modal-overlay">
-          <div className="custom-modal-box variant-modal catalog-variant-modal">
-            <h3>Tuỳ chọn sản phẩm</h3>
-            <div className="variant-product-info">
-              <img src={activeProductImage} alt={activeProduct.name} />
-              <div>
-                <h4>{activeProduct.name}</h4>
-                <p className="price">{Number(activeProduct.price || 0).toLocaleString("vi-VN")} đ</p>
-              </div>
-            </div>
-
-            {colorOptions.length > 0 && (
-              <div className="option-group">
-                <label>Màu sắc:</label>
-                <div className="option-buttons color-option-buttons">
-                  {colorOptions.map((item) => (
-                    <button
-                      type="button"
-                      key={item.color}
-                      className={selectedColor === item.color ? "active" : ""}
-                      onClick={() => setSelectedColor(item.color)}
-                    >
-                      <span className="modal-color-swatch" style={{ background: colorToBackground(item.color) }} />
-                      {item.color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {sizeOptions.length > 0 && (
-              <div className="option-group">
-                <label>Kích cỡ (Size):</label>
-                <div className="option-buttons">
-                  {sizeOptions.map((size) => {
-                    const variant = variantsForSelectedColor.find((item) => item.size === size);
-                    const soldOut = !variant || Number(variant.stock || 0) <= 0;
-                    return (
-                      <button
-                        type="button"
-                        key={size}
-                        disabled={soldOut}
-                        className={`${selectedSize === size ? "active" : ""} ${soldOut ? "sold-out" : ""}`}
-                        onClick={() => setSelectedSize(size)}
-                      >
-                        {size}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="custom-modal-actions">
-              <button className="btn-cancel" onClick={() => setShowModal(false)} disabled={addingToCart}>Hủy</button>
-              <button className="btn-confirm" onClick={confirmAddToCart} disabled={addingToCart || !selectedSize || !selectedColor}>
-                {addingToCart ? "Đang xử lý..." : isBuyNow ? "Mua ngay" : "Thêm vào giỏ"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </>

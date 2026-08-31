@@ -16,7 +16,9 @@ class Coupon extends Model
         'discount_value',
         'min_order_value',
         'usage_limit',
+        'per_user_limit',
         'used_count',
+        'starts_at',
         'expires_at',
         'end_date',
         'status',
@@ -26,7 +28,9 @@ class Coupon extends Model
         'discount_value' => 'decimal:2',
         'min_order_value' => 'decimal:2',
         'usage_limit' => 'integer',
+        'per_user_limit' => 'integer',
         'used_count' => 'integer',
+        'starts_at' => 'datetime',
         'expires_at' => 'datetime',
         'end_date' => 'datetime',
         'status' => 'boolean',
@@ -38,5 +42,15 @@ class Coupon extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function orderCoupons()
+    {
+        return $this->hasMany(OrderCoupon::class);
+    }
+
+    public function userUsages()
+    {
+        return $this->hasMany(CouponUserUsage::class);
     }
 }

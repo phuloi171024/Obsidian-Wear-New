@@ -9,6 +9,12 @@ import {
   FiChevronRight,
   FiEye,
   FiX,
+  FiUser,
+  FiMapPin,
+  FiCreditCard,
+  FiPackage,
+  FiTag,
+  FiClock,
 } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -24,12 +30,12 @@ export default function Orders() {
   const [totalPages, setTotalPages] = useState(1);
 
   // ================= 1. LẤY DANH SÁCH ĐƠN HÀNG TỪ API =================
-  const fetchOrders = async (page = 1, keyword = "", status = "") => {
+  const fetchOrders = async (page = 1, keyword = "", status = "", silent = false) => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       let url = `${API_BASE_URL}/admin/orders?page=${page}`;
       if (keyword) url += `&search=${keyword}`;
       if (status) url += `&status=${status}`;
@@ -50,7 +56,7 @@ export default function Orders() {
     } catch (error) {
       toast.error("Không thể tải danh sách đơn hàng!");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -115,10 +121,14 @@ export default function Orders() {
        * Tải lại từ backend để cập nhật cả trạng thái
        * thanh toán, paid_at, tồn kho và bộ lọc.
        */
+      setOrders((previous) => previous.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
       await fetchOrders(
         currentPage,
         search,
-        statusFilter
+        statusFilter,
+        true
       );
     } else {
       toast.error(
@@ -128,7 +138,8 @@ export default function Orders() {
       await fetchOrders(
         currentPage,
         search,
-        statusFilter
+        statusFilter,
+        true
       );
     }
   } catch (error) {
@@ -225,8 +236,16 @@ const getAllowedStatuses = (order) => {
 };
 
   const formatVND = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + ' VND';
+    return new Intl.NumberFormat('vi-VN').format(Number(amount) || 0) + ' VND';
   };
+
+  const selectedOrderCoupons = (selectedOrder?.order_coupons || []).filter(
+    (coupon) => coupon.status !== "released"
+  );
+
+  const selectedCouponCodes = selectedOrderCoupons
+    .map((coupon) => coupon.code_snapshot)
+    .filter(Boolean);
 
   return (
     <div className="orders-page">
@@ -402,90 +421,184 @@ const getAllowedStatuses = (order) => {
 
       {selectedOrder && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            background: "rgba(15, 23, 42, 0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
+          className="order-modal-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelectedOrder(null);
           }}
         >
-          <div
-            style={{
-              width: "min(900px, 100%)",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              background: "white",
-              borderRadius: "14px",
-              padding: "24px",
-              position: "relative",
-            }}
-          >
+          <div className="order-modal" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
             <button
               type="button"
-              className="icon-btn"
+              className="order-modal-close"
               onClick={() => setSelectedOrder(null)}
-              style={{ position: "absolute", top: 16, right: 16 }}
+              aria-label="Đóng chi tiết đơn hàng"
             >
               <FiX />
             </button>
 
-            <h2>Chi tiết đơn #{selectedOrder.id}</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+            <header className="order-modal-header">
               <div>
-                <h4>Khách hàng</h4>
-                <p>{selectedOrder.user?.name || "Không có"}</p>
-                <p>{selectedOrder.user?.email || ""}</p>
-                <p>{selectedOrder.user?.phone || ""}</p>
-              </div>
-              <div>
-                <h4>Địa chỉ giao hàng</h4>
-                <p>{selectedOrder.address?.receiver_name || "Không có"}</p>
-                <p>{selectedOrder.address?.phone || ""}</p>
-                <p>
-                  {[
-                    selectedOrder.address?.street,
-                    selectedOrder.address?.ward,
-                    selectedOrder.address?.district,
-                    selectedOrder.address?.province,
-                  ].filter(Boolean).join(", ") || "Không có"}
+                <span className="order-modal-eyebrow">CHI TIẾT ĐƠN HÀNG</span>
+                <h2 id="order-detail-title">Đơn hàng #{selectedOrder.id}</h2>
+                <p className="order-created-at">
+                  <FiClock />
+                  {selectedOrder.created_at
+                    ? new Date(selectedOrder.created_at).toLocaleString("vi-VN")
+                    : "Không có thời gian tạo"}
                 </p>
               </div>
-              <div>
-                <h4>Thanh toán</h4>
-                <p>{translatePaymentMethod(selectedOrder.payment_method)}</p>
-                <p>{translatePaymentStatus(selectedOrder.payment_status)}</p>
-                <p>Mã VNPay: {selectedOrder.vnpay_txn_ref || "—"}</p>
-                <p>Mã giao dịch: {selectedOrder.vnpay_transaction_no || "—"}</p>
-                <p>Response code: {selectedOrder.vnpay_response_code || "—"}</p>
-                <p>Thanh toán lúc: {selectedOrder.paid_at ? new Date(selectedOrder.paid_at).toLocaleString("vi-VN") : "—"}</p>
-              </div>
+              <span className={badgeClass(selectedOrder.status)}>
+                {translateStatus(selectedOrder.status)}
+              </span>
+            </header>
+
+            <div className="order-info-grid">
+              <section className="order-info-card">
+                <div className="order-card-title">
+                  <span className="order-card-icon"><FiUser /></span>
+                  <h3>Khách hàng</h3>
+                </div>
+                <dl className="order-detail-list">
+                  <div><dt>Họ tên</dt><dd>{selectedOrder.user?.name || "Không có"}</dd></div>
+                  <div><dt>Email</dt><dd>{selectedOrder.user?.email || "Không có"}</dd></div>
+                  <div><dt>Số điện thoại</dt><dd>{selectedOrder.user?.phone || selectedOrder.shipping_phone || "Không có"}</dd></div>
+                </dl>
+              </section>
+
+              <section className="order-info-card">
+                <div className="order-card-title">
+                  <span className="order-card-icon"><FiMapPin /></span>
+                  <h3>Địa chỉ giao hàng</h3>
+                </div>
+                <p className="order-recipient">
+                  {selectedOrder.shipping_receiver_name || selectedOrder.address?.receiver_name || "Không có"}
+                </p>
+                <p className="order-muted">
+                  {selectedOrder.shipping_phone || selectedOrder.address?.phone || "Không có"}
+                </p>
+                <p className="order-address">
+                  {[
+                    selectedOrder.shipping_street || selectedOrder.address?.street,
+                    selectedOrder.shipping_ward || selectedOrder.address?.ward,
+                    selectedOrder.shipping_district || selectedOrder.address?.district,
+                    selectedOrder.shipping_province || selectedOrder.address?.province,
+                  ].filter(Boolean).join(", ") || "Không có"}
+                </p>
+              </section>
+
+              <section className="order-info-card">
+                <div className="order-card-title">
+                  <span className="order-card-icon"><FiCreditCard /></span>
+                  <h3>Thanh toán</h3>
+                </div>
+                <div className="payment-heading-row">
+                  <strong>{translatePaymentMethod(selectedOrder.payment_method)}</strong>
+                  <span className={`payment-pill payment-${selectedOrder.payment_status || "unpaid"}`}>
+                    {translatePaymentStatus(selectedOrder.payment_status)}
+                  </span>
+                </div>
+
+                {selectedOrder.payment_method === "vnpay" ? (
+                  <dl className="order-detail-list compact">
+                    <div><dt>Mã VNPay</dt><dd>{selectedOrder.vnpay_txn_ref || "—"}</dd></div>
+                    <div><dt>Mã giao dịch</dt><dd>{selectedOrder.vnpay_transaction_no || "—"}</dd></div>
+                    <div><dt>Response code</dt><dd>{selectedOrder.vnpay_response_code || "—"}</dd></div>
+                  </dl>
+                ) : (
+                  <p className="cod-message">Thu tiền trực tiếp khi khách nhận hàng.</p>
+                )}
+
+                <p className="paid-at">
+                  {selectedOrder.paid_at
+                    ? `Thanh toán lúc ${new Date(selectedOrder.paid_at).toLocaleString("vi-VN")}`
+                    : "Chưa ghi nhận thời gian thanh toán"}
+                </p>
+              </section>
             </div>
 
-            <h4>Sản phẩm</h4>
-            {(selectedOrder.items || []).map((orderItem) => {
-              const variant = orderItem.product_variant;
-              const product = variant?.product;
-              return (
-                <div key={orderItem.id} style={{ display: "flex", gap: 14, padding: "12px 0", borderBottom: "1px solid #e5e7eb" }}>
-                  <img src={product?.thumbnail || "/images/placeholder.png"} alt={product?.name || "Sản phẩm"} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8 }} />
-                  <div style={{ flex: 1 }}>
-                    <strong>{product?.name || "Sản phẩm đã xóa"}</strong>
-                    <div>{variant?.color || "—"} / {variant?.size || "—"}</div>
-                    <div>Số lượng: {orderItem.quantity}</div>
-                  </div>
-                  <strong>{formatVND(orderItem.price)}</strong>
+            <section className="order-products-section">
+              <div className="order-section-title">
+                <div>
+                  <span className="order-card-icon"><FiPackage /></span>
+                  <h3>Sản phẩm</h3>
                 </div>
-              );
-            })}
+                <span>{(selectedOrder.items || []).length} sản phẩm</span>
+              </div>
 
-            <div style={{ marginTop: 18, textAlign: "right" }}>
-              <p>Voucher: {selectedOrder.coupon?.code || "Không dùng"}</p>
-              <p>Ghi chú: {selectedOrder.note || "Không có"}</p>
-              <h3>Tổng cộng: {formatVND(selectedOrder.total_amount)}</h3>
+              <div className="order-product-list">
+                {(selectedOrder.items || []).map((orderItem) => {
+                  const variant = orderItem.product_variant;
+                  const product = variant?.product;
+                  const productName = orderItem.product_name_snapshot || product?.name || "Sản phẩm đã xóa";
+                  const productImage = orderItem.variant_image_snapshot || variant?.image_url || variant?.image || product?.thumbnail || "/images/placeholder.png";
+                  const variantColor = orderItem.variant_color_snapshot || variant?.color || "—";
+                  const variantSize = orderItem.variant_size_snapshot || variant?.size || "—";
+
+                  return (
+                    <article className="order-product-item" key={orderItem.id}>
+                      <img src={productImage} alt={productName} />
+                      <div className="order-product-info">
+                        <strong>{productName}</strong>
+                        <p>{variantColor} / {variantSize}</p>
+                        <span>Số lượng: {orderItem.quantity}</span>
+                      </div>
+                      <div className="order-product-price">
+                        <span>{formatVND(orderItem.price)} × {orderItem.quantity}</span>
+                        <strong>{formatVND(Number(orderItem.price) * Number(orderItem.quantity))}</strong>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+
+            <div className="order-footer-grid">
+              <section className="order-note-card">
+                <h3>Ghi chú đơn hàng</h3>
+                <p>{selectedOrder.note || "Khách hàng không để lại ghi chú."}</p>
+              </section>
+
+              <section className="order-summary-card">
+                <div className="summary-line">
+                  <span>Tạm tính</span>
+                  <strong>{formatVND(selectedOrder.subtotal)}</strong>
+                </div>
+                <div className="summary-line">
+                  <span>Phí vận chuyển</span>
+                  <strong>{formatVND(selectedOrder.shipping_fee)}</strong>
+                </div>
+
+                {Number(selectedOrder.discount_amount) > 0 && (
+                  <div className="summary-line discount-line">
+                    <span>Giảm giá sản phẩm</span>
+                    <strong>-{formatVND(selectedOrder.discount_amount)}</strong>
+                  </div>
+                )}
+                {Number(selectedOrder.shipping_discount) > 0 && (
+                  <div className="summary-line discount-line">
+                    <span>Giảm phí vận chuyển</span>
+                    <strong>-{formatVND(selectedOrder.shipping_discount)}</strong>
+                  </div>
+                )}
+
+                <div className="voucher-summary">
+                  <span><FiTag /> Voucher áp dụng</span>
+                  {selectedCouponCodes.length ? (
+                    <div className="voucher-code-list">
+                      {selectedCouponCodes.map((code, index) => (
+                        <strong key={`${code}-${index}`}>{code}</strong>
+                      ))}
+                    </div>
+                  ) : (
+                    <em>Không sử dụng voucher</em>
+                  )}
+                </div>
+
+                <div className="summary-total">
+                  <span>Tổng thanh toán</span>
+                  <strong>{formatVND(selectedOrder.total_amount)}</strong>
+                </div>
+              </section>
             </div>
           </div>
         </div>

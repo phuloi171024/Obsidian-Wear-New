@@ -1,848 +1,742 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  FaShoppingCart,
-  FaMapMarkerAlt,
-  FaCheck,
-} from "react-icons/fa";
-import { FiChevronRight } from "react-icons/fi";
-import toast, { Toaster } from "react-hot-toast";
-import { API_BASE_URL } from "../config/api";
-import Footer from "../components/Footer";
+import { Link } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
+import Footer from "../components/Footer";
+import { useFriendCheckoutLogic } from "../services/useFriendCheckoutLogic";
+import "./CheckoutPage.css";
 
 export default function ShippingInfoPage() {
-  const navigate = useNavigate();
+  const {
+    form, errors, savedAddresses, selectedAddressId, handleSelectAddress,
+    cartItems, loading, showVoucherModal, setShowVoucherModal,
+    isLoadingCoupons, openVoucherModal,
+    voucherTab, setVoucherTab, inputVoucher, setInputVoucher, dbCoupons,
+    appliedProductVoucher, setAppliedProductVoucher,
+    appliedShippingVoucher, setAppliedShippingVoucher,
+    isApplying, surname, setSurname, wardDistrict, setWardDistrict,
 
-  // --- STATE FORM GIAO HÀNG ---
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    ward: "",
-    district: "",
-    city: "",
-  });
-  const [errors, setErrors] = useState({});
+    note, setNote,
+    shippingMethod, setShippingMethod, checkoutPayment, setCheckoutPayment,
 
-  // ==========================================
-  // [THÊM MỚI] STATE: LƯU TRỮ SỔ ĐỊA CHỈ
-  // ==========================================
-  const [savedAddresses, setSavedAddresses] = useState([]);
-  const [selectedAddressId, setSelectedAddressId] = useState("");
+    handleApplyCoupon, handleChange, handleSubmit,
+    subtotal, baseShippingFee, productDiscount, shippingDiscount,
+    finalShippingFee, total, provinces, wards,
+    handleProvinceChange, handleWardChange, retryMode, notice,
+    submitting, isQuoteLoading,
+ } = useFriendCheckoutLogic();
 
-  // --- STATE GIỎ HÀNG (KẾT NỐI API) ---
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // --- STATE MÃ GIẢM GIÁ (KẾT NỐI API) ---
-  const [showVoucherModal, setShowVoucherModal] = useState(false);
-  const [voucherTab, setVoucherTab] = useState("product"); 
-  const [inputVoucher, setInputVoucher] = useState("");
-  const [dbCoupons, setDbCoupons] = useState([]);
-  const [appliedProductVoucher, setAppliedProductVoucher] = useState(null);
-  const [appliedShippingVoucher, setAppliedShippingVoucher] = useState(null);
-  const [isApplying, setIsApplying] = useState(false);
-
-  // Lấy token bảo mật
-  const getHeaders = () => {
-    const token = localStorage.getItem("access_token") || localStorage.getItem("token");
-    return {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      "Authorization": `Bearer ${token?.trim()}`
-    };
-  };
-
-  // 1. GỌI API LẤY GIỎ HÀNG VÀ SỔ ĐỊA CHỈ
-  useEffect(() => {
-    const fetchCartAndAddresses = async () => {
-      try {
-        setLoading(true);
-        // Chạy song song 2 API: Lấy giỏ hàng và Lấy sổ địa chỉ
-        const [cartRes, addressRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/cart`, { headers: getHeaders() }),
-          fetch(`${API_BASE_URL}/user/addresses`, { headers: getHeaders() })
-        ]);
-
-        // 1.1 Xử lý Giỏ hàng
-        const cartData = await cartRes.json();
-        if (cartRes.ok && cartData.success) {
-          setCartItems(cartData.data);
-        } else if (cartRes.status === 401) {
-          navigate("/login");
-          return;
-        }
-
-        // 1.2 Xử lý Sổ địa chỉ
-        if (addressRes.ok) {
-          const addressData = await addressRes.json();
-          const addrs = addressData.data || [];
-          
-          if (addrs.length > 0) {
-            // Sắp xếp ưu tiên địa chỉ mặc định lên đầu
-            const sortedAddrs = [...addrs].sort(
-  (a, b) => Number(b.is_default) - Number(a.is_default)
+const totalQuantity = cartItems.reduce(
+  (sum, item) => sum + Number(item.quantity || 0),
+  0
 );
-            setSavedAddresses(sortedAddrs);
 
-            // Tự động điền địa chỉ mặc định (hoặc địa chỉ đầu tiên) vào Form
-            const defaultAddr = sortedAddrs[0];
-        setSelectedAddressId(String(defaultAddr.id));
-
-localStorage.setItem(
-  "selected_address_id",
-  String(defaultAddr.id)
-);
-            setForm({
-              name: defaultAddr.receiver_name || "",
-              phone: defaultAddr.phone || "",
-              // Gộp Số nhà, Tên đường, Phường, Quận vào ô Địa chỉ
-              address: defaultAddr.street || "",
-              ward: defaultAddr.ward || "",
-              district: defaultAddr.district || "",
-              city: defaultAddr.province || "",
-            });
-          }
-        }
-
-      } catch (error) {
-        toast.error("Lỗi kết nối máy chủ");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Kiểm tra xem trang trước có lưu mã giảm giá không
-    try {
-  const savedVouchers = JSON.parse(
-    localStorage.getItem("applied_vouchers") || "{}"
-  );
-
-  const selectedVoucher =
-    savedVouchers.selected ||
-    savedVouchers.product ||
-    savedVouchers.shipping ||
-    null;
-
-  if (selectedVoucher) {
-    if (selectedVoucher.type === "shipping") {
-      setAppliedShippingVoucher(selectedVoucher);
-      setAppliedProductVoucher(null);
-    } else {
-      setAppliedProductVoucher(selectedVoucher);
-      setAppliedShippingVoucher(null);
-    }
-  }
-} catch (error) {
-  console.error("Dữ liệu voucher trong localStorage không hợp lệ:", error);
-  localStorage.removeItem("applied_vouchers");
-}
-
-    fetchCartAndAddresses();
-  }, [navigate]);
-
-  // ==========================================
-  // [THÊM MỚI] HÀM XỬ LÝ KHI CHỌN ĐỊA CHỈ TỪ DROPDOWN
-  // ==========================================
-const handleSelectAddress = (e) => {
-  const id = e.target.value;
-
-  setSelectedAddressId(id);
-
-  if (!id) {
-    localStorage.removeItem("selected_address_id");
-
-    setForm({
-      name: "",
-      phone: "",
-      address: "",
-      ward: "",
-      district: "",
-      city: "",
-    });
-
-    return;
+const visibleCoupons = dbCoupons.filter((coupon) => {
+  if (voucherTab === "shipping") {
+    return coupon.discount_type === "shipping";
   }
 
-  const addr = savedAddresses.find(
-    (item) => String(item.id) === String(id)
-  );
-
-  if (!addr) {
-    toast.error("Không tìm thấy địa chỉ đã chọn!");
-    return;
-  }
-
-  setForm({
-    name: addr.receiver_name || "",
-    phone: addr.phone || "",
-    address: addr.street || "",
-    ward: addr.ward || "",
-    district: addr.district || "",
-    city: addr.province || "",
-  });
-
-  localStorage.setItem("selected_address_id", String(id));
-  setErrors({});
-};
-
-  // 2. GỌI API LẤY DANH SÁCH MÃ TỪ DB
-// 2. GỌI API LẤY DANH SÁCH MÃ TỪ DB (ĐÃ NÂNG CẤP BỘ LỌC)
-  const fetchCoupons = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/coupons`, { headers: getHeaders() });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        const now = new Date();
-        
-        // Lọc bỏ ngay các mã đã hết hạn, hết lượt hoặc bị khóa
-        const validCoupons = data.data.filter(coupon => {
-          // 1. Kiểm tra trạng thái đang hoạt động
-          if (coupon.status === 0 || coupon.status === false) return false;
-          
-          // 2. Kiểm tra số lượt dùng (nếu có giới hạn)
-          if (coupon.usage_limit !== null && coupon.used_count >= coupon.usage_limit) return false;
-          
-          // 3. Kiểm tra ngày hết hạn
-          if (coupon.expires_at) {
-            const expiryDate = new Date(coupon.expires_at);
-            if (expiryDate < now) return false;
-          }
-          
-          return true; // Thỏa mãn hết các điều kiện thì mới cho phép hiển thị
-        });
-
-        // Chỉ lưu các mã còn hợp lệ vào state
-        setDbCoupons(validCoupons); 
-      }
-    } catch (error) {
-      console.error("Không thể tải danh sách mã giảm giá");
-    }
-  };
-
-  // 3. API KIỂM TRA MÃ GIẢM GIÁ (ÁP DỤNG)
-  const handleApplyCoupon = async () => {
-    if (!inputVoucher.trim()) {
-      toast.error("Vui lòng nhập mã giảm giá!");
-      return;
-    }
-
-    try {
-      setIsApplying(true);
-      const res = await fetch(`${API_BASE_URL}/coupons/apply`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify({
-          code: inputVoucher,
-          order_value: subtotal 
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        toast.success(data.message);
-        const couponData = data.data;
-
-        if (couponData.type === "shipping") {
-          setAppliedShippingVoucher(couponData);
-          setAppliedProductVoucher(null);
-        } else {
-          setAppliedProductVoucher(couponData);
-          setAppliedShippingVoucher(null);
-        }
-
-        setInputVoucher("");
-        setShowVoucherModal(false);
-      } else {
-        toast.error(data.message || "Mã giảm giá không hợp lệ!");
-      }
-    } catch (error) {
-      toast.error("Không thể kết nối máy chủ!");
-    } finally {
-      setIsApplying(false);
-    }
-  };
-
-  // --- XỬ LÝ FORM ĐIỀN THÔNG TIN ---
-  const handleChange = (field) => (e) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-    // Nội dung đã thay đổi nên sẽ lưu thành địa chỉ mới khi tiếp tục.
-    setSelectedAddressId("");
-    localStorage.removeItem("selected_address_id");
-  };
-
-  // --- HÀM KIỂM TRA LỖI (VALIDATE) ---
-  const validate = () => {
-    const newErrors = {};
-    if (!form.name.trim()) {
-      newErrors.name = "Vui lòng nhập họ tên người nhận";
-    }
-    
-    if (!form.phone.trim()) {
-      newErrors.phone = "Vui lòng nhập số điện thoại";
-    } else if (!/^[0-9]{9,11}$/.test(form.phone.trim())) {
-      newErrors.phone = "Số điện thoại không hợp lệ (Phải từ 9-11 số)";
-    }
-    
-    if (!form.address.trim()) {
-      newErrors.address = "Vui lòng nhập số nhà và tên đường";
-    }
-
-    if (!form.ward.trim()) {
-      newErrors.ward = "Vui lòng nhập phường/xã";
-    }
-
-    if (!form.district.trim()) {
-      newErrors.district = "Vui lòng nhập quận/huyện";
-    }
-    
-    if (!form.city.trim()) {
-      newErrors.city = "Vui lòng nhập tỉnh/thành phố";
-    }
-    
-    return newErrors;
-  };
-
-  // --- TÍNH TOÁN TIỀN TỰ ĐỘNG ---
-  const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.product_variant?.product?.current_price || item.product_variant?.product?.price || 0;
-    return sum + (price * item.quantity);
-  }, 0);
-  
-  const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  // Phí vận chuyển: Mua >= 3 cái thì Freeship (0đ), ngược lại 30.000đ
-  const baseShippingFee = cartItems.length > 0 ? (totalQuantity >= 3 ? 0 : 30000) : 0;
-  
-  // Tiền giảm giá
-  const productDiscount = appliedProductVoucher
-    ? Number(appliedProductVoucher.discount_amount ?? appliedProductVoucher.discount_value ?? 0)
-    : 0;
-  const shippingDiscount = appliedShippingVoucher
-    ? Math.min(Number(appliedShippingVoucher.discount_value || 0), baseShippingFee)
-    : 0;
-
-  const finalShippingFee = baseShippingFee - shippingDiscount;
-  const total = Math.max(0, subtotal + finalShippingFee - productDiscount);
-
-  // CHUYỂN TRANG THANH TOÁN
-  const handleSubmit = async () => {
-    const newErrors = validate();
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      toast.error("Vui lòng nhập đầy đủ thông tin giao hàng!");
-      return;
-    }
-
-    if (cartItems.length === 0) {
-      toast.error("Giỏ hàng đang trống!");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      let addressId = selectedAddressId;
-
-      if (!addressId) {
-        const addressRes = await fetch(`${API_BASE_URL}/user/addresses`, {
-          method: "POST",
-          headers: getHeaders(),
-          body: JSON.stringify({
-            type: "Nhà",
-            receiver_name: form.name.trim(),
-            phone: form.phone.trim(),
-            province: form.city.trim(),
-            district: form.district.trim(),
-            ward: form.ward.trim(),
-            street: form.address.trim(),
-            is_default: savedAddresses.length === 0,
-          }),
-        });
-
-        const addressData = await addressRes.json();
-
-        if (!addressRes.ok || !addressData.status) {
-          const message = addressData.errors
-            ? Object.values(addressData.errors).flat().join("\n")
-            : addressData.message;
-          throw new Error(message || "Không thể lưu địa chỉ giao hàng!");
-        }
-
-        addressId = String(addressData.data.id);
-      }
-
-      const selectedVoucher =
-        appliedProductVoucher || appliedShippingVoucher || null;
-
-      localStorage.setItem("selected_address_id", String(addressId));
-      localStorage.setItem("shipping_info", JSON.stringify(form));
-      localStorage.setItem(
-        "applied_vouchers",
-        JSON.stringify({ selected: selectedVoucher })
-      );
-
-      navigate("/payment");
-    } catch (error) {
-      toast.error(error.message || "Không thể lưu thông tin giao hàng!");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const steps = [
-    { label: "Giỏ hàng", icon: FaShoppingCart, status: "done", href: "/cart" },
-    { label: "Thông tin giao hàng", icon: FaMapMarkerAlt, status: "active", href: null },
-    { label: "Thanh toán", icon: FaCheck, status: "pending", href: null },
-  ];
+  return coupon.discount_type !== "shipping";
+});
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="ash-checkout-page">
       <Toaster position="top-right" />
-      
-      <div className="flex-1">
-        <div className="max-w-6xl mx-auto px-4 pt-8 pb-16">
-          <div className="text-sm text-gray-400 mb-2">
-            <Link to="/" className="hover:text-gray-600">Trang chủ</Link>
-            <span className="mx-1">/</span>
-            <span className="text-gray-500">Thông tin đặt hàng</span>
-          </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-8">
-            Thông tin đặt hàng
-          </h1>
 
-          <div className="flex items-center mb-10 max-w-xl">
-            {steps.map((step, idx) => {
-              const Icon = step.icon;
-              const isDone = step.status === "done";
-              const isActive = step.status === "active";
-              const content = (
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm shrink-0 ${
-                      isDone || isActive ? "bg-indigo-600" : "bg-gray-200 text-gray-400"
-                    }`}
-                  >
-                    <Icon className="text-sm" />
+
+      <main className="ash-checkout-main">
+        <div className="ash-checkout-shell">
+          {/* ================= Cá»˜T TRÃI ================= */}
+          <section className="ash-checkout-left">
+            <div className="ash-checkout-content">
+              {notice && (
+                <div className="ash-checkout-api-notice">{notice}</div>
+              )}
+              {/* ThÃ´ng tin giao hÃ ng */}
+              <section className="ash-checkout-section">
+                <h2>
+                  ThÃ´ng Tin Giao HÃ ng{" "}
+                  <span>(Äá»‹a chá»‰ SAU SÃT NHáº¬P)</span>
+                </h2>
+
+                {!retryMode && (
+                  <div className="ash-checkout-field">
+                    <select
+                      value={selectedAddressId}
+                      onChange={handleSelectAddress}
+                    >
+                      <option value="">+ Nháº­p Ä‘á»‹a chá»‰ má»›i</option>
+                      {savedAddresses.map((address) => (
+                        <option key={address.id} value={address.id}>
+                          {address.receiver_name} â€” {address.street}, {address.ward}, {address.province}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <span
-                    className={`text-sm whitespace-nowrap ${
-                      isDone || isActive ? "text-gray-900 font-medium" : "text-gray-400"
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                </div>
-              );
-              return (
-                <div key={step.label} className="flex items-center flex-1 last:flex-none">
-                  {step.href ? (
-                    <Link to={step.href} className="hover:opacity-80 transition">
-                      {content}
-                    </Link>
-                  ) : (
-                    content
-                  )}
-                  {idx < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 mx-3 ${
-                        isDone ? "bg-indigo-600" : "bg-gray-200"
-                      }`}
+                )}
+
+                <div className="ash-checkout-two-cols">
+                  <div className="ash-checkout-field">
+                    <input
+                      type="text"
+                      value={surname}
+                      onChange={(event) => setSurname(event.target.value)}
+                      placeholder="Há»"
                     />
+                  </div>
+
+                  <div className="ash-checkout-field">
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={handleChange("name")}
+                      placeholder="TÃªn ngÆ°á»i nháº­n"
+                      className={errors.name ? "is-error" : ""}
+                    />
+                    {errors.name && (
+                      <p className="ash-checkout-error">{errors.name}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="ash-checkout-field">
+                  <div className="ash-checkout-input-wrap">
+                    <input
+                      type="tel"
+                      value={form.phone}
+                      onChange={handleChange("phone")}
+                      placeholder="Sá»‘ Ä‘iá»‡n thoáº¡i"
+                      className={errors.phone ? "is-error" : ""}
+                    />
+                    <span className="ash-checkout-input-icon">?</span>
+                  </div>
+                  {errors.phone && (
+                    <p className="ash-checkout-error">{errors.phone}</p>
                   )}
                 </div>
-              );
-            })}
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* CỘT TRÁI: FORM ĐIỀN THÔNG TIN */}
-            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8 h-fit">
-              <h2 className="text-lg font-bold text-gray-900 mb-6">
-                Thông tin giao hàng
-              </h2>
-
-              {/* ========================================== */}
-              {/* [THÊM MỚI] GIAO DIỆN CHỌN SỔ ĐỊA CHỈ */}
-              {/* ========================================== */}
-              {savedAddresses.length > 0 && (
-                <div className="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <label className="text-sm font-semibold text-blue-800 mb-2 flex items-center">
-                    <FaMapMarkerAlt className="mr-2" /> Chọn địa chỉ đã lưu (Sổ địa chỉ)
-                  </label>
+                <div className="ash-checkout-field">
                   <select
-                    value={selectedAddressId}
-                    onChange={handleSelectAddress}
-                    className="w-full border border-blue-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 bg-white"
+                    value={form.province_code}
+                    onChange={handleProvinceChange}
+                    disabled={Boolean(selectedAddressId)}
+                    className={errors.city ? "is-error" : ""}
                   >
-                    <option value="">-- Tạo một địa chỉ giao hàng mới --</option>
-                    {savedAddresses.map((addr) => (
-                      <option key={addr.id} value={addr.id}>
-                        [{addr.type}] {addr.receiver_name} - {addr.phone} - {addr.street}, {addr.ward}, {addr.district}, {addr.province}
+                    <option value="">Tá»ˆNH / THÃ€NH PHá»</option>
+                    {provinces.map((province) => (
+                      <option key={province.code} value={province.code}>
+                        {province.name}
                       </option>
                     ))}
                   </select>
-                </div>
-              )}
-
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    Họ tên người nhận <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={handleChange("name")}
-                    placeholder="Nhập họ tên người nhận"
-                    className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
-                      errors.name
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
-                    }`}
-                  />
-                  {errors.name && (
-                    <p className="text-xs text-red-500 mt-1">{errors.name}</p>
+                  {errors.city && (
+                    <p className="ash-checkout-error">{errors.city}</p>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    Số điện thoại <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={form.phone}
-                    onChange={handleChange("phone")}
-                    placeholder="Nhập số điện thoại"
-                    className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
-                      errors.phone
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
-                    }`}
-                  />
-                  {errors.phone && (
-                    <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+                <div className="ash-checkout-field">
+                  <select
+                    value={form.ward_code}
+                    onChange={handleWardChange}
+                    disabled={Boolean(selectedAddressId) || !form.province_code}
+                    className={errors.ward ? "is-error" : ""}
+                  >
+                    <option value="">PHÆ¯á»œNG / XÃƒ</option>
+                    {selectedAddressId && form.ward_code && (
+                      <option value={form.ward_code}>{wardDistrict}</option>
+                    )}
+                    {wards.map((ward) => (
+                      <option key={ward.code} value={ward.code}>
+                        {ward.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.ward && (
+                    <p className="ash-checkout-error">{errors.ward}</p>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    Số nhà, tên đường <span className="text-red-500">*</span>
-                  </label>
+                <div className="ash-checkout-field">
                   <input
                     type="text"
                     value={form.address}
                     onChange={handleChange("address")}
-                    placeholder="Ví dụ: 123 Nguyễn Trãi"
-                    className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
-                      errors.address
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
-                    }`}
+                    placeholder="Sá»‘ nhÃ  + tÃªn Ä‘Æ°á»ng"
+                    className={errors.address ? "is-error" : ""}
                   />
                   {errors.address && (
-                    <p className="text-xs text-red-500 mt-1">{errors.address}</p>
+                    <p className="ash-checkout-error">{errors.address}</p>
                   )}
                 </div>
+              </section>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Phường/Xã <span className="text-red-500">*</span>
-                    </label>
+              {/* PhÆ°Æ¡ng thá»©c váº­n chuyá»ƒn */}
+              <section className="ash-checkout-section">
+                <h3>PhÆ°Æ¡ng thá»©c váº­n chuyá»ƒn</h3>
+
+                <div className="ash-checkout-option-box">
+                  <label
+                    className={`ash-checkout-option ${
+                      shippingMethod === "economy"
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="shippingMethod"
+                      checked={shippingMethod === "economy"}
+                      onChange={() =>
+                        setShippingMethod("economy")
+                      }
+                    />
+                    <span className="ash-radio-ui" />
+                    <span className="ash-option-copy">
+                      <strong>
+                        Freeship - TikiNOW giao hÃ ng tá»« 3 - 8 ngÃ y
+                        lÃ m viá»‡c cho Ä‘Æ¡n tá»« 3,399,000Ä
+                      </strong>
+                    </span>
+                    <b>
+                      {subtotal >= 3399000
+                        ? "MIá»„N PHÃ"
+                        : `${new Intl.NumberFormat("vi-VN").format(
+                            30000
+                          )} Ä‘`}
+                    </b>
+                  </label>
+
+                  <label
+                    className={`ash-checkout-option ${
+                      shippingMethod === "standard"
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="shippingMethod"
+                      checked={shippingMethod === "standard"}
+                      onChange={() =>
+                        setShippingMethod("standard")
+                      }
+                    />
+                    <span className="ash-radio-ui" />
+                    <span className="ash-option-copy">
+                      <strong>
+                        TikiNOW - Giao HÃ ng TiÃªu Chuáº©n 2-7 ngÃ y lÃ m
+                        viá»‡c tÃ¹y tá»‰nh thÃ nh
+                      </strong>
+                    </span>
+                    <b>50.000 Ä‘</b>
+                  </label>
+
+                  <label
+                    className={`ash-checkout-option ${
+                      shippingMethod === "express"
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="shippingMethod"
+                      checked={shippingMethod === "express"}
+                      onChange={() =>
+                        setShippingMethod("express")
+                      }
+                    />
+                    <span className="ash-radio-ui" />
+                    <span className="ash-option-copy">
+                      <strong>
+                        Giao HÃ ng Grab Há»a Tá»‘c (Chá»‰ Ã¡p dá»¥ng ná»™i thÃ nh
+                        HCM) trÆ°á»›c 16h ngÃ y trong tuáº§n
+                      </strong>
+                      <small>
+                        LiÃªn há»‡ CSKH Ä‘á»ƒ Ä‘Æ°á»£c há»— trá»£ cá»¥ thá»ƒ vá» phÃ­ ship
+                        vÃ  cÃ¡ch thá»©c thanh toÃ¡n
+                      </small>
+                    </span>
+                    <b>200.000 Ä‘</b>
+                  </label>
+                </div>
+              </section>
+
+              {/* Thanh toÃ¡n */}
+              <section className="ash-checkout-section">
+                <h3>Thanh toÃ¡n</h3>
+                <p className="ash-checkout-muted">
+                  ToÃ n bá»™ cÃ¡c giao dá»‹ch Ä‘Æ°á»£c báº£o máº­t vÃ  mÃ£ hÃ³a.
+                </p>
+
+                <div className="ash-checkout-option-box ash-payment-box">
+                  <label
+                    className={`ash-checkout-option ${
+                      checkoutPayment === "vnpay" ? "active" : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentOption"
+                      checked={checkoutPayment === "vnpay"}
+                      onChange={() =>
+                        setCheckoutPayment("vnpay")
+                      }
+                    />
+                    <span className="ash-radio-ui" />
+                    <span className="ash-option-copy">
+                      <strong>
+                        VNPay - Tháº» ATM/QR/NgÃ¢n hÃ ng
+                      </strong>
+                    </span>
+                    <span className="ash-payment-logos" aria-label="PhÆ°Æ¡ng thá»©c thanh toÃ¡n há»— trá»£">
+                      <span className="payment-logo payment-logo-visa">VISA</span>
+                      <span className="payment-logo payment-logo-mastercard" aria-label="Mastercard">
+                        <span className="mc-circle mc-red" />
+                        <span className="mc-circle mc-orange" />
+                      </span>
+                      <span className="payment-logo payment-logo-jcb" aria-label="JCB">
+                        <span>J</span><span>C</span><span>B</span>
+                      </span>
+                      <span className="payment-logo payment-logo-more">+2</span>
+                    </span>
+                  </label>
+
+                  {checkoutPayment === "vnpay" && (
+                    <div className="ash-payment-description">
+                      Báº¡n sáº½ Ä‘Æ°á»£c chuyá»ƒn Ä‘áº¿n cá»•ng thanh toÃ¡n VNPay Ä‘á»ƒ hoÃ n táº¥t giao dá»‹ch.
+                    </div>
+                  )}
+
+                  <label
+                    className={`ash-checkout-option ${
+                      checkoutPayment === "cod" ? "active" : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentOption"
+                      checked={checkoutPayment === "cod"}
+                      onChange={() => setCheckoutPayment("cod")}
+                    />
+                    <span className="ash-radio-ui" />
+                    <span className="ash-option-copy">
+                      <strong>
+                        Thanh toÃ¡n khi nháº­n hÃ ng (COD)
+                      </strong>
+                    </span>
+                  </label>
+
+                </div>
+              </section>
+
+              <section className="ash-checkout-section">
+                <h3>Ghi chÃº Ä‘Æ¡n hÃ ng</h3>
+                <textarea
+                  className="ash-checkout-note"
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  maxLength={500}
+                  placeholder="VÃ­ dá»¥: Gá»i trÆ°á»›c khi giao hÃ ng"
+                />
+              </section>
+
+              <button
+                type="button"
+                className="ash-checkout-pay-now"
+                onClick={handleSubmit}
+                disabled={
+                  submitting ||
+                  isQuoteLoading ||
+                  (!retryMode && !total)
+                }
+              >
+                {submitting
+                  ? "ÄANG Xá»¬ LÃ..."
+                  : checkoutPayment === "cod"
+                    ? "Äáº¶T HÃ€NG COD"
+                    : "THANH TOÃN QUA VNPAY"}
+              </button>
+
+              <footer className="ash-checkout-mini-footer">
+                <Link to="/">ChÃ­nh sÃ¡ch hoÃ n tiá»n</Link>
+                <Link to="/">Váº­n chuyá»ƒn</Link>
+                <Link to="/">ChÃ­nh sÃ¡ch quyá»n riÃªng tÆ°</Link>
+                <Link to="/">Äiá»u khoáº£n dá»‹ch vá»¥</Link>
+                <Link to="/contact">LiÃªn há»‡</Link>
+              </footer>
+            </div>
+          </section>
+
+          {/* ================= Cá»˜T PHáº¢I ================= */}
+          <aside className="ash-checkout-right">
+            <div className="ash-order-summary">
+              <div className="ash-order-products">
+                {loading ? (
+                  <div
+                    className="ash-order-skeleton-list"
+                    aria-label="Äang táº£i Ä‘Æ¡n hÃ ng"
+                  >
+                    {[0, 1, 2].map((item) => (
+                      <div
+                        className="ash-order-item ash-order-item-skeleton"
+                        key={item}
+                      >
+                        <span className="ash-order-skeleton-thumb" />
+                        <span className="ash-order-skeleton-copy" />
+                        <span className="ash-order-skeleton-price" />
+                      </div>
+                    ))}
+                  </div>
+                ) : cartItems.length > 0 ? (
+                  cartItems.map((item, index) => {
+                    const product =
+                      item.product_variant?.product || {};
+                    const lineTotal =
+                      Number(
+                        item.price ||
+                          product.current_price ||
+                          product.sale_price ||
+                          product.price ||
+                          0
+                      ) *
+                      Number(item.quantity || 0);
+
+                    return (
+                      <div
+                        key={item.id || index}
+                        className="ash-order-item"
+                      >
+                        <div className="ash-order-thumb">
+                          <img
+                            src={
+                              item.product_variant?.image_url ||
+                              item.product_variant?.image ||
+                              product.thumbnail ||
+                              product.image_url ||
+                              product.images?.[0]?.image_url ||
+                              product.images?.[0]?.image_path ||
+                              "/images/placeholder.png"
+                            }
+                            alt={product.name || "Sáº£n pháº©m"}
+                            onError={(event) => {
+                              event.currentTarget.onerror = null;
+                              event.currentTarget.src =
+                                "/images/placeholder.png";
+                            }}
+                          />
+                          <span>{item.quantity}</span>
+                        </div>
+
+                        <div className="ash-order-item-info">
+                          <strong>{product.name}</strong>
+                          <small>
+                            {item.product_variant?.color || ""}
+                            {item.product_variant?.color &&
+                            item.product_variant?.size
+                              ? " / "
+                              : ""}
+                            {item.product_variant?.size || ""}
+                          </small>
+
+                          {appliedProductVoucher && (
+                            <em>
+                              â—‡ {appliedProductVoucher.code} - Ä‘Ã£ Ã¡p
+                              dá»¥ng Æ°u Ä‘Ã£i
+                            </em>
+                          )}
+                        </div>
+
+                        <div className="ash-order-line-price">
+                          {new Intl.NumberFormat("vi-VN").format(
+                            lineTotal
+                          )}{" "}
+                          Ä‘
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="ash-order-loading">
+                    Giá» hÃ ng trá»‘ng
+                  </div>
+                )}
+              </div>
+
+              {!retryMode && (
+                <>
+                  <div className="ash-order-coupon">
                     <input
                       type="text"
-                      value={form.ward}
-                      onChange={handleChange("ward")}
-                      placeholder="Nhập phường/xã"
-                      className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
-                        errors.ward
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                          : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
-                      }`}
+                      placeholder="MÃ£ giáº£m giÃ¡ hoáº·c tháº» quÃ  táº·ng"
+                      value={inputVoucher}
+                      onChange={(e) => setInputVoucher(e.target.value)}
                     />
-                    {errors.ward && (
-                      <p className="text-xs text-red-500 mt-1">{errors.ward}</p>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleApplyCoupon()}
+                      disabled={isApplying}
+                    >
+                      {isApplying ? "Äang xá»­ lÃ½" : "Ãp dá»¥ng"}
+                    </button>
                   </div>
 
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Quận/Huyện <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={form.district}
-                      onChange={handleChange("district")}
-                      placeholder="Nhập quận/huyện"
-                      className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
-                        errors.district
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                          : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
-                      }`}
-                    />
-                    {errors.district && (
-                      <p className="text-xs text-red-500 mt-1">{errors.district}</p>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={openVoucherModal}
+                    disabled={isLoadingCoupons}
+                    style={{
+                      width: "100%",
+                      minHeight: "44px",
+                      margin: "-14px 0 26px",
+                      border: "1px solid #222",
+                      borderRadius: "7px",
+                      background: "#fff",
+                      color: "#222",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      cursor: isLoadingCoupons
+                        ? "wait"
+                        : "pointer",
+                      opacity: isLoadingCoupons ? 0.65 : 1,
+                    }}
+                  >
+                    {isLoadingCoupons
+                      ? "ÄANG Táº¢I Æ¯U ÄÃƒI..."
+                      : "CHá»ŒN MÃƒ GIáº¢M GIÃ"}
+                  </button>
+                </>
+              )}
+
+              <div className="ash-order-totals">
+                <div>
+                  <span>
+                    Tá»•ng phá»¥
+                    {totalQuantity > 1
+                      ? ` Â· ${totalQuantity} máº·t hÃ ng`
+                      : ""}
+                  </span>
+                  <b>
+                    {new Intl.NumberFormat("vi-VN").format(
+                      subtotal
+                    )}{" "}
+                    Ä‘
+                  </b>
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    Tỉnh/Thành phố <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={form.city}
-                    onChange={handleChange("city")}
-                    placeholder="Nhập tỉnh/thành phố"
-                    className={`w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-1 transition ${
-                      errors.city
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                        : "border-gray-200 focus:border-indigo-400 focus:ring-indigo-100"
-                    }`}
-                  />
-                  {errors.city && (
-                    <p className="text-xs text-red-500 mt-1">{errors.city}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* CỘT PHẢI: CHI TIẾT ĐƠN HÀNG & MÃ GIẢM GIÁ */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit">
-              <h2 className="text-base font-bold text-gray-900 mb-4">
-                Giỏ Hàng <span className="text-gray-500 font-normal">({totalQuantity} Sản Phẩm)</span>
-              </h2>
-
-              {/* Danh sách sản phẩm API */}
-              <div className="max-h-60 overflow-y-auto pr-2 mb-4 border-b border-gray-100">
-                {loading ? (
-                  <p className="text-sm text-center py-4">Đang tải...</p>
-                ) : cartItems.length > 0 ? (
-                  cartItems.map((item, index) => (
-                    <div key={index} className="flex items-center gap-3 pb-4 mb-4 border-b border-gray-50 last:border-0 last:mb-0">
-                      <div className="w-14 h-14 rounded-lg bg-gray-100 overflow-hidden shrink-0">
-                        <img
-                          src={item.product_variant?.product?.thumbnail || "/images/placeholder.png"}
-                          alt={item.product_variant?.product?.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900 line-clamp-1">{item.product_variant?.product?.name}</p>
-                        <p className="text-xs text-gray-400">Size: {item.product_variant?.size} - Số lượng: {item.quantity}</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">
-                          {new Intl.NumberFormat('vi-VN').format((item.product_variant?.product?.current_price || item.product_variant?.product?.price) * item.quantity)} đ
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-center py-4 text-gray-500">Giỏ hàng trống</p>
-                )}
-              </div>
-
-              {/* TỔNG TIỀN TRƯỚC VOUCHER */}
-              <div className="flex justify-between items-center mb-6">
-                 <span className="text-gray-600 text-sm font-medium">Tổng tiền</span>
-                 <span className="font-bold text-gray-900">{new Intl.NumberFormat('vi-VN').format(subtotal)}đ</span>
-              </div>
-
-              {/* KHU VỰC ÁP DỤNG GIẢM GIÁ (GIỐNG GUARDIAN) */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-bold text-gray-800">Áp Dụng Giảm Giá</h3>
-                  <button 
-                    onClick={() => { setShowVoucherModal(true); fetchCoupons(); }}
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition"
-                  >
-                    Mã Giảm Giá & Ưu Đãi Của Tôi <FiChevronRight />
-                  </button>
-                </div>
-                
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="Nhập mã giảm giá của bạn" 
-                    value={inputVoucher}
-                    onChange={(e) => setInputVoucher(e.target.value)}
-                    className="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm outline-none focus:border-blue-500 bg-white"
-                  />
-                  <button 
-                    onClick={handleApplyCoupon}
-                    disabled={isApplying}
-                    className="bg-gray-900 text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-gray-800 transition disabled:opacity-50"
-                  >
-                    {isApplying ? "ĐANG XỬ LÝ" : "ÁP DỤNG"}
-                  </button>
-                </div>
-              </div>
-
-              {/* BẢNG TÍNH TIỀN CHUNG CUỘC */}
-              <h3 className="text-sm font-bold text-gray-900 mb-3">Đơn Hàng Của Bạn</h3>
-              <div className="space-y-2 text-sm mb-4 pb-4 border-b border-gray-100">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Tổng sản phẩm đã chọn</span>
-                  <span className="font-semibold text-gray-900">{totalQuantity}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Tạm tính</span>
-                  <span className="font-semibold text-gray-900">{new Intl.NumberFormat('vi-VN').format(subtotal)}đ</span>
-                </div>
-                <div className="flex justify-between flex-col">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Phí vận chuyển {totalQuantity >= 3 && <span className="text-green-600 font-semibold">(Freeship)</span>}</span>
-                    <span className="font-semibold text-gray-900">{baseShippingFee === 0 ? "0đ" : `${new Intl.NumberFormat('vi-VN').format(baseShippingFee)}đ`}</span>
-                  </div>
-                  <span className="text-xs text-gray-400 mt-0.5">Giao Hàng Tiêu Chuẩn | Standard Delivery</span>
+                  <span>Váº­n chuyá»ƒn â“˜</span>
+                  <b>
+                    {finalShippingFee === 0
+                      ? "MIá»„N PHÃ"
+                      : `${new Intl.NumberFormat("vi-VN").format(
+                          finalShippingFee
+                        )} Ä‘`}
+                  </b>
                 </div>
 
                 {productDiscount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Mã giảm giá sản phẩm</span>
-                    <span className="font-semibold">- {new Intl.NumberFormat('vi-VN').format(productDiscount)}đ</span>
+                  <div className="ash-order-discount">
+                    <span>Giáº£m giÃ¡ sáº£n pháº©m</span>
+                    <b>
+                      -
+                      {new Intl.NumberFormat("vi-VN").format(
+                        productDiscount
+                      )}{" "}
+                      Ä‘
+                    </b>
                   </div>
                 )}
+
                 {shippingDiscount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Mã giảm giá vận chuyển</span>
-                    <span className="font-semibold">- {new Intl.NumberFormat('vi-VN').format(shippingDiscount)}đ</span>
+                  <div className="ash-order-discount">
+                    <span>Giáº£m phÃ­ váº­n chuyá»ƒn</span>
+                    <b>
+                      -
+                      {new Intl.NumberFormat("vi-VN").format(
+                        shippingDiscount
+                      )}{" "}
+                      Ä‘
+                    </b>
                   </div>
                 )}
               </div>
 
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-gray-900">Tổng thanh toán</span>
-                  <span className="text-[10px] text-gray-400">*Đã bao gồm VAT</span>
+              <div className="ash-order-grand-total">
+                <div>
+                  <strong>Tá»•ng</strong>
+                  <small>
+                    Bao gá»“m thuáº¿ theo chÃ­nh sÃ¡ch hiá»‡n hÃ nh
+                  </small>
                 </div>
-                <span className="text-xl font-bold text-red-500">{new Intl.NumberFormat('vi-VN').format(total)}đ</span>
+
+                <div>
+                  <span>VND</span>
+                  <b>
+                    {isQuoteLoading
+                      ? "Äang tÃ­nh..."
+                      : `${new Intl.NumberFormat("vi-VN").format(
+                          total
+                        )} Ä‘`}
+                  </b>
+                </div>
               </div>
 
-              {/* NÚT THANH TOÁN */}
-              <button
-                onClick={handleSubmit}
-                disabled={loading || cartItems.length === 0}
-                className="w-full bg-[#f26522] hover:bg-[#e05515] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-full transition shadow-md"
-              >
-                {loading ? "ĐANG XỬ LÝ..." : "TIẾN HÀNH THANH TOÁN"}
-              </button>
+              {(productDiscount > 0 || shippingDiscount > 0) && (
+                <div className="ash-order-saved">
+                  â—‡ Tá»”NG Sá» TIá»€N TIáº¾T KIá»†M ÄÆ¯á»¢C{" "}
+                  {new Intl.NumberFormat("vi-VN").format(
+                    productDiscount + shippingDiscount
+                  )}{" "}
+                  Ä‘
+                </div>
+              )}
             </div>
-          </div>
+          </aside>
         </div>
-      </div>
+      </main>
 
-      <Footer />
-
-      {/* POPUP MODAL MÃ GIẢM GIÁ TỪ TRANG CART */}
+      {/* POPUP MÃƒ GIáº¢M GIÃ - giá»¯ nguyÃªn logic hiá»‡n táº¡i */}
       {showVoucherModal && (
         <div className="voucher-modal-overlay">
           <div className="voucher-modal-box">
             <div className="voucher-modal-header">
-              <h3>MÃ GIẢM GIÁ & ƯU ĐÃI</h3>
-              <button className="close-btn" onClick={() => setShowVoucherModal(false)}>✕</button>
+              <h3>MÃƒ GIáº¢M GIÃ & Æ¯U ÄÃƒI</h3>
+              <button
+                type="button"
+                className="close-btn"
+                onClick={() => setShowVoucherModal(false)}
+              >
+                âœ•
+              </button>
             </div>
-            
+
             <div className="voucher-input-group">
-              <input 
-                type="text" 
-                placeholder="Nhập mã giảm giá của bạn (VD: ROHTO40)" 
+              <input
+                type="text"
+                placeholder="Nháº­p mÃ£ giáº£m giÃ¡ cá»§a báº¡n"
                 value={inputVoucher}
                 onChange={(e) => setInputVoucher(e.target.value)}
               />
-              <button onClick={handleApplyCoupon} disabled={isApplying}>
-                {isApplying ? "Đang ktra..." : "ÁP DỤNG"}
+              <button
+                type="button"
+                onClick={() => handleApplyCoupon()}
+                disabled={isApplying}
+              >
+                {isApplying ? "Äang ktra..." : "ÃP Dá»¤NG"}
               </button>
             </div>
 
             <div className="voucher-tabs">
-              <button className={voucherTab === "product" ? "active" : ""} onClick={() => setVoucherTab("product")}>
-                Ưu Đãi Cho Bạn
+              <button
+                type="button"
+                className={
+                  voucherTab === "product" ? "active" : ""
+                }
+                onClick={() => setVoucherTab("product")}
+              >
+                Æ¯u ÄÃ£i Cho Báº¡n
               </button>
-              <button className={voucherTab === "shipping" ? "active" : ""} onClick={() => setVoucherTab("shipping")}>
-                Ưu Đãi Vận Chuyển
+              <button
+                type="button"
+                className={
+                  voucherTab === "shipping" ? "active" : ""
+                }
+                onClick={() => setVoucherTab("shipping")}
+              >
+                Æ¯u ÄÃ£i Váº­n Chuyá»ƒn
               </button>
             </div>
 
             <div className="voucher-list-container">
-              {dbCoupons
-                .filter(coupon => {
-                  if (voucherTab === "shipping") return coupon.discount_type === "shipping";
-                  return coupon.discount_type !== "shipping";
-                })
-                .map(coupon => {
-                  const isSelected = voucherTab === "product" 
-                    ? appliedProductVoucher?.id === coupon.id 
-                    : appliedShippingVoucher?.id === coupon.id;
-                  
+              {visibleCoupons
+                .map((coupon) => {
+                  const isSelected =
+                    voucherTab === "product"
+                      ? appliedProductVoucher?.id === coupon.id
+                      : appliedShippingVoucher?.id === coupon.id;
+
                   return (
-                    <div key={coupon.id} className={`voucher-card ${isSelected ? 'selected' : ''}`}>
+                    <div
+                      key={coupon.id}
+                      className={`voucher-card ${
+                        isSelected ? "selected" : ""
+                      }`}
+                    >
                       <div className="voucher-icon">%</div>
                       <div className="voucher-info">
-                        <h4>Mã: {coupon.code} - Giảm {Number(coupon.discount_value).toLocaleString('vi-VN')} {coupon.discount_type === 'percent' ? '%' : 'đ'}</h4>
-                        <p>Đơn tối thiểu: {Number(coupon.min_order_value).toLocaleString('vi-VN')} đ</p>
-                        <p>Hạn sử dụng: Đến {coupon.expires_at || "Không thời hạn"}</p>
+                        <h4>
+                          MÃ£: {coupon.code} - Giáº£m{" "}
+                          {Number(
+                            coupon.discount_value
+                          ).toLocaleString("vi-VN")}{" "}
+                          {coupon.discount_type === "percent"
+                            ? "%"
+                            : "Ä‘"}
+                        </h4>
+                        <p>
+                          ÄÆ¡n tá»‘i thiá»ƒu:{" "}
+                          {Number(
+                            coupon.min_order_value
+                          ).toLocaleString("vi-VN")}{" "}
+                          Ä‘
+                        </p>
+                        <p>
+                          Háº¡n sá»­ dá»¥ng: Äáº¿n{" "}
+                          {coupon.expires_at || "KhÃ´ng thá»i háº¡n"}
+                        </p>
                       </div>
                       <div className="voucher-action">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={isSelected}
+                          disabled={isApplying}
                           onChange={() => {
-                            const formattedCoupon = {
-                              id: coupon.id,
-                              code: coupon.code,
-                              discount_type: coupon.discount_type,
-                              discount_value: Number(coupon.discount_value),
-                              discount_amount:
-                                coupon.discount_type === "percent"
-                                  ? Math.min(
-                                      subtotal * (Number(coupon.discount_value) / 100),
-                                      subtotal
-                                    )
-                                  : Number(coupon.discount_value),
-                              type: coupon.discount_type === "shipping" ? "shipping" : "product"
-                            };
+                            if (isSelected) {
+                              if (voucherTab === "product") {
+                                setAppliedProductVoucher(null);
+                              } else {
+                                setAppliedShippingVoucher(null);
+                              }
 
-                            if (!isSelected && subtotal < Number(coupon.min_order_value)) {
-                                toast.error(`Đơn hàng chưa đạt tối thiểu ${Number(coupon.min_order_value).toLocaleString('vi-VN')} đ`);
-                                return;
+                              return;
                             }
 
-                            if (voucherTab === "product") {
-                              setAppliedProductVoucher(isSelected ? null : formattedCoupon);
-                              if (!isSelected) setAppliedShippingVoucher(null);
-                            } else {
-                              setAppliedShippingVoucher(isSelected ? null : formattedCoupon);
-                              if (!isSelected) setAppliedProductVoucher(null);
-                            }
+                            handleApplyCoupon(coupon.code);
                           }}
                         />
                       </div>
                     </div>
                   );
                 })}
-              
-              {dbCoupons.length === 0 && (
-                <p style={{ textAlign: 'center', color: '#666', padding: '20px' }}>Đang tải danh sách ưu đãi...</p>
+
+              {isLoadingCoupons && (
+                <p className="voucher-empty">
+                  Äang táº£i danh sÃ¡ch Æ°u Ä‘Ã£i...
+                </p>
+              )}
+
+              {!isLoadingCoupons && visibleCoupons.length === 0 && (
+                <p className="voucher-empty">
+                  KhÃ´ng cÃ³ mÃ£ giáº£m giÃ¡ phÃ¹ há»£p.
+                </p>
               )}
             </div>
-            
+
             <div className="voucher-modal-footer">
-              <button className="confirm-voucher-btn" onClick={() => setShowVoucherModal(false)}>
-                XÁC NHẬN
+              <button
+                type="button"
+                className="confirm-voucher-btn"
+                onClick={() => setShowVoucherModal(false)}
+              >
+                XÃC NHáº¬N
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <Footer />
     </div>
   );
 }

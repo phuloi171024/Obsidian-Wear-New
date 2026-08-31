@@ -1,154 +1,371 @@
-import { API_BASE_URL } from "../config/api";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import "./OrdersPage.css";
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiUser, FiClipboard, FiLock, FiLogOut, FiEye, FiX, FiTrash2, FiCreditCard } from "react-icons/fi";
+import {
+  FiClipboard,
+  FiCreditCard,
+  FiEye,
+  FiMapPin,
+  FiRefreshCw,
+  FiTag,
+  FiTrash2,
+  FiX,
+} from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
+import { API_BASE_URL } from "../config/api";
+import Footer from "../components/Footer";
+import "./ProfilePage.css";
+import "./OrdersPage.css";
 
+const FALLBACK_IMAGE =
+  "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23eeeeee'/%3E%3Cpath d='M25 82l22-25 15 17 12-13 21 21z' fill='%23c5c5c5'/%3E%3Ccircle cx='43' cy='38' r='9' fill='%23c5c5c5'/%3E%3C/svg%3E";
+
+const STATUS_LABELS = {
+  pending: "Chờ xử lý",
+  shipped: "Đang giao",
+  completed: "Hoàn tất",
+  cancelled: "Đã hủy",
+};
+
+const PAYMENT_STATUS_LABELS = {
+  paid: "Thành công",
+  pending: "Chờ thanh toán",
+  unpaid: "Chưa thanh toán",
+  failed: "Thanh toán thất bại",
+  expired: "Đã hết hạn",
+  refunded: "Đã hoàn tiền",
+};
+
+const FILTER_TABS = [
+  { id: "all", label: "Tất cả" },
+  { id: "pending", label: "Chờ xác nhận" },
+  { id: "shipped", label: "Đang giao" },
+  { id: "completed", label: "Hoàn tất" },
+  { id: "cancelled", label: "Đã hủy" },
+];
+
+const formatMoney = (value) =>
+  `${Number(value || 0).toLocaleString("vi-VN")} đ`;
+
+const formatDate = (value) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "—"
+    : date.toLocaleString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+};
+
+const paymentMethodLabel = (method) =>
+  method === "vnpay" ? "VNPay" : method === "cod" ? "COD" : "Không xác định";
+
+const orderCoupons = (order) =>
+  (order?.order_coupons || order?.orderCoupons || []).filter(
+    (coupon) => coupon?.status !== "released"
+  );
+
+const firstValidationMessage = (data) =>
+  data?.errors ? Object.values(data.errors).flat().find(Boolean) : null;
+
+const itemSnapshot = (item) => {
+  const variant = item?.product_variant || item?.productVariant;
+  const product = variant?.product;
+  const galleryImage = product?.images?.[0];
+
+  return {
+    name:
+      item?.product_name_snapshot ||
+      product?.name ||
+      "Sản phẩm không còn tồn tại",
+    sku: item?.product_sku_snapshot || product?.sku || "",
+    color:
+      item?.variant_color_snapshot ||
+      variant?.color ||
+      "Không xác định",
+    size:
+      item?.variant_size_snapshot ||
+      variant?.size ||
+      "Không xác định",
+    image:
+      item?.variant_image_snapshot ||
+      variant?.image_url ||
+      variant?.image ||
+      product?.thumbnail_url ||
+      product?.thumbnail ||
+      galleryImage?.image_url ||
+      galleryImage?.url ||
+      galleryImage?.image ||
+      FALLBACK_IMAGE,
+  };
+};
 
 export default function OrdersPage() {
   const navigate = useNavigate();
-  const [userInfo, setUserInfo] = useState({ name: "Khách hàng", email: "" });
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-const [confirmCancelId, setConfirmCancelId] = useState(null);
-  // THÊM STATE: Quản lý bộ lọc và trạng thái loading khi hủy đơn
   const [filterStatus, setFilterStatus] = useState("all");
+  const [confirmCancelId, setConfirmCancelId] = useState(null);
   const [cancelingId, setCancelingId] = useState(null);
   const [payingId, setPayingId] = useState(null);
+  const [detailOrderId, setDetailOrderId] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState("");
 
-  // STATE: ĐỔI MẬT KHẨU
-  const [showPwdModal, setShowPwdModal] = useState(false);
-  const [pwdForm, setPwdForm] = useState({ current_password: "", new_password: "", new_password_confirmation: "" });
-  const [isSubmittingPwd, setIsSubmittingPwd] = useState(false);
+  const listControllerRef = useRef(null);
+  const detailControllerRef = useRef(null);
+  const listRequestRef = useRef(0);
+  const detailRequestRef = useRef(0);
+  const cancelLocksRef = useRef(new Set());
+  const paymentLocksRef = useRef(new Set());
 
-  const getHeaders = () => {
+  const getHeaders = useCallback(() => {
     const token = localStorage.getItem("access_token");
     return {
+      Accept: "application/json",
       "Content-Type": "application/json",
-      "Accept": "application/json",
-      "Authorization": `Bearer ${token?.trim()}`
+      ...(token ? { Authorization: `Bearer ${token.trim()}` } : {}),
     };
-  };
+  }, []);
 
-  const fetchOrders = async () => {
+  const forceLogin = useCallback(() => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_info");
+    navigate("/login", { replace: true });
+  }, [navigate]);
+
+  const fetchOrders = useCallback(async ({ showToast = false, silent = false } = {}) => {
+    const requestId = listRequestRef.current + 1;
+    listRequestRef.current = requestId;
+    listControllerRef.current?.abort();
+    const controller = new AbortController();
+    listControllerRef.current = controller;
+
     try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/orders`, { headers: getHeaders() });
-      const data = await res.json();
-      if (res.ok && data.status) {
-        setOrders(data.orders || []);
+      if (!silent) setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/orders`, {
+        headers: getHeaders(),
+        signal: controller.signal,
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (requestId !== listRequestRef.current) return false;
+
+      if (response.status === 401) {
+        forceLogin();
+        return false;
       }
+
+      if (!response.ok || data.status === false) {
+        throw new Error(
+          firstValidationMessage(data) ||
+            data.message ||
+            "Không thể tải lịch sử đơn hàng!"
+        );
+      }
+
+      const responseOrders = data.orders?.data || data.orders || data.data || [];
+      setOrders(Array.isArray(responseOrders) ? responseOrders : []);
+      if (showToast) toast.success("Đã làm mới danh sách!");
+      return true;
     } catch (error) {
-      toast.error("Lỗi khi tải lịch sử đơn hàng");
+      if (error.name === "AbortError" || requestId !== listRequestRef.current) {
+        return false;
+      }
+      console.error("Lỗi tải đơn hàng:", error);
+      toast.error(error.message || "Không thể tải lịch sử đơn hàng!");
+      return false;
     } finally {
-      setLoading(false);
+      if (!silent && requestId === listRequestRef.current) setLoading(false);
     }
-  };
+  }, [forceLogin, getHeaders]);
+
+  const closeOrderDetail = useCallback(() => {
+    detailControllerRef.current?.abort();
+    detailRequestRef.current += 1;
+    setDetailOrderId(null);
+    setSelectedOrder(null);
+    setDetailError("");
+    setDetailLoading(false);
+  }, []);
+
+  const fetchOrderDetail = useCallback(async (orderId, { silent = false } = {}) => {
+    const requestId = detailRequestRef.current + 1;
+    detailRequestRef.current = requestId;
+    detailControllerRef.current?.abort();
+    const controller = new AbortController();
+    detailControllerRef.current = controller;
+
+    if (!silent) {
+      setDetailOrderId(orderId);
+      setSelectedOrder(null);
+      setDetailError("");
+      setDetailLoading(true);
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/orders/${encodeURIComponent(orderId)}`,
+        { headers: getHeaders(), signal: controller.signal }
+      );
+      const data = await response.json().catch(() => ({}));
+
+      if (requestId !== detailRequestRef.current) return null;
+      if (response.status === 401) {
+        forceLogin();
+        return null;
+      }
+      if (!response.ok || data.status === false) {
+        throw new Error(
+          firstValidationMessage(data) || data.message || "Không thể tải chi tiết đơn hàng!"
+        );
+      }
+
+      const currentOrder = data.order || data.data || data;
+      if (!currentOrder?.id) throw new Error("Dữ liệu đơn hàng không hợp lệ!");
+      setSelectedOrder(currentOrder);
+      setDetailOrderId(currentOrder.id);
+      setDetailError("");
+      return currentOrder;
+    } catch (error) {
+      if (error.name === "AbortError" || requestId !== detailRequestRef.current) {
+        return null;
+      }
+      setDetailError(error.message || "Không thể tải chi tiết đơn hàng!");
+      if (silent) toast.error(error.message || "Không thể cập nhật chi tiết đơn hàng!");
+      return null;
+    } finally {
+      if (!silent && requestId === detailRequestRef.current) setDetailLoading(false);
+    }
+  }, [forceLogin, getHeaders]);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
+    if (!localStorage.getItem("access_token")) {
       toast.error("Vui lòng đăng nhập để xem lịch sử đơn hàng!");
-      navigate("/login");
+      forceLogin();
       return;
-    }
-
-    const savedUser = localStorage.getItem("user_info");
-    if (savedUser) {
-      try {
-        setUserInfo(JSON.parse(savedUser));
-      } catch (e) { console.error(e); }
     }
 
     fetchOrders();
-  }, [navigate]);
+
+    return () => {
+      listControllerRef.current?.abort();
+      detailControllerRef.current?.abort();
+    };
+  }, [fetchOrders, forceLogin]);
+
+  useEffect(() => {
+    const refreshVisibleData = () => {
+      if (document.visibilityState !== "visible") return;
+      fetchOrders({ silent: true });
+      if (detailOrderId) fetchOrderDetail(detailOrderId, { silent: true });
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") refreshVisibleData();
+    };
+
+    window.addEventListener("focus", refreshVisibleData);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("focus", refreshVisibleData);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [detailOrderId, fetchOrderDetail, fetchOrders]);
 
   const handleLogout = async () => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      try {
+    try {
+      if (localStorage.getItem("access_token")) {
         await fetch(`${API_BASE_URL}/logout`, {
           method: "POST",
-          headers: getHeaders()
+          headers: getHeaders(),
         });
-      } catch (error) {
-        console.error("Lỗi mạng khi đăng xuất:", error);
       }
+    } catch (error) {
+      console.error("Không thể thu hồi token:", error);
+    } finally {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user_info");
+      toast.success("Đăng xuất thành công!");
+      navigate("/login", { replace: true });
     }
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user_info");
-    toast.success("Đăng xuất thành công!");
-    navigate("/");
   };
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    if (pwdForm.new_password !== pwdForm.new_password_confirmation) {
-      toast.error("Mật khẩu xác nhận không khớp!");
-      return;
-    }
-    if (pwdForm.new_password.length < 8) {
-      toast.error("Mật khẩu mới phải từ 8 ký tự trở lên!");
-      return;
-    }
+  const executeCancelOrder = async () => {
+    const orderId = confirmCancelId;
+    if (!orderId || cancelLocksRef.current.has(orderId)) return;
+    cancelLocksRef.current.add(orderId);
 
     try {
-      setIsSubmittingPwd(true);
-      const res = await fetch(`${API_BASE_URL}/user/password`, {
+      setCancelingId(orderId);
+      const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
         method: "PUT",
         headers: getHeaders(),
-        body: JSON.stringify(pwdForm)
       });
-      const data = await res.json();
-      
-      if (res.ok && (data.status || data.success)) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user_info");
-        toast.success("Đổi mật khẩu thành công. Vui lòng đăng nhập lại!");
-        setShowPwdModal(false);
-        setPwdForm({ current_password: "", new_password: "", new_password_confirmation: "" });
-        navigate("/login", { replace: true });
-      } else {
-        toast.error(data.message || "Mật khẩu cũ không chính xác!");
-      }
-    } catch (error) {
-      toast.error("Lỗi kết nối máy chủ!");
-    } finally {
-      setIsSubmittingPwd(false);
-    }
-  };
+      const data = await response.json().catch(() => ({}));
 
-  // THÊM: HÀM HỦY ĐƠN HÀNG
-  const executeCancelOrder = async () => {
-    if (!confirmCancelId) return;
-    
-    try {
-      setCancelingId(confirmCancelId);
-      const res = await fetch(`${API_BASE_URL}/orders/${confirmCancelId}/cancel`, {
-        method: "PUT",
-        headers: getHeaders()
-      });
-      
-      const data = await res.json();
-      if (res.ok && (data.status || data.success)) {
-        toast.success("Đã hủy đơn hàng thành công!");
-        setOrders(orders.map(o => o.id === confirmCancelId ? { ...o, status: 'cancelled' } : o));
-      } else {
-        toast.error(data.message || "Không thể hủy đơn hàng này!");
+      if (response.status === 401) {
+        forceLogin();
+        return;
+      }
+
+      if (!response.ok || data.status === false) {
+        throw new Error(
+          firstValidationMessage(data) ||
+            data.message ||
+            "Không thể hủy đơn hàng này!"
+        );
+      }
+
+      setOrders((previous) =>
+        previous.map((order) =>
+          order.id === orderId
+            ? {
+                ...order,
+                status: "cancelled",
+                payment_status:
+                  order.payment_method === "vnpay" ? "failed" : order.payment_status,
+              }
+            : order
+        )
+      );
+      setSelectedOrder((previous) =>
+        previous?.id === orderId
+          ? {
+              ...previous,
+              status: "cancelled",
+              payment_status:
+                previous.payment_method === "vnpay" ? "failed" : previous.payment_status,
+              order_coupons: (previous.order_coupons || []).map((coupon) => ({
+                ...coupon,
+                status: "released",
+              })),
+            }
+          : previous
+      );
+      toast.success(data.message || "Đã hủy đơn, hoàn kho và trả voucher!");
+      await fetchOrders({ silent: true });
+      if (detailOrderId === orderId) {
+        await fetchOrderDetail(orderId, { silent: true });
       }
     } catch (error) {
-      toast.error("Lỗi kết nối đến máy chủ!");
+      toast.error(error.message || "Không thể hủy đơn hàng này!");
     } finally {
+      cancelLocksRef.current.delete(orderId);
       setCancelingId(null);
-      setConfirmCancelId(null); // Tắt popup sau khi gọi xong
+      setConfirmCancelId(null);
     }
   };
 
   const retryVnpayPayment = async (orderId) => {
+    if (paymentLocksRef.current.has(orderId)) return;
+    paymentLocksRef.current.add(orderId);
     try {
       setPayingId(orderId);
       const response = await fetch(`${API_BASE_URL}/vnpay/create`, {
@@ -156,282 +373,296 @@ const [confirmCancelId, setConfirmCancelId] = useState(null);
         headers: getHeaders(),
         body: JSON.stringify({ order_id: orderId }),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (!response.ok || !(data.url || data.data)) {
-        toast.error(data.message || "Không thể tạo liên kết VNPay mới!");
+      if (response.status === 401) {
+        forceLogin();
         return;
       }
 
-      window.location.assign(data.url || data.data);
+      const paymentUrl = data.url || data.payment_url || data.data?.url || data.data;
+      if (!response.ok || typeof paymentUrl !== "string") {
+        throw new Error(data.message || "Không thể tạo liên kết VNPay mới!");
+      }
+
+      window.location.assign(paymentUrl);
     } catch (error) {
-      toast.error("Không thể kết nối đến máy chủ!");
+      toast.error(error.message || "Không thể tạo liên kết VNPay mới!");
     } finally {
+      paymentLocksRef.current.delete(orderId);
       setPayingId(null);
     }
   };
 
-  // THÊM: LỌC MẢNG ĐƠN HÀNG TRƯỚC KHI HIỂN THỊ
-  const filteredOrders = filterStatus === "all" 
-    ? orders 
-    : orders.filter(o => o.status === filterStatus);
+  const filteredOrders = useMemo(
+    () =>
+      filterStatus === "all"
+        ? orders
+        : orders.filter((order) => order.status === filterStatus),
+    [filterStatus, orders]
+  );
 
-  // Hàm helper để dịch trạng thái
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'pending': return 'Chờ xử lý';
-      case 'shipped': return 'Đang giao';
-      case 'completed': return 'Hoàn tất';
-      case 'cancelled': return 'Đã hủy';
-      default: return status;
-    }
-  };
+  const selectedCoupons = useMemo(
+    () => orderCoupons(selectedOrder),
+    [selectedOrder]
+  );
 
   return (
     <>
       <Toaster position="top-right" />
-   
 
-      <div className="orders-page">
-        <div className="account-layout">
-          {/* Sidebar */}
-          <div className="account-sidebar">
-            <h2>Tài khoản của tôi</h2>
-            <div className="user-info">
-              <div className="avatar">
-                {userInfo?.name ? userInfo.name.charAt(0).toUpperCase() : "K"}
-              </div>
-              <div>
-                <h4>{userInfo?.name || "Khách hàng"}</h4>
-                <span>{userInfo?.email || "Chưa cập nhật email"}</span>
-              </div>
-            </div>
+      <div className="ash-account-page ash-orders-page">
+        <div className="ash-account-shell">
+          <aside className="ash-account-side-nav">
+            <Link to="/orders" className="active">Orders</Link>
+            <Link to="/profile">Profile</Link>
+          </aside>
 
-            <ul className="account-menu">
-              <li><Link to="/profile"><FiUser /> Thông tin cá nhân</Link></li>
-              <li className="active"><Link to="/orders"><FiClipboard /> Đơn hàng của tôi</Link></li>
-              <li onClick={() => setShowPwdModal(true)} style={{ cursor: "pointer" }}><FiLock /> Đổi mật khẩu</li>
-              <li className="logout" onClick={handleLogout} style={{ cursor: "pointer" }}><FiLogOut /> Đăng xuất</li>
-            </ul>
-          </div>
-
-          {/* Content */}
-          <div className="orders-content">
-            <div className="orders-header">
-              <h2 className="orders-title"><FiClipboard /> Đơn hàng của tôi</h2>
-              <a href="#" onClick={(e) => { e.preventDefault(); fetchOrders(); toast.success("Đã làm mới danh sách!"); }}>Làm mới</a>
-            </div>
-
-            {/* BỘ LỌC TRẠNG THÁI */}
-            <div style={{ display: "flex", gap: "10px", marginBottom: "20px", borderBottom: "1px solid #e5e7eb", paddingBottom: "15px", overflowX: "auto" }}>
-              {[
-                { id: "all", label: "Tất cả" },
-                { id: "pending", label: "Chờ xác nhận" },
-                { id: "shipped", label: "Đang giao" },
-                { id: "completed", label: "Hoàn tất" },
-                { id: "cancelled", label: "Đã hủy" }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setFilterStatus(tab.id)}
-                  style={{
-                    padding: "8px 16px",
-                    border: "none",
-                    background: filterStatus === tab.id ? "#4f46e5" : "#f3f4f6",
-                    color: filterStatus === tab.id ? "#fff" : "#4b5563",
-                    borderRadius: "20px",
-                    fontWeight: filterStatus === tab.id ? "600" : "500",
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    transition: "all 0.2s"
-                  }}
-                >
-                  {tab.label}
+          <main className="ash-orders-main">
+            <section className="ash-profile-section ash-orders-section">
+              <div className="ash-profile-section-head ash-orders-heading">
+                <div>
+                  <h2>Đơn hàng của tôi</h2>
+                  <p>Theo dõi và quản lý các đơn hàng của bạn</p>
+                </div>
+                <button type="button" className="ash-outline-btn ash-orders-refresh" onClick={() => fetchOrders({ showToast: true })} disabled={loading}>
+                  <FiRefreshCw className={loading ? "spinning" : ""} />
+                  {loading ? "Đang tải" : "Làm mới"}
                 </button>
-              ))}
-            </div>
+              </div>
 
-            {loading ? (
-              <p style={{ textAlign: "center", padding: "30px" }}>Đang tải lịch sử đơn hàng...</p>
-            ) : filteredOrders.length === 0 ? (
-              <p style={{ textAlign: "center", padding: "30px", color: "#666" }}>
-                {filterStatus === "all" ? "Bạn chưa có đơn hàng nào." : "Không có đơn hàng nào ở trạng thái này."}
-              </p>
-            ) : (
-              <table className="orders-table">
-                <thead>
-                  <tr>
-                    <th>Mã đơn hàng</th>
-                    <th>Ngày đặt</th>
-                    <th>Tổng tiền</th>
-                    <th>Trạng thái</th>
-                    <th style={{ textAlign: "right" }}>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td className="order-id">#{order.id}</td>
-                      <td>{new Date(order.created_at).toLocaleDateString("vi-VN")}</td>
-                      <td className="price">{new Intl.NumberFormat('vi-VN').format(order.total_amount)} đ</td>
-                      <td>
-                        <span className={`status ${order.status}`}>
-                          {getStatusLabel(order.status)}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                          <button className="view-btn" onClick={() => setSelectedOrder(order)} title="Xem chi tiết">
-                            <FiEye />
-                          </button>
+              <div className="ash-orders-tabs" role="tablist" aria-label="Lọc trạng thái đơn hàng">
+                {FILTER_TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`ash-orders-tab ${filterStatus === tab.id ? "active" : ""}`}
+                    onClick={() => setFilterStatus(tab.id)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
 
-                          {order.payment_method === "vnpay" &&
-                            order.status === "pending" &&
-                            order.payment_status !== "paid" && (
-                              <button
-                                type="button"
-                                className="view-btn"
-                                disabled={payingId === order.id}
-                                onClick={() => retryVnpayPayment(order.id)}
-                                title="Thanh toán lại bằng VNPay"
-                              >
-                                <FiCreditCard />
-                              </button>
-                            )}
-                          
-                          {/* CHỈ HIỂN THỊ NÚT HỦY KHI ĐƠN ĐANG "PENDING" */}
-                          {order.status === 'pending' && (
-                            <button 
-                              onClick={() => setConfirmCancelId(order.id)} // ĐỔI TẠI ĐÂY
-                              disabled={cancelingId === order.id}
-                              style={{ 
-                                background: "#fee2e2", color: "#ef4444", border: "none", 
-                                width: "32px", height: "32px", borderRadius: "6px", 
-                                cursor: cancelingId === order.id ? "not-allowed" : "pointer", 
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                                transition: "all 0.2s", opacity: cancelingId === order.id ? 0.5 : 1
-                              }}
-                              title="Hủy đơn hàng"
-                            >
-                              <FiTrash2 />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+              {loading ? (
+                <div className="ash-profile-card ash-orders-state">Đang tải lịch sử đơn hàng...</div>
+              ) : filteredOrders.length === 0 ? (
+                <div className="ash-profile-card ash-orders-state">
+                  <span className="ash-orders-state-icon"><FiClipboard /></span>
+                  <div>
+                    <strong>{filterStatus === "all" ? "Bạn chưa có đơn hàng nào" : "Không có đơn hàng ở trạng thái này"}</strong>
+                    <p>{filterStatus === "all" ? "Các đơn hàng sau khi đặt sẽ xuất hiện tại đây." : "Bạn có thể chọn trạng thái khác để xem đơn hàng."}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="ash-profile-card ash-orders-card">
+                  <div className="ash-orders-table-wrap">
+                    <table className="ash-orders-table">
+                      <thead>
+                        <tr>
+                          <th>Mã đơn hàng</th>
+                          <th>Ngày đặt</th>
+                          <th>Tổng tiền</th>
+                          <th>Thanh toán</th>
+                          <th>Trạng thái</th>
+                          <th>Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredOrders.map((order) => (
+                          <tr key={order.id}>
+                            <td data-label="Mã đơn hàng"><strong className="ash-order-code">#{order.id}</strong></td>
+                            <td data-label="Ngày đặt">{formatDate(order.created_at)}</td>
+                            <td data-label="Tổng tiền"><strong className="ash-order-price">{formatMoney(order.total_amount)}</strong></td>
+                            <td data-label="Thanh toán">
+                              <div className="ash-order-payment-cell">
+                                <strong>{paymentMethodLabel(order.payment_method)}</strong>
+                                <span className={`payment-${order.payment_status || "unpaid"}`}>
+                                  {PAYMENT_STATUS_LABELS[order.payment_status] || order.payment_status || "Chưa xác định"}
+                                </span>
+                              </div>
+                            </td>
+                            <td data-label="Trạng thái">
+                              <span className={`ash-order-status ${order.status}`}>{STATUS_LABELS[order.status] || order.status}</span>
+                            </td>
+                            <td data-label="Thao tác">
+                              <div className="ash-order-actions">
+                                <button type="button" className="ash-order-action-btn" onClick={() => fetchOrderDetail(order.id)} title="Xem chi tiết">
+                                  <FiEye /><span>Xem</span>
+                                </button>
+
+                                {order.payment_method === "vnpay" && order.status === "pending" && order.payment_status !== "paid" && (
+                                  <button type="button" className="ash-order-action-btn" onClick={() => retryVnpayPayment(order.id)} disabled={payingId === order.id} title="Thanh toán lại bằng VNPay">
+                                    <FiCreditCard /><span>{payingId === order.id ? "Đang mở" : "Thanh toán"}</span>
+                                  </button>
+                                )}
+
+                                {order.status === "pending" && order.payment_status !== "paid" && (
+                                  <button type="button" className="ash-order-action-btn danger" onClick={() => setConfirmCancelId(order.id)} disabled={cancelingId === order.id} title="Hủy đơn hàng">
+                                    <FiTrash2 /><span>{cancelingId === order.id ? "Đang hủy" : "Hủy"}</span>
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <section className="ash-profile-actions ash-orders-account-actions">
+              <button type="button" className="ash-outline-btn ash-logout-btn" onClick={handleLogout}>Đăng xuất</button>
+            </section>
+          </main>
         </div>
       </div>
 
-      {/* ==========================================
-          MODAL: CHI TIẾT ĐƠN HÀNG
-      ========================================== */}
-      {selectedOrder && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" }}>
-          <div style={{ background: "#fff", padding: "24px", borderRadius: "12px", width: "100%", maxWidth: "600px", maxHeight: "90vh", position: "relative", display: "flex", flexDirection: "column" }}>
-            <button onClick={() => setSelectedOrder(null)} style={{ position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#6b7280" }}><FiX /></button>
-            <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "18px", borderBottom: "1px solid #eee", paddingBottom: "10px" }}>Chi tiết đơn hàng #{selectedOrder.id}</h3>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "14px", marginBottom: "15px" }}>
-              <p><strong>Ngày đặt:</strong> {new Date(selectedOrder.created_at).toLocaleDateString("vi-VN")}</p>
-              <p><strong>Trạng thái:</strong> <span className={`status ${selectedOrder.status}`}>{getStatusLabel(selectedOrder.status)}</span></p>
-              {selectedOrder.note && <p><strong>Ghi chú:</strong> {selectedOrder.note}</p>}
-              <p><strong>Tổng thanh toán:</strong> <span style={{ color: "red", fontWeight: "bold" }}>{new Intl.NumberFormat('vi-VN').format(selectedOrder.total_amount)} đ</span></p>
-            </div>
+      {detailOrderId && (
+        <div className="ash-order-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeOrderDetail()}>
+          <div className="ash-order-modal" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
+            <button type="button" className="ash-order-modal-close" onClick={closeOrderDetail} aria-label="Đóng"><FiX /></button>
 
-            <h4 style={{ fontSize: "15px", marginBottom: "10px", color: "#374151" }}>Sản phẩm đã mua:</h4>
-            
-            <div style={{ overflowY: "auto", paddingRight: "5px", flex: 1, border: "1px solid #eee", borderRadius: "8px", padding: "10px", background: "#fafafa" }}>
-              {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                selectedOrder.items.map((item, index) => {
-                  const variant = item.product_variant;
-                  const product = variant?.product;
-                  return (
-                    <div key={index} style={{ display: "flex", alignItems: "center", gap: "15px", padding: "10px 0", borderBottom: index < selectedOrder.items.length - 1 ? "1px dashed #d1d5db" : "none" }}>
-                      <img src={product?.thumbnail || "https://placehold.co/60"} alt={product?.name} style={{ width: "65px", height: "65px", objectFit: "cover", borderRadius: "6px", border: "1px solid #eee", background: "#fff" }} />
-                      <div style={{ flex: 1 }}>
-                        <p style={{ margin: "0 0 5px 0", fontWeight: "600", fontSize: "14px", color: "#1f2937" }}>{product?.name || "Sản phẩm không xác định"}</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>Phân loại: {variant?.color} - Size {variant?.size}</p>
-                        <p style={{ margin: "5px 0 0 0", fontSize: "13px", color: "#374151" }}>Số lượng: <strong>x{item.quantity}</strong></p>
-                      </div>
-                      <div style={{ fontWeight: "bold", color: "#ef4444", fontSize: "14px" }}>{new Intl.NumberFormat('vi-VN').format(item.price)} đ</div>
+            {detailLoading ? (
+              <div className="ash-order-detail-state">
+                <FiRefreshCw className="spinning" />
+                <strong>Đang tải chi tiết đơn hàng...</strong>
+              </div>
+            ) : detailError ? (
+              <div className="ash-order-detail-state error">
+                <strong>Không thể hiển thị đơn hàng</strong>
+                <p>{detailError}</p>
+                <button type="button" onClick={() => fetchOrderDetail(detailOrderId)}>Thử lại</button>
+              </div>
+            ) : selectedOrder ? (
+              <>
+                <div className="ash-order-modal-header">
+                  <div>
+                    <span>CHI TIẾT ĐƠN HÀNG</span>
+                    <h3 id="order-detail-title">Đơn hàng #{selectedOrder.id}</h3>
+                    <p>Đặt lúc {formatDate(selectedOrder.created_at)}</p>
+                  </div>
+                  <span className={`ash-order-status ${selectedOrder.status}`}>
+                    {STATUS_LABELS[selectedOrder.status] || selectedOrder.status}
+                  </span>
+                </div>
+
+                <div className="ash-order-info-grid">
+                  <section className="ash-order-info-card">
+                    <h4><FiMapPin /> Giao hàng</h4>
+                    <strong>{selectedOrder.shipping_receiver_name || selectedOrder.address?.receiver_name || "Người nhận"}</strong>
+                    <span>{selectedOrder.shipping_phone || selectedOrder.address?.phone || "Không có số điện thoại"}</span>
+                    <p>{[
+                      selectedOrder.shipping_street || selectedOrder.address?.street,
+                      selectedOrder.shipping_ward || selectedOrder.address?.ward,
+                      selectedOrder.shipping_district || selectedOrder.address?.district,
+                      selectedOrder.shipping_province || selectedOrder.address?.province,
+                    ].filter(Boolean).join(", ") || "Không có địa chỉ giao hàng"}</p>
+                  </section>
+
+                  <section className="ash-order-info-card">
+                    <h4><FiCreditCard /> Thanh toán</h4>
+                    <div className="ash-order-payment-row">
+                      <strong>{paymentMethodLabel(selectedOrder.payment_method)}</strong>
+                      <span className={`payment-${selectedOrder.payment_status || "unpaid"}`}>
+                        {PAYMENT_STATUS_LABELS[selectedOrder.payment_status] || selectedOrder.payment_status || "Chưa xác định"}
+                      </span>
                     </div>
-                  );
-                })
-              ) : (
-                <p style={{ textAlign: "center", color: "#6b7280", margin: "20px 0" }}>Không có thông tin sản phẩm.</p>
-              )}
-            </div>
+                    {selectedOrder.payment_method === "vnpay" ? (
+                      <dl className="ash-payment-details">
+                        <div><dt>Mã VNPay</dt><dd>{selectedOrder.vnpay_txn_ref || "—"}</dd></div>
+                        <div><dt>Mã giao dịch</dt><dd>{selectedOrder.vnpay_transaction_no || "—"}</dd></div>
+                        <div><dt>Thanh toán lúc</dt><dd>{formatDate(selectedOrder.paid_at)}</dd></div>
+                      </dl>
+                    ) : (
+                      <p>Thanh toán khi khách nhận được hàng.</p>
+                    )}
+                  </section>
+                </div>
 
-            <button onClick={() => setSelectedOrder(null)} style={{ width: "100%", background: "#4f46e5", color: "#fff", border: "none", padding: "12px", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", marginTop: "20px" }}>Đóng</button>
+                <section className="ash-order-products-block">
+                  <div className="ash-order-block-title">
+                    <h4>Sản phẩm đã mua</h4>
+                    <span>{selectedOrder.items?.length || 0} sản phẩm</span>
+                  </div>
+                  <div className="ash-order-items">
+                    {selectedOrder.items?.length ? (
+                      selectedOrder.items.map((item) => {
+                        const snapshot = itemSnapshot(item);
+                        return (
+                          <div className="ash-order-item" key={item.id || `${item.product_variant_id}-${snapshot.color}-${snapshot.size}`}>
+                            <img src={snapshot.image} alt={snapshot.name} onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }} />
+                            <div className="ash-order-item-copy">
+                              <strong>{snapshot.name}</strong>
+                              {snapshot.sku && <span>SKU: {snapshot.sku}</span>}
+                              <span>Màu: {snapshot.color} · Size: {snapshot.size}</span>
+                              <span>Số lượng: {item.quantity}</span>
+                            </div>
+                            <div className="ash-order-item-price-wrap">
+                              <span>{formatMoney(item.price)} × {item.quantity}</span>
+                              <strong className="ash-order-item-price">{formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}</strong>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="ash-order-empty-items">Không có thông tin sản phẩm.</p>
+                    )}
+                  </div>
+                </section>
+
+                <div className="ash-order-footer-grid">
+                  <section className="ash-order-note-card">
+                    <h4>Ghi chú</h4>
+                    <p>{selectedOrder.note || "Khách hàng không để lại ghi chú."}</p>
+                  </section>
+
+                  <section className="ash-order-totals-card">
+                    <div><span>Tạm tính</span><strong>{formatMoney(selectedOrder.subtotal)}</strong></div>
+                    <div><span>Phí vận chuyển</span><strong>{formatMoney(selectedOrder.shipping_fee)}</strong></div>
+                    {Number(selectedOrder.discount_amount) > 0 && (
+                      <div className="discount"><span>Giảm giá sản phẩm</span><strong>-{formatMoney(selectedOrder.discount_amount)}</strong></div>
+                    )}
+                    {Number(selectedOrder.shipping_discount) > 0 && (
+                      <div className="discount"><span>Giảm phí vận chuyển</span><strong>-{formatMoney(selectedOrder.shipping_discount)}</strong></div>
+                    )}
+                    <div className="ash-order-vouchers">
+                      <span><FiTag /> Voucher</span>
+                      {selectedCoupons.length ? (
+                        <div>{selectedCoupons.map((coupon) => (
+                          <strong key={coupon.id || `${coupon.coupon_kind}-${coupon.code_snapshot}`}>
+                            {coupon.code_snapshot}
+                          </strong>
+                        ))}</div>
+                      ) : <em>Không sử dụng</em>}
+                    </div>
+                    <div className="total"><span>Tổng thanh toán</span><strong>{formatMoney(selectedOrder.total_amount)}</strong></div>
+                  </section>
+                </div>
+
+                <button type="button" className="ash-order-modal-primary" onClick={closeOrderDetail}>Đóng</button>
+              </>
+            ) : null}
           </div>
         </div>
       )}
 
-      {/* MODAL ĐỔI MẬT KHẨU GIỮ NGUYÊN */}
-      {showPwdModal && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <div style={{ background: "#fff", padding: "24px", borderRadius: "12px", width: "100%", maxWidth: "400px", position: "relative" }}>
-            <button onClick={() => setShowPwdModal(false)} style={{ position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#6b7280" }}><FiX /></button>
-            <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "18px" }}>Đổi mật khẩu</h3>
-            <form onSubmit={handleChangePassword} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label style={{ fontSize: "14px", fontWeight: "500" }}>Mật khẩu hiện tại *</label>
-                <input type="password" required value={pwdForm.current_password} onChange={(e) => setPwdForm({...pwdForm, current_password: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label style={{ fontSize: "14px", fontWeight: "500" }}>Mật khẩu mới *</label>
-                <input type="password" required minLength={8} value={pwdForm.new_password} onChange={(e) => setPwdForm({...pwdForm, new_password: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label style={{ fontSize: "14px", fontWeight: "500" }}>Xác nhận mật khẩu mới *</label>
-                <input type="password" required minLength={8} value={pwdForm.new_password_confirmation} onChange={(e) => setPwdForm({...pwdForm, new_password_confirmation: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
-              </div>
-              <button disabled={isSubmittingPwd} type="submit" style={{ background: "#4f46e5", color: "#fff", border: "none", padding: "12px", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", marginTop: "10px", opacity: isSubmittingPwd ? 0.7 : 1 }}>
-                {isSubmittingPwd ? "Đang xử lý..." : "Xác nhận đổi mật khẩu"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* ==========================================
-          MODAL: XÁC NHẬN HỦY ĐƠN HÀNG
-      ========================================== */}
       {confirmCancelId && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" }}>
-          <div style={{ background: "#fff", padding: "24px", borderRadius: "12px", width: "100%", maxWidth: "400px", position: "relative", textAlign: "center" }}>
-            <div style={{ width: "50px", height: "50px", borderRadius: "50%", background: "#fee2e2", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", margin: "0 auto 15px auto" }}>
-              <FiTrash2 />
-            </div>
-            
-            <h3 style={{ marginTop: 0, marginBottom: "10px", fontSize: "18px", color: "#111827" }}>Xác nhận hủy đơn hàng</h3>
-            <p style={{ color: "#4b5563", fontSize: "14px", marginBottom: "25px" }}>
-              Bạn có chắc chắn muốn hủy đơn hàng <strong>#{confirmCancelId}</strong> không? Hành động này không thể hoàn tác.
-            </p>
-
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-              <button 
-                onClick={() => setConfirmCancelId(null)}
-                disabled={cancelingId !== null}
-                style={{ flex: 1, padding: "10px", background: "#f3f4f6", color: "#374151", border: "none", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}
-              >
-                Không, quay lại
-              </button>
-              <button 
-                onClick={executeCancelOrder}
-                disabled={cancelingId !== null}
-                style={{ flex: 1, padding: "10px", background: "#ef4444", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "600", cursor: cancelingId !== null ? "not-allowed" : "pointer", opacity: cancelingId !== null ? 0.7 : 1 }}
-              >
-                {cancelingId !== null ? "Đang xử lý..." : "Có, Hủy đơn"}
-              </button>
+        <div className="ash-order-modal-backdrop">
+          <div className="ash-cancel-modal" role="dialog" aria-modal="true">
+            <span className="ash-cancel-icon"><FiTrash2 /></span>
+            <h3>Xác nhận hủy đơn hàng</h3>
+            <p>Bạn có chắc muốn hủy đơn hàng <strong>#{confirmCancelId}</strong>? Tồn kho và voucher sẽ được backend hoàn lại.</p>
+            <div>
+              <button type="button" onClick={() => setConfirmCancelId(null)} disabled={cancelingId !== null}>Không, quay lại</button>
+              <button type="button" className="danger" onClick={executeCancelOrder} disabled={cancelingId !== null}>{cancelingId !== null ? "Đang xử lý..." : "Có, hủy đơn"}</button>
             </div>
           </div>
         </div>
       )}
+
       <Footer />
     </>
   );

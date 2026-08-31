@@ -16,9 +16,11 @@ protected $fillable = [
     'type',
     'receiver_name',
     'phone',
+    'province_code',
     'province',
     'district',
     'ward',
+    'ward_code',
     'street',
     'is_default'
 ];

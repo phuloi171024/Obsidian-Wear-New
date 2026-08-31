@@ -44,12 +44,12 @@ export default function Variants() {
   const [editForm, setEditForm] = useState({ color: "", size: "", stock: 0 });
 
   // ================= 1. GỌI API LẤY TẤT CẢ BIẾN THỂ =================
-  const fetchAllVariants = async (keyword = "") => {
+  const fetchAllVariants = async (keyword = "", silent = false) => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const productsList = [];
       let apiPage = 1;
       let lastApiPage = 1;
@@ -135,7 +135,7 @@ export default function Variants() {
     } catch (error) {
       toast.error("Không thể tải danh sách biến thể!");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -211,7 +211,8 @@ export default function Variants() {
       });
       if (res.ok) {
         toast.success("Xóa biến thể thành công!");
-        fetchAllVariants(search);
+        setVariants((previous) => previous.filter((variant) => variant.id !== variantId));
+        fetchAllVariants(search, true);
       } else {
         toast.error("Không thể xóa biến thể!");
       }
@@ -248,7 +249,7 @@ export default function Variants() {
 
       if (res.ok) {
         toast.success("Cập nhật biến thể thành công!");
-        fetchAllVariants(search);
+        fetchAllVariants(search, true);
         setEditModal({ show: false, variant: null });
       } else {
         toast.error("Không thể cập nhật biến thể!");

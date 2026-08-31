@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CouponController;
+use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\ShippingController;
 use App\Http\Controllers\Api\OrderController as ClientOrderController;
 use App\Http\Controllers\Api\ProductController as ClientProductController;
 use App\Http\Controllers\Api\ReviewController;
@@ -97,16 +99,9 @@ Route::post(
     [AuthController::class, 'exchangeGoogleCode']
 )->middleware('throttle:10,1');
 
-// Voucher công khai
-Route::get(
-    '/coupons',
-    [CouponController::class, 'index']
-);
-
-Route::post(
-    '/coupons/apply',
-    [CouponController::class, 'apply']
-)->middleware('throttle:20,1');
+// Danh mục hành chính sau sáp nhập, backend gọi API ngoài và cache.
+Route::get('/locations/provinces', [LocationController::class, 'provinces']);
+Route::get('/locations/provinces/{provinceCode}/wards', [LocationController::class, 'wards']);
 
 // VNPay Return và IPN
 Route::get(
@@ -210,6 +205,12 @@ Route::middleware([
         [CartController::class, 'remove']
     );
 
+    Route::get('/coupons', [CouponController::class, 'index']);
+    Route::post('/coupons/apply', [CouponController::class, 'apply'])
+        ->middleware('throttle:20,1');
+    Route::post('/shipping/quote', [ShippingController::class, 'quote'])
+        ->middleware('throttle:30,1');
+
     // Đánh giá
     Route::post(
         '/products/{productId}/reviews',
@@ -241,6 +242,11 @@ Route::middleware([
         '/orders/{id}/cancel',
         [ClientOrderController::class, 'cancel']
     )->middleware('throttle:5,1');
+
+    Route::put(
+        '/orders/{id}/payment-method',
+        [ClientOrderController::class, 'updatePaymentMethod']
+    )->middleware('throttle:10,1');
 
     // VNPay
     Route::post(

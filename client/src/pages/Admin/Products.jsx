@@ -62,12 +62,12 @@ export default function Products() {
   const fileInputRef = useRef(null);
 
   // ================= 1. GỌI API LẤY DANH SÁCH =================
-  const fetchProducts = async (page = 1, keyword = "") => {
+  const fetchProducts = async (page = 1, keyword = "", silent = false) => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await fetch(`${API_BASE_URL}/admin/products?page=${page}&search=${keyword}`, {
         headers: {
           "Accept": "application/json",
@@ -89,7 +89,7 @@ export default function Products() {
     } catch (error) {
       toast.error("Không thể tải danh sách sản phẩm!");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -202,7 +202,7 @@ export default function Products() {
 
       if (res.ok) {
         toast.success(editingId ? "Cập nhật sản phẩm thành công!" : "Thêm sản phẩm thành công!");
-        fetchProducts(currentPage, search);
+        fetchProducts(currentPage, search, true);
         setShowModal(false);
       } else {
         toast.error(data.message || "Không thể lưu sản phẩm!");
@@ -230,7 +230,8 @@ export default function Products() {
       const data = await res.json();
       if (res.ok) {
         toast.success("Xóa sản phẩm thành công!");
-        fetchProducts(currentPage, search);
+        setProducts((previous) => previous.filter((product) => product.id !== id));
+        fetchProducts(currentPage, search, true);
       } else {
         toast.error(data.message || "Không thể xóa sản phẩm!");
       }

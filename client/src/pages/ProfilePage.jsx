@@ -1,17 +1,10 @@
 import { API_BASE_URL } from "../config/api";
-import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./OrdersPage.css";
 import "./ProfilePage.css";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  FiUser,
-  FiClipboard,
-  FiLock,
-  FiLogOut,
-  FiEdit,
-  FiPlus,
   FiTrash2,
   FiX,
   FiMapPin
@@ -37,13 +30,18 @@ export default function ProfilePage() {
     type: "Nhà", 
     receiver_name: "", 
     phone: "", 
+    province_code: "",
     province: "", 
     district: "", 
+    ward_code: "",
     ward: "", 
     street: "", 
     is_default: false 
   });
   const [isSubmittingAddr, setIsSubmittingAddr] = useState(false);
+  const [provinces, setProvinces] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [isLoadingWards, setIsLoadingWards] = useState(false);
 
   // =====================================
   // STATE: ĐỔI MẬT KHẨU
@@ -51,6 +49,36 @@ export default function ProfilePage() {
   const [showPwdModal, setShowPwdModal] = useState(false);
   const [pwdForm, setPwdForm] = useState({ current_password: "", new_password: "", new_password_confirmation: "" });
   const [isSubmittingPwd, setIsSubmittingPwd] = useState(false);
+
+  const sortAddresses = (items = []) =>
+    [...items].sort(
+      (a, b) => Number(Boolean(b.is_default)) - Number(Boolean(a.is_default))
+    );
+
+  const notifyAuthChanged = () => {
+    window.dispatchEvent(new Event("loginSuccess"));
+  };
+
+  const fetchAddresses = async (token) => {
+    const response = await fetch(`${API_BASE_URL}/user/addresses`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token.trim()}`,
+      },
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.message || "Không thể tải danh sách địa chỉ!");
+    }
+
+    const nextAddresses = sortAddresses(data.data || []);
+    setAddresses(nextAddresses);
+
+    return nextAddresses;
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -82,6 +110,11 @@ export default function ProfilePage() {
           }
         });
 
+        const provinceRes = await fetch(
+          `${API_BASE_URL}/locations/provinces`,
+          { headers: { Accept: "application/json" } }
+        );
+
         if (profileRes.ok) {
           const data = await profileRes.json();
           const userData = data.data || data;
@@ -100,8 +133,14 @@ export default function ProfilePage() {
         if (addrRes.ok) {
           const addrData = await addrRes.json();
           // Đảm bảo đưa địa chỉ mặc định lên đầu danh sách
-          const sortedAddrs = (addrData.data || []).sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0));
-          setAddresses(sortedAddrs);
+          setAddresses(sortAddresses(addrData.data || []));
+        }
+
+        if (provinceRes.ok) {
+          const provinceData = await provinceRes.json();
+          setProvinces(provinceData.data || []);
+        } else {
+          toast.error("Không thể tải danh sách tỉnh/thành phố!");
         }
 
       } catch (error) {
@@ -115,11 +154,29 @@ export default function ProfilePage() {
     fetchData();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user_info");
-    toast.success("Đăng xuất thành công!");
-    navigate("/login");
+  const handleLogout = async () => {
+    const token = localStorage.getItem("access_token");
+
+    try {
+      if (token) {
+        await fetch(`${API_BASE_URL}/logout`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token.trim()}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Không thể thu hồi token đăng nhập:", error);
+    } finally {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user_info");
+      notifyAuthChanged();
+      toast.success("Đăng xuất thành công!");
+      navigate("/login", { replace: true });
+    }
   };
 
   const handleChange = (e) => {
@@ -128,6 +185,13 @@ export default function ProfilePage() {
 
   const handleUpdate = async () => {
     const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      toast.error("Phiên đăng nhập đã hết hạn!");
+      notifyAuthChanged();
+      navigate("/login", { replace: true });
+      return;
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/user/profile`, {
@@ -147,9 +211,16 @@ export default function ProfilePage() {
 
       if (response.ok) {
         toast.success("Cập nhật thông tin thành công!");
-        if (data.data || data) {
-          localStorage.setItem("user_info", JSON.stringify(data.data || data));
-        }
+        const updatedUser = data.data || data;
+
+        setUser({
+          name: updatedUser.name || "",
+          email: updatedUser.email || user.email,
+          phone: updatedUser.phone || "",
+        });
+
+        localStorage.setItem("user_info", JSON.stringify(updatedUser));
+        notifyAuthChanged();
       } else {
   const validationMessage = data.errors
     ? Object.values(data.errors).flat()[0]
@@ -167,30 +238,118 @@ export default function ProfilePage() {
     }
   };
 
-  // HÀM MỞ MODAL ĐỊA CHỈ ĐÃ ĐƯỢC MAP ĐÚNG DỮ LIỆU MỚI
-  const openAddressModal = (addr = null) => {
+  const loadWards = async (provinceCode) => {
+    if (!provinceCode) {
+      setWards([]);
+      return;
+    }
+
+    try {
+      setIsLoadingWards(true);
+      const response = await fetch(
+        `${API_BASE_URL}/locations/provinces/${provinceCode}/wards`,
+        { headers: { Accept: "application/json" } }
+      );
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Không thể tải danh sách phường/xã!");
+      }
+
+      setWards(data.data || []);
+    } catch (error) {
+      console.error("Lỗi tải phường/xã:", error);
+      setWards([]);
+      toast.error(error.message || "Không thể tải danh sách phường/xã!");
+    } finally {
+      setIsLoadingWards(false);
+    }
+  };
+
+  const handleProvinceChange = async (event) => {
+    const provinceCode = event.target.value;
+    const selectedProvince = provinces.find(
+      (item) => String(item.code) === String(provinceCode)
+    );
+
+    setAddrForm((previous) => ({
+      ...previous,
+      province_code: provinceCode,
+      province: selectedProvince?.name || "",
+      district: "",
+      ward_code: "",
+      ward: "",
+    }));
+
+    await loadWards(provinceCode);
+  };
+
+  const handleWardChange = (event) => {
+    const wardCode = event.target.value;
+    const selectedWard = wards.find(
+      (item) => String(item.code) === String(wardCode)
+    );
+
+    setAddrForm((previous) => ({
+      ...previous,
+      ward_code: wardCode,
+      ward: selectedWard?.name || "",
+    }));
+  };
+
+  // Mở modal và giữ đúng cả mã lẫn tên tỉnh/phường.
+  const openAddressModal = async (addr = null) => {
     if (addr) {
       setAddrForm({ 
         id: addr.id, 
         type: addr.type || "Nhà", 
         receiver_name: addr.receiver_name || "",
         phone: addr.phone || "",
+        province_code: String(addr.province_code || ""),
         province: addr.province || "",
         district: addr.district || "",
+        ward_code: String(addr.ward_code || ""),
         ward: addr.ward || "",
         street: addr.street || addr.address || "", // Fallback nếu chưa xóa cột address
         is_default: addr.is_default === 1 || addr.is_default === true
       });
+
+      if (addr.province_code) {
+        await loadWards(String(addr.province_code));
+      } else {
+        setWards([]);
+      }
     } else {
-      setAddrForm({ id: null, type: "Nhà", receiver_name: "", phone: "", province: "", district: "", ward: "", street: "", is_default: false });
+      setAddrForm({
+        id: null,
+        type: "Nhà",
+        receiver_name: "",
+        phone: "",
+        province_code: "",
+        province: "",
+        district: "",
+        ward_code: "",
+        ward: "",
+        street: "",
+        is_default: false,
+      });
+      setWards([]);
     }
     setShowAddrModal(true);
   };
 
   const handleSaveAddress = async (e) => {
     e.preventDefault();
-    if (!addrForm.receiver_name || !addrForm.phone || !addrForm.province || !addrForm.district || !addrForm.ward || !addrForm.street) {
-      toast.error("Vui lòng nhập đầy đủ các trường thông tin!");
+    if (
+      !addrForm.receiver_name.trim() ||
+      !addrForm.phone.trim() ||
+      !addrForm.province_code ||
+      !addrForm.province ||
+      !addrForm.ward_code ||
+      !addrForm.ward ||
+      !addrForm.street.trim()
+    ) {
+      toast.error("Vui lòng nhập đầy đủ thông tin địa chỉ!");
       return;
     }
 
@@ -203,13 +362,15 @@ export default function ProfilePage() {
     // CẬP NHẬT PAYLOAD
     const payload = {
       type: addrForm.type,
-      receiver_name: addrForm.receiver_name,
-      phone: addrForm.phone,
+      receiver_name: addrForm.receiver_name.trim(),
+      phone: addrForm.phone.trim(),
+      province_code: String(addrForm.province_code),
       province: addrForm.province,
-      district: addrForm.district,
+      district: addrForm.district || null,
+      ward_code: String(addrForm.ward_code),
       ward: addrForm.ward,
-      street: addrForm.street,
-      is_default: addrForm.is_default
+      street: addrForm.street.trim(),
+      is_default: Boolean(addrForm.is_default)
     };
 
     try {
@@ -224,18 +385,12 @@ export default function ProfilePage() {
         body: JSON.stringify(payload)
       });
       
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok && (data.status || data.success)) {
         toast.success(addrForm.id ? "Cập nhật địa chỉ thành công!" : "Thêm địa chỉ thành công!");
-        
-        // Refresh
-        const addrRes = await fetch(`${API_BASE_URL}/user/addresses`, {
-          headers: { "Accept": "application/json", "Authorization": `Bearer ${token.trim()}` }
-        });
-        const addrData = await addrRes.json();
-        const sortedAddrs = (addrData.data || []).sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0));
-        setAddresses(sortedAddrs);
+
+        await fetchAddresses(token);
         setShowAddrModal(false);
       } else {
         if (data.errors) {
@@ -260,9 +415,17 @@ export default function ProfilePage() {
         method: "DELETE",
         headers: { "Accept": "application/json", "Authorization": `Bearer ${token.trim()}` }
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         toast.success("Đã xóa địa chỉ!");
-        setAddresses(prev => prev.filter(a => a.id !== id));
+
+        /*
+         * Backend có thể tự chọn một địa chỉ mặc định mới sau khi xóa.
+         * Gọi lại API để dấu "Mặc định" được cập nhật ngay, không cần F5.
+         */
+        await fetchAddresses(token);
+      } else {
+        toast.error(data.message || "Không thể xóa địa chỉ!");
       }
     } catch (error) {
       toast.error("Không thể xóa địa chỉ!");
@@ -335,7 +498,9 @@ export default function ProfilePage() {
 
     // Backend đã xóa toàn bộ Sanctum token.
     localStorage.removeItem("access_token");
+    localStorage.removeItem("token");
     localStorage.removeItem("user_info");
+    notifyAuthChanged();
 
     toast.success(
       data.message ||
@@ -359,105 +524,95 @@ export default function ProfilePage() {
     <>
       <Toaster position="top-right" />
 
-      <div className="orders-page">
-        <div className="account-layout">
-          
-          <div className="account-sidebar">
-            <h2>Tài khoản của tôi</h2>
-            <div className="user-info">
-              <div className="avatar">
-                {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-              </div>
-              <div>
-                <h4>{user.name || "Khách hàng"}</h4>
-                <span>{user.email}</span>
-              </div>
-            </div>
+      <div className="ash-account-page">
+        <div className="ash-account-shell">
+          <aside className="ash-account-side-nav">
+            <Link to="/orders">Orders</Link>
+            <Link to="/profile" className="active">Profile</Link>
+          </aside>
 
-            <ul className="account-menu">
-              <li className="active"><Link to="/profile"><FiUser />Thông tin cá nhân</Link></li>
-              <li><Link to="/orders"><FiClipboard />Đơn hàng của tôi</Link></li>
-              <li onClick={() => setShowPwdModal(true)} style={{ cursor: "pointer" }}><FiLock />Đổi mật khẩu</li>
-              <li className="logout" onClick={handleLogout} style={{ cursor: "pointer" }}><FiLogOut />Đăng xuất</li>
-            </ul>
-          </div>
-
-          <div className="profile-content">
-            <div className="profile-header">
-              <h2><FiEdit /> Thông tin cá nhân</h2>
-              <span>* Thông tin bắt buộc</span>
-            </div>
-
-            <div className="profile-form">
-              <div className="form-group">
-                <label>Họ và tên *</label>
-                <input name="name" value={user.name} onChange={handleChange} />
-              </div>
-              <div className="form-group">
-                <label>Email *</label>
-                <input name="email" value={user.email} disabled style={{ backgroundColor: "#f3f4f6", cursor: "not-allowed" }} />
-              </div>
-              <div className="form-group">
-                <label>Số điện thoại chính *</label>
-                <input name="phone" value={user.phone} onChange={handleChange} placeholder="Số điện thoại cá nhân" />
-              </div>
-            </div>
-
-            <div className="profile-btn" style={{ marginBottom: "30px" }}>
-              <button onClick={handleUpdate}>Cập nhật thông tin</button>
-            </div>
-
-            <hr style={{ border: "0", borderTop: "1px solid #e5e7eb", margin: "30px 0" }} />
-
-            <div className="profile-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-              <h4><FiMapPin style={{ marginRight: '8px' }} />Sổ địa chỉ </h4>
-              {addresses.length < 5 && (
-                <button 
-                  onClick={() => openAddressModal()}
-                  style={{ background: "#4f46e5", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" }}
-                >
-                  <FiPlus /> Thêm địa chỉ mới
+          <main className="ash-profile-main">
+            <section className="ash-profile-section ash-profile-contact-section">
+              <div className="ash-profile-section-head">
+                <h2>Liên hệ</h2>
+                <button type="button" className="ash-outline-btn" onClick={handleUpdate}>
+                  Cập nhật
                 </button>
-              )}
-            </div>
+              </div>
 
-            <div className="address-list" style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-              {addresses.length === 0 ? (
-                <div style={{ padding: "20px", textAlign: "center", background: "#f9fafb", borderRadius: "8px", color: "#6b7280" }}>
-                  Bạn chưa có địa chỉ nào. Hãy thêm địa chỉ để thuận tiện đặt hàng nhé!
+              <div className="ash-profile-card ash-contact-card">
+                <div className="ash-profile-row">
+                  <span className="ash-profile-label">Họ và tên</span>
+                  <input name="name" value={user.name} onChange={handleChange} aria-label="Họ và tên" />
                 </div>
-              ) : (
-                addresses.map((addr) => (
-                  <div key={addr.id} style={{ border: "1px solid #e5e7eb", padding: "15px", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: addr.is_default ? "#fef2f2" : "#fff" }}>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                        <span style={{ fontWeight: "700", color: "#111827", fontSize: "16px" }}>{addr.receiver_name || user.name}</span>
-                        <span style={{ color: "#6b7280", fontSize: "14px" }}>| {addr.phone}</span>
-                        
-                        {/* HIỂN THỊ BADGE MẶC ĐỊNH */}
-                        {(addr.is_default === 1 || addr.is_default === true) && (
-                          <span style={{ border: "1px solid #ef4444", color: "#ef4444", padding: "2px 8px", fontSize: "11px", borderRadius: "4px", fontWeight: "600", marginLeft: "10px" }}>
-                            Mặc định
-                          </span>
-                        )}
-                      </div>
-                      
-                      <p style={{ margin: "0 0 4px 0", color: "#4b5563", fontSize: "14px" }}>{addr.street}</p>
-                      <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>{addr.ward}, {addr.district}, {addr.province}</p>
-                    </div>
-                    
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end" }}>
-                      <div style={{ display: "flex", gap: "15px" }}>
-                        <button onClick={() => openAddressModal(addr)} style={{ background: "none", border: "none", color: "#4f46e5", cursor: "pointer", fontSize: "14px", fontWeight: "500", padding: 0 }}>Sửa</button>
-                        <button onClick={() => handleDeleteAddress(addr.id)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "18px", padding: 0 }} title="Xóa"><FiTrash2 /></button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+                <div className="ash-profile-row">
+                  <span className="ash-profile-label">Email</span>
+                  <input name="email" value={user.email} disabled aria-label="Email" />
+                </div>
+                <div className="ash-profile-row">
+                  <span className="ash-profile-label">Điện thoại</span>
+                  <input name="phone" value={user.phone} onChange={handleChange} placeholder="Chưa cập nhật" aria-label="Số điện thoại" />
+                </div>
+              </div>
+            </section>
 
-          </div>
+            <section className="ash-profile-section ash-address-section">
+              <div className="ash-profile-section-head">
+                <h2>Địa chỉ</h2>
+                {addresses.length < 5 && (
+                  <button type="button" className="ash-outline-btn" onClick={() => openAddressModal()}>
+                    Thêm
+                  </button>
+                )}
+              </div>
+
+              <div className="ash-address-list">
+                {addresses.length === 0 ? (
+                  <div className="ash-profile-card ash-address-empty">
+                    <span className="ash-address-icon"><FiMapPin /></span>
+                    <span>Chưa thêm địa chỉ nào</span>
+                  </div>
+                ) : (
+                  addresses.map((addr) => (
+                    <div key={addr.id} className="ash-profile-card ash-address-card">
+                      <span className="ash-address-icon"><FiMapPin /></span>
+                      <div className="ash-address-copy">
+                        <div className="ash-address-name-line">
+                          <strong>{addr.receiver_name || user.name}</strong>
+                          {addr.phone && <span>{addr.phone}</span>}
+                          {(addr.is_default === 1 || addr.is_default === true) && <em>Mặc định</em>}
+                        </div>
+                        <p>{addr.street}</p>
+                        <p>{[addr.ward, addr.district, addr.province].filter(Boolean).join(", ")}</p>
+                      </div>
+                      <div className="ash-address-actions">
+                        <button type="button" onClick={() => openAddressModal(addr)}>Sửa</button>
+                        <button type="button" className="delete" onClick={() => handleDeleteAddress(addr.id)} aria-label="Xóa địa chỉ">
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section className="ash-profile-section">
+              <h2>Tùy chọn tiếp thị</h2>
+              <div className="ash-profile-card ash-marketing-card">
+                <div className="ash-marketing-left">
+                  <span className="ash-mail-icon">✉</span>
+                  <span>Email</span>
+                </div>
+                <span className="ash-static-switch" aria-hidden="true"><span>✓</span></span>
+              </div>
+            </section>
+
+            <section className="ash-profile-actions">
+              <button type="button" className="ash-outline-btn ash-logout-btn" onClick={handleLogout}>Đăng xuất</button>
+              <button type="button" className="ash-link-btn ash-password-link" onClick={() => setShowPwdModal(true)}>Đổi mật khẩu</button>
+            </section>
+          </main>
         </div>
       </div>
 
@@ -467,14 +622,14 @@ export default function ProfilePage() {
           MODAL: THÊM / SỬA ĐỊA CHỈ ĐÃ ĐƯỢC CHIA NHỎ
       ========================================== */}
       {showAddrModal && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ position: "fixed", inset: 0, padding: "16px", backgroundColor: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
           <div style={{ background: "#fff", padding: "24px", borderRadius: "12px", width: "100%", maxWidth: "550px", position: "relative", maxHeight: "90vh", overflowY: "auto" }}>
             <button onClick={() => setShowAddrModal(false)} style={{ position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#6b7280" }}><FiX /></button>
             <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "18px" }}>{addrForm.id ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}</h3>
             
             <form onSubmit={handleSaveAddress} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
               
-              <div style={{ display: "flex", gap: "15px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "15px" }}>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>
                   <label style={{ fontSize: "14px", fontWeight: "500" }}>Họ tên người nhận *</label>
                   <input type="text" required value={addrForm.receiver_name} onChange={(e) => setAddrForm({...addrForm, receiver_name: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
@@ -485,22 +640,28 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "15px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "15px" }}>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>
                   <label style={{ fontSize: "14px", fontWeight: "500" }}>Tỉnh/Thành phố *</label>
-                  <input type="text" required placeholder="VD: TP. Hồ Chí Minh" value={addrForm.province} onChange={(e) => setAddrForm({...addrForm, province: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
+                  <select required value={addrForm.province_code} onChange={handleProvinceChange} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none", background: "#fff" }}>
+                    <option value="">Chọn tỉnh/thành phố</option>
+                    {provinces.map((province) => (
+                      <option key={province.code} value={province.code}>{province.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>
-                  <label style={{ fontSize: "14px", fontWeight: "500" }}>Quận/Huyện *</label>
-                  <input type="text" required placeholder="VD: Quận 1" value={addrForm.district} onChange={(e) => setAddrForm({...addrForm, district: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
+                  <label style={{ fontSize: "14px", fontWeight: "500" }}>Phường/Xã *</label>
+                  <select required value={addrForm.ward_code} onChange={handleWardChange} disabled={!addrForm.province_code || isLoadingWards} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none", background: !addrForm.province_code || isLoadingWards ? "#f3f4f6" : "#fff" }}>
+                    <option value="">{isLoadingWards ? "Đang tải phường/xã..." : "Chọn phường/xã"}</option>
+                    {wards.map((ward) => (
+                      <option key={ward.code} value={ward.code}>{ward.name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "15px" }}>
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>
-                  <label style={{ fontSize: "14px", fontWeight: "500" }}>Phường/Xã *</label>
-                  <input type="text" required placeholder="VD: Phường Bến Nghé" value={addrForm.ward} onChange={(e) => setAddrForm({...addrForm, ward: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }} />
-                </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "15px" }}>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>
                   <label style={{ fontSize: "14px", fontWeight: "500" }}>Loại địa chỉ</label>
                   <select value={addrForm.type} onChange={(e) => setAddrForm({...addrForm, type: e.target.value})} style={{ padding: "10px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none" }}>
@@ -537,8 +698,8 @@ export default function ProfilePage() {
 
       {/* MODAL ĐỔI MẬT KHẨU GIỮ NGUYÊN */}
       {showPwdModal && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <div style={{ background: "#fff", padding: "24px", borderRadius: "12px", width: "100%", maxWidth: "400px", position: "relative" }}>
+        <div style={{ position: "fixed", inset: 0, padding: "16px", backgroundColor: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ background: "#fff", padding: "24px", borderRadius: "12px", width: "100%", maxWidth: "400px", maxHeight: "90vh", overflowY: "auto", position: "relative" }}>
             <button onClick={() => setShowPwdModal(false)} style={{ position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#6b7280" }}><FiX /></button>
             <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "18px" }}>Đổi mật khẩu</h3>
             <form onSubmit={handleChangePassword} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>

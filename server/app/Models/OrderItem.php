@@ -15,6 +15,11 @@ class OrderItem extends Model
         'product_variant_id',
         'quantity',
         'price',
+        'product_name_snapshot',
+        'product_sku_snapshot',
+        'variant_color_snapshot',
+        'variant_size_snapshot',
+        'variant_image_snapshot',
     ];
 
     protected function casts(): array
@@ -32,6 +37,6 @@ class OrderItem extends Model
 
     public function productVariant()
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(ProductVariant::class)->withTrashed();
     }
 }

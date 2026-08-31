@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\OrderSuccessMail;
 use App\Models\Order;
 use App\Models\VNPayPaymentAttempt;
+use App\Services\VoucherReservationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,10 @@ use Illuminate\Support\Str;
 class VNPayController extends Controller
 {
     private const VNPAY_TIMEZONE = 'Asia/Ho_Chi_Minh';
+
+    public function __construct(
+        private readonly VoucherReservationService $vouchers
+    ) {}
 
     /**
      * Tạo URL thanh toán VNPay cho đơn hàng của người dùng đang đăng nhập.
@@ -241,9 +246,9 @@ class VNPayController extends Controller
 
                 return redirect()->away(
                     $frontendUrl .
-                    '/checkout/failed?' .
+                    '/shipping-info?' .
                     http_build_query([
-                        'payment' => 'failed',
+                        'payment' => 'retry',
                         'reason' => 'invalid_signature',
                         'order_id' => $orderId,
                     ])
@@ -264,19 +269,19 @@ class VNPayController extends Controller
             if ($isSuccessful && $orderId !== null) {
                 return redirect()->away(
                     $frontendUrl .
-                    '/checkout/success?' .
+                    '/shipping-info?' .
                     http_build_query([
                         'order_id' => $orderId,
-                        'payment' => 'vnpay',
+                        'payment' => 'verifying',
                     ])
                 );
             }
 
             return redirect()->away(
                 $frontendUrl .
-                '/checkout/failed?' .
+                '/shipping-info?' .
                 http_build_query([
-                    'payment' => 'failed',
+                    'payment' => 'retry',
                     'reason' => $responseCode ?: 'unknown',
                     'order_id' => $orderId,
                 ])
@@ -289,9 +294,9 @@ class VNPayController extends Controller
 
             return redirect()->away(
                 $frontendUrl .
-                '/checkout/failed?' .
+                '/shipping-info?' .
                 http_build_query([
-                    'payment' => 'failed',
+                    'payment' => 'retry',
                     'reason' => 'system_error',
                 ])
             );
@@ -360,6 +365,18 @@ class VNPayController extends Controller
                         'message' => 'Order not found',
                         'send_mail' => false,
                         'order_id' => null,
+                    ];
+                }
+
+                if ($attempt && (
+                    $attempt->status !== 'pending' ||
+                    !hash_equals((string) $order->vnpay_txn_ref, $txnRef)
+                )) {
+                    return [
+                        'code' => '02',
+                        'message' => 'Attempt is not current',
+                        'send_mail' => false,
+                        'order_id' => $order->id,
                     ];
                 }
 
@@ -442,13 +459,14 @@ class VNPayController extends Controller
                         'paid_at' => $paidAt,
                         'payment_expires_at' => null,
                     ]);
+                    $this->vouchers->consume($order);
                 } elseif (
                     !$attempt ||
                     hash_equals((string) $order->vnpay_txn_ref, $txnRef)
                 ) {
                     // Không để IPN của attempt cũ làm hỏng attempt retry mới.
                     $order->update([
-                        'payment_status' => 'failed',
+                        'payment_status' => 'pending',
                         'vnpay_response_code' => $responseCode ?: null,
                         'vnpay_transaction_no' => $transactionNo,
                         'paid_at' => null,
@@ -505,64 +523,84 @@ class VNPayController extends Controller
         return $inputData;
     }
 
-    /**
-     * Kiểm tra chữ ký HMAC SHA-512 của dữ liệu VNPay trả về.
-     */
-    private function hasValidSignature(array $inputData): bool
-    {
-        $hashSecret = (string) config('vnpay.hash_secret', '');
-        $tmnCode = (string) config('vnpay.tmn_code', '');
-        $receivedHash = (string) (
-            $inputData['vnp_SecureHash'] ?? ''
-        );
+   /**
+ * Xác minh chữ ký VNPay.
+ */
+private function hasValidSignature(array $inputData): bool
+{
+    $hashSecret = trim(
+        (string) config('vnpay.hash_secret', '')
+    );
 
-        if (
-            $hashSecret === '' ||
-            $receivedHash === '' ||
-            $tmnCode === '' ||
-            (string) ($inputData['vnp_TmnCode'] ?? '') !== $tmnCode
-        ) {
-            return false;
-        }
+    $tmnCode = trim(
+        (string) config('vnpay.tmn_code', '')
+    );
 
-        unset(
-            $inputData['vnp_SecureHash'],
-            $inputData['vnp_SecureHashType']
-        );
+    $receivedHash = (string) (
+        $inputData['vnp_SecureHash'] ?? ''
+    );
 
-        $expectedHash = hash_hmac(
-            'sha512',
-            $this->buildHashData($inputData),
-            $hashSecret
-        );
-
-        return hash_equals(
-            strtolower($expectedHash),
-            strtolower($receivedHash)
-        );
+    if (
+        $hashSecret === '' ||
+        $tmnCode === '' ||
+        $receivedHash === ''
+    ) {
+        return false;
     }
 
-    /**
-     * Sắp xếp và mã hóa query string dùng để ký dữ liệu VNPay.
+    if (
+        !isset($inputData['vnp_TmnCode']) ||
+        !hash_equals(
+            $tmnCode,
+            (string) $inputData['vnp_TmnCode']
+        )
+    ) {
+        return false;
+    }
+
+    /*
+     * Theo mẫu PHP chính thức của VNPay:
+     * chỉ bỏ vnp_SecureHash.
+     *
+     * Không bỏ vnp_SecureHashType vì nếu VNPay gửi trường này,
+     * nó vẫn thuộc dữ liệu dùng để tạo checksum.
      */
-    private function buildHashData(array $inputData): string
-    {
-        ksort($inputData);
+    unset($inputData['vnp_SecureHash']);
 
-        $pairs = [];
+    $expectedHash = hash_hmac(
+        'sha512',
+        $this->buildHashData($inputData),
+        $hashSecret
+    );
 
-        foreach ($inputData as $key => $value) {
-            if ($value === null || $value === '') {
-                continue;
-            }
+    return hash_equals(
+        strtolower($expectedHash),
+        strtolower($receivedHash)
+    );
+}
 
-            $pairs[] = urlencode((string) $key) .
-                '=' .
-                urlencode((string) $value);
+/**
+ * Sắp xếp và mã hóa dữ liệu theo mẫu PHP của VNPay.
+ */
+private function buildHashData(array $inputData): string
+{
+    ksort($inputData);
+
+    $pairs = [];
+
+    foreach ($inputData as $key => $value) {
+        if (is_array($value)) {
+            continue;
         }
 
-        return implode('&', $pairs);
+        $pairs[] =
+            urlencode((string) $key) .
+            '=' .
+            urlencode((string) $value);
     }
+
+    return implode('&', $pairs);
+}
 
     /**
      * Đọc ID đơn hàng từ mã ORD{id}-yyyyMMddHHmmss-random.
@@ -584,24 +622,28 @@ class VNPayController extends Controller
     /**
      * Chuyển vnp_PayDate sang thời gian thanh toán của Laravel.
      */
-    private function resolvePaidAt(?string $payDate): Carbon
-    {
-        if ($payDate) {
-            try {
-                return Carbon::createFromFormat(
-                    'YmdHis',
-                    $payDate,
-                    self::VNPAY_TIMEZONE
-                );
-            } catch (\Throwable $exception) {
-                Log::warning('vnp_PayDate không hợp lệ', [
-                    'value' => $payDate,
-                ]);
-            }
+ private function resolvePaidAt(?string $payDate): Carbon
+{
+    if ($payDate) {
+        try {
+            return Carbon::createFromFormat(
+                'YmdHis',
+                $payDate,
+                self::VNPAY_TIMEZONE
+            )->setTimezone(
+                config('app.timezone', 'UTC')
+            );
+        } catch (\Throwable $exception) {
+            Log::warning('Không đọc được vnp_PayDate', [
+                'pay_date' => $payDate,
+            ]);
         }
-
-        return Carbon::now(self::VNPAY_TIMEZONE);
     }
+
+    return Carbon::now(
+        config('app.timezone', 'UTC')
+    );
+}
 
     /**
      * Gửi email đúng một lần khi IPN chuyển đơn sang paid.
@@ -613,6 +655,7 @@ class VNPayController extends Controller
                 'user',
                 'items.productVariant.product',
                 'coupon',
+                'orderCoupons.coupon',
                 'address',
             ])->find($orderId);
 

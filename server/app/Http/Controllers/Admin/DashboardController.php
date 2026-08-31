@@ -16,50 +16,73 @@ class DashboardController extends Controller
     {
         $filter = in_array(
             $request->input('filter'),
-            ['week', 'month', 'year'],
+            ['week', 'month', 'year', 'all'],
             true
         ) ? $request->input('filter') : 'month';
 
         [$startDate, $endDate, $lastStartDate, $lastEndDate] =
             $this->resolvePeriod($filter);
 
-        $revenueThisPeriod = $this->paidOrders()
-            ->whereBetween('paid_at', [$startDate, $endDate])
-            ->sum('total_amount');
-        $revenueLastPeriod = $this->paidOrders()
-            ->whereBetween('paid_at', [$lastStartDate, $lastEndDate])
-            ->sum('total_amount');
-        $revenueGrowth = $revenueLastPeriod > 0
-            ? round((($revenueThisPeriod - $revenueLastPeriod) / $revenueLastPeriod) * 100, 1)
-            : 0;
+        // Doanh thu và số đơn đều chỉ tính đơn đã thanh toán theo paid_at.
+        $currentPaidOrders = $this->withinPeriod(
+            $this->paidOrders(),
+            'paid_at',
+            $startDate,
+            $endDate
+        );
 
-        $orderStats = Order::whereBetween('created_at', [$startDate, $endDate])
+        $revenueThisPeriod = (float) (clone $currentPaidOrders)
+            ->sum('total_amount');
+        $totalOrders = (clone $currentPaidOrders)->count();
+        $orderStats = (clone $currentPaidOrders)
             ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status');
-        $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])->count();
-        $totalOrdersLastPeriod = Order::whereBetween(
-            'created_at',
-            [$lastStartDate, $lastEndDate]
-        )->count();
-        $orderGrowth = $totalOrdersLastPeriod > 0
-            ? round((($totalOrders - $totalOrdersLastPeriod) / $totalOrdersLastPeriod) * 100, 1)
-            : 0;
+
+        $revenueLastPeriod = null;
+        $totalOrdersLastPeriod = null;
+
+        if ($lastStartDate && $lastEndDate) {
+            $lastPaidOrders = $this->withinPeriod(
+                $this->paidOrders(),
+                'paid_at',
+                $lastStartDate,
+                $lastEndDate
+            );
+
+            $revenueLastPeriod = (float) (clone $lastPaidOrders)
+                ->sum('total_amount');
+            $totalOrdersLastPeriod = (clone $lastPaidOrders)->count();
+        }
 
         $totalUsers = User::where('role', 'user')->count();
-        $newUsersThisPeriod = User::where('role', 'user')
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->count();
+        $newUsersQuery = User::where('role', 'user');
+        $this->withinPeriod(
+            $newUsersQuery,
+            'created_at',
+            $startDate,
+            $endDate
+        );
+        $newUsersThisPeriod = $newUsersQuery->count();
 
-        $topProducts = DB::table('order_items')
+        $topProductsQuery = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
             ->join('products', 'product_variants.product_id', '=', 'products.id')
-            ->whereBetween('orders.paid_at', [$startDate, $endDate])
             ->where('orders.payment_status', 'paid')
+            ->whereNull('orders.deleted_at')
             ->whereNull('order_items.deleted_at')
             ->whereNull('product_variants.deleted_at')
-            ->whereNull('products.deleted_at')
+            ->whereNull('products.deleted_at');
+
+        $this->withinPeriod(
+            $topProductsQuery,
+            'orders.paid_at',
+            $startDate,
+            $endDate
+        );
+
+        $topProducts = $topProductsQuery
             ->select(
                 'products.id',
                 'products.name',
@@ -73,16 +96,26 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $categoryStats = DB::table('order_items')
+        $categoryStatsQuery = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
             ->join('products', 'product_variants.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
-            ->whereBetween('orders.paid_at', [$startDate, $endDate])
             ->where('orders.payment_status', 'paid')
+            ->whereNull('orders.deleted_at')
             ->whereNull('order_items.deleted_at')
             ->whereNull('product_variants.deleted_at')
             ->whereNull('products.deleted_at')
+            ->whereNull('categories.deleted_at');
+
+        $this->withinPeriod(
+            $categoryStatsQuery,
+            'orders.paid_at',
+            $startDate,
+            $endDate
+        );
+
+        $categoryStats = $categoryStatsQuery
             ->select(
                 'categories.id',
                 'categories.name',
@@ -93,13 +126,20 @@ class DashboardController extends Controller
             ->get();
 
         return response()->json([
+            'filter' => $filter,
             'revenue' => [
-                'current' => (float) $revenueThisPeriod,
-                'growth' => $revenueGrowth,
+                'current' => $revenueThisPeriod,
+                'growth' => $this->calculateGrowth(
+                    $revenueThisPeriod,
+                    $revenueLastPeriod
+                ),
             ],
             'orders' => [
                 'total' => $totalOrders,
-                'growth' => $orderGrowth,
+                'growth' => $this->calculateGrowth(
+                    $totalOrders,
+                    $totalOrdersLastPeriod
+                ),
                 'by_status' => $orderStats,
             ],
             'users' => [
@@ -122,74 +162,145 @@ class DashboardController extends Controller
 
     private function paidOrders()
     {
-        return Order::query()->where('payment_status', 'paid');
+        return Order::query()
+            ->where('payment_status', 'paid')
+            ->whereNotNull('paid_at');
     }
 
+    private function withinPeriod(
+        $query,
+        string $column,
+        ?Carbon $startDate,
+        Carbon $endDate
+    ) {
+        if ($startDate) {
+            return $query->whereBetween($column, [$startDate, $endDate]);
+        }
+
+        return $query->where($column, '<=', $endDate);
+    }
+
+    /**
+     * Kỳ hiện tại tính đến lúc này; kỳ trước có cùng thời lượng đã trôi qua.
+     */
     private function resolvePeriod(string $filter): array
     {
         $now = Carbon::now();
 
+        if ($filter === 'all') {
+            return [null, $now, null, null];
+        }
+
         if ($filter === 'week') {
-            return [
-                $now->copy()->startOfWeek()->startOfDay(),
-                $now->copy()->endOfWeek()->endOfDay(),
-                $now->copy()->subWeek()->startOfWeek()->startOfDay(),
-                $now->copy()->subWeek()->endOfWeek()->endOfDay(),
-            ];
+            $startDate = $now->copy()->startOfWeek()->startOfDay();
+            $lastStartDate = $startDate->copy()->subWeek();
+            $lastNaturalEnd = $lastStartDate->copy()->endOfWeek()->endOfDay();
+        } elseif ($filter === 'year') {
+            $startDate = $now->copy()->startOfYear()->startOfDay();
+            $lastStartDate = $startDate->copy()->subYear();
+            $lastNaturalEnd = $lastStartDate->copy()->endOfYear()->endOfDay();
+        } else {
+            $startDate = $now->copy()->startOfMonth()->startOfDay();
+            $lastStartDate = $startDate->copy()->subMonth();
+            $lastNaturalEnd = $lastStartDate->copy()->endOfMonth()->endOfDay();
         }
 
-        if ($filter === 'year') {
-            return [
-                $now->copy()->startOfYear(),
-                $now->copy()->endOfYear(),
-                $now->copy()->subYear()->startOfYear(),
-                $now->copy()->subYear()->endOfYear(),
-            ];
+        $elapsedSeconds = $startDate->diffInSeconds($now);
+        $lastEndDate = $lastStartDate->copy()->addSeconds($elapsedSeconds);
+
+        if ($lastEndDate->gt($lastNaturalEnd)) {
+            $lastEndDate = $lastNaturalEnd;
         }
 
-        return [
-            $now->copy()->startOfMonth(),
-            $now->copy()->endOfMonth(),
-            $now->copy()->subMonth()->startOfMonth(),
-            $now->copy()->subMonth()->endOfMonth(),
-        ];
+        return [$startDate, $now, $lastStartDate, $lastEndDate];
+    }
+
+    private function calculateGrowth($current, $previous): ?float
+    {
+        if ($previous === null) {
+            return null;
+        }
+
+        $current = (float) $current;
+        $previous = (float) $previous;
+
+        if ($previous == 0.0) {
+            return $current == 0.0 ? 0.0 : null;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 1);
     }
 
     private function buildRevenueChart(
         string $filter,
-        Carbon $startDate,
+        ?Carbon $startDate,
         Carbon $endDate
     ) {
-        if ($filter === 'year') {
-            return collect(range(1, 12))->map(function (int $month) use ($startDate) {
-                $from = $startDate->copy()->month($month)->startOfMonth();
-                $to = $from->copy()->endOfMonth();
+        if ($filter === 'all') {
+            $firstPaidAt = $this->paidOrders()->min('paid_at');
 
-                return [
-                    'day' => 'T' . $month,
-                    'revenue' => (float) $this->paidOrders()
-                        ->whereBetween('paid_at', [$from, $to])
-                        ->sum('total_amount'),
-                    'orders' => Order::whereBetween('created_at', [$from, $to])->count(),
+            if (!$firstPaidAt) {
+                return collect();
+            }
+
+            $startDate = Carbon::parse($firstPaidAt)->startOfMonth();
+        }
+
+        if ($filter === 'year' || $filter === 'all') {
+            $months = [];
+            $cursor = $startDate->copy()->startOfMonth();
+            $lastMonth = $endDate->copy()->startOfMonth();
+
+            while ($cursor->lte($lastMonth)) {
+                $from = $cursor->copy()->startOfMonth();
+                $to = $cursor->isSameMonth($endDate)
+                    ? $endDate->copy()
+                    : $cursor->copy()->endOfMonth();
+
+                $orders = $this->withinPeriod(
+                    $this->paidOrders(),
+                    'paid_at',
+                    $from,
+                    $to
+                );
+
+                $months[] = [
+                    'day' => $filter === 'all'
+                        ? $cursor->format('m/Y')
+                        : 'T' . $cursor->month,
+                    'revenue' => (float) (clone $orders)->sum('total_amount'),
+                    'orders' => (clone $orders)->count(),
                 ];
-            });
+
+                $cursor->addMonth();
+            }
+
+            return collect($months);
         }
 
         $days = [];
         $cursor = $startDate->copy()->startOfDay();
+        $lastDay = $endDate->copy()->startOfDay();
 
-        while ($cursor->lte($endDate)) {
-            $date = $cursor->copy();
+        while ($cursor->lte($lastDay)) {
+            $from = $cursor->copy()->startOfDay();
+            $to = $cursor->isSameDay($endDate)
+                ? $endDate->copy()
+                : $cursor->copy()->endOfDay();
+
+            $orders = $this->withinPeriod(
+                $this->paidOrders(),
+                'paid_at',
+                $from,
+                $to
+            );
+
             $days[] = [
-                'day' => $date->format('d/m'),
-                'revenue' => (float) $this->paidOrders()
-                    ->whereDate('paid_at', $date->toDateString())
-                    ->sum('total_amount'),
-                'orders' => Order::whereDate(
-                    'created_at',
-                    $date->toDateString()
-                )->count(),
+                'day' => $cursor->format('d/m'),
+                'revenue' => (float) (clone $orders)->sum('total_amount'),
+                'orders' => (clone $orders)->count(),
             ];
+
             $cursor->addDay();
         }
 

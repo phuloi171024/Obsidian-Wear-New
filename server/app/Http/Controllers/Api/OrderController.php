@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\OrderSuccessMail;
-use App\Services\OrderService;
+use App\Models\Address;
 use App\Models\CartItem;
-use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
-use Carbon\Carbon;
+use App\Services\CheckoutPricingService;
+use App\Services\OrderService;
+use App\Services\VoucherReservationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,374 +21,179 @@ use Illuminate\Validation\Rule;
 class OrderController extends Controller
 {
     public function __construct(
-        private readonly OrderService $orderService
-    ) {
+        private readonly OrderService $orders,
+        private readonly CheckoutPricingService $pricing,
+        private readonly VoucherReservationService $vouchers,
+    ) {}
+
+    private function relations(): array
+    {
+        return [
+            'items.productVariant.product.images', 'coupon', 'address',
+            'orderCoupons.coupon', 'vnpayPaymentAttempts',
+        ];
     }
-    /**
-     * Lấy danh sách đơn hàng của người dùng đang đăng nhập.
-     */
+
     public function index(Request $request)
     {
-        $orders = Order::with([
-            'items.productVariant.product.images',
-            'coupon',
-            'address',
-        ])
-            ->where('user_id', $request->user()->id)
-            ->orderByDesc('created_at')
-            ->get();
-
         return response()->json([
             'status' => true,
-            'orders' => $orders,
+            'orders' => Order::with($this->relations())
+                ->where('user_id', $request->user()->id)->latest()->get(),
         ]);
     }
 
-    /**
-     * Xem chi tiết một đơn hàng của người dùng.
-     */
     public function show(Request $request, int $id)
     {
-        $order = Order::with([
-            'items.productVariant.product.images',
-            'coupon',
-            'address',
-        ])
-            ->where('user_id', $request->user()->id)
-            ->where('id', $id)
-            ->first();
-
-        if (!$order) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Không tìm thấy đơn hàng!',
-            ], 404);
-        }
-
-        return response()->json([
-            'status' => true,
-            'order' => $order,
-        ]);
+        $order = Order::with($this->relations())
+            ->where('user_id', $request->user()->id)->find($id);
+        if (!$order) return response()->json(['status' => false, 'message' => 'Không tìm thấy đơn hàng!'], 404);
+        return response()->json(['status' => true, 'order' => $order]);
     }
 
-    /**
-     * Tạo đơn hàng từ giỏ hàng.
-     */
     public function store(Request $request)
     {
         $user = $request->user();
-
-        $validated = $request->validate([
-            'address_id' => [
-                'required',
-                'integer',
-                Rule::exists('addresses', 'id')->where(
-                    fn ($query) => $query
-                        ->where('user_id', $user->id)
-                        ->whereNull('deleted_at')
-                ),
-            ],
-            'coupon_id' => [
-                'nullable',
-                'integer',
-                'exists:coupons,id',
-            ],
-            'payment_method' => [
-                'required',
-                Rule::in(['cod', 'vnpay']),
-            ],
-            'note' => [
-                'nullable',
-                'string',
-                'max:1000',
-            ],
+        $data = $request->validate([
+            'address_id' => ['required', 'integer'],
+            'shipping_method' => ['required', Rule::in(['economy', 'standard', 'express'])],
+            'product_coupon_id' => ['nullable', 'integer'],
+            'shipping_coupon_id' => ['nullable', 'integer', 'different:product_coupon_id'],
+            'payment_method' => ['required', Rule::in(['cod', 'vnpay'])],
+            'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
         try {
-            $order = DB::transaction(function () use ($user, $validated) {
-                // Khóa giỏ hàng để hai request đồng thời không tạo hai đơn.
-                $cartItems = CartItem::query()
-                    ->where('user_id', $user->id)
-                    ->lockForUpdate()
-                    ->get();
+            $order = DB::transaction(function () use ($user, $data) {
+                $address = Address::where('user_id', $user->id)
+                    ->whereKey($data['address_id'])->lockForUpdate()->first();
+                if (!$address) throw new \RuntimeException('Địa chỉ giao hàng không hợp lệ!');
 
-                $cartItems->load('productVariant.product');
-
-                if ($cartItems->isEmpty()) {
-                    throw new \RuntimeException(
-                        'Giỏ hàng của bạn đang trống!'
-                    );
-                }
-
-                $subtotal = 0;
-                $totalQuantity = 0;
-
-                foreach ($cartItems as $item) {
-                    if (
-                        !$item->productVariant ||
-                        !$item->productVariant->product
-                    ) {
-                        throw new \RuntimeException(
-                            'Có sản phẩm trong giỏ hàng không còn tồn tại!'
-                        );
-                    }
-
-                    $price = (float) $item->productVariant->product->current_price;
-                    $quantity = (int) $item->quantity;
-
-                    $subtotal += $price * $quantity;
-                    $totalQuantity += $quantity;
-                }
-
-                // Mua từ 3 sản phẩm thì miễn phí vận chuyển.
-                $shippingFee = $totalQuantity >= 3 ? 0 : 30000;
-
-                $couponId = $validated['coupon_id'] ?? null;
-                $coupon = null;
-                $discountAmount = 0;
-
-                if ($couponId !== null) {
-                    $coupon = Coupon::query()
-                        ->withTrashed()
-                        ->where('id', $couponId)
-                        ->lockForUpdate()
-                        ->first();
-
-                    if (!$coupon || $coupon->trashed()) {
-                        throw new \RuntimeException(
-                            'Mã giảm giá không tồn tại!'
-                        );
-                    }
-
-                    if (!$coupon->status) {
-                        throw new \RuntimeException(
-                            'Mã giảm giá này đã bị tạm ngưng!'
-                        );
-                    }
-
-                    if (
-                        $coupon->usage_limit !== null &&
-                        $coupon->used_count >= $coupon->usage_limit
-                    ) {
-                        throw new \RuntimeException(
-                            'Mã giảm giá này đã hết lượt sử dụng!'
-                        );
-                    }
-
-                    $now = Carbon::now();
-
-                    if (
-                        ($coupon->expires_at &&
-                            $now->greaterThan($coupon->expires_at)) ||
-                        ($coupon->end_date &&
-                            $now->greaterThan($coupon->end_date))
-                    ) {
-                        throw new \RuntimeException(
-                            'Mã giảm giá này đã hết hạn!'
-                        );
-                    }
-
-                    if (
-                        $coupon->min_order_value !== null &&
-                        $subtotal < (float) $coupon->min_order_value
-                    ) {
-                        throw new \RuntimeException(
-                            'Đơn hàng chưa đạt giá trị tối thiểu để dùng mã này!'
-                        );
-                    }
-
-                    $hasUsed = Order::where('user_id', $user->id)
-                        ->where('coupon_id', $coupon->id)
-                        ->where('status', '!=', 'cancelled')
-                        ->exists();
-
-                    if ($hasUsed) {
-                        throw new \RuntimeException(
-                            'Bạn đã sử dụng mã giảm giá này rồi!'
-                        );
-                    }
-
-                    $discountValue = (float) $coupon->discount_value;
-
-                    if ($coupon->discount_type === 'percent') {
-                        $discountAmount = min(
-                            $subtotal * ($discountValue / 100),
-                            $subtotal
-                        );
-                    } elseif ($coupon->discount_type === 'shipping') {
-                        $discountAmount = min(
-                            $discountValue,
-                            $shippingFee
-                        );
-                    } elseif ($coupon->discount_type === 'fixed') {
-                        $discountAmount = min(
-                            $discountValue,
-                            $subtotal
-                        );
-                    } else {
-                        throw new \RuntimeException(
-                            'Loại mã giảm giá không hợp lệ!'
-                        );
-                    }
-                }
-
-                $finalTotal = max(
-                    0,
-                    $subtotal + $shippingFee - $discountAmount
+                $quote = $this->pricing->quote(
+                    $user, $data['shipping_method'],
+                    $data['product_coupon_id'] ?? null,
+                    $data['shipping_coupon_id'] ?? null,
+                    $address->province, true
                 );
 
-                $paymentMethod = $validated['payment_method'];
-
-                $newOrder = Order::create([
+                $paymentMethod = $data['payment_method'];
+                $order = Order::create([
                     'user_id' => $user->id,
-                    'coupon_id' => $couponId,
-                    'address_id' => $validated['address_id'],
-                    'note' => $validated['note'] ?? null,
-                    'total_amount' => $finalTotal,
+                    'coupon_id' => null,
+                    'address_id' => $address->id,
+                    'note' => $data['note'] ?? null,
+                    'subtotal' => $quote['subtotal'],
+                    'shipping_method' => $quote['shipping_method'],
+                    'shipping_fee' => $quote['shipping_fee'],
+                    'discount_amount' => $quote['discount_amount'],
+                    'shipping_discount' => $quote['shipping_discount'],
+                    'total_amount' => $quote['total'],
                     'status' => 'pending',
                     'payment_method' => $paymentMethod,
-                    'payment_status' => $paymentMethod === 'vnpay'
-                        ? 'pending'
-                        : 'unpaid',
+                    'payment_status' => $paymentMethod === 'vnpay' ? 'pending' : 'unpaid',
                     'payment_expires_at' => $paymentMethod === 'vnpay'
-                        ? now()->addMinutes(max(
-                            5,
-                            (int) config('vnpay.order_expire_minutes', 30)
-                        ))
-                        : null,
+                        ? now()->addMinutes(max(5, (int) config('vnpay.expire_minutes', 15))) : null,
+                    'shipping_receiver_name' => $address->receiver_name,
+                    'shipping_phone' => $address->phone,
+                    'shipping_address_type' => $address->type,
+                    'shipping_province_code' => $address->province_code,
+                    'shipping_province' => $address->province,
+                    'shipping_district' => $address->district,
+                    'shipping_ward_code' => $address->ward_code,
+                    'shipping_ward' => $address->ward,
+                    'shipping_street' => $address->street,
                 ]);
 
-                // Khóa từng biến thể trước khi kiểm tra và trừ tồn kho.
-                foreach ($cartItems as $item) {
-                    $variant = ProductVariant::query()
-                        ->where('id', $item->product_variant_id)
+                foreach ($quote['items'] as $item) {
+                    $variant = ProductVariant::with('product')
+                        ->whereKey($item->product_variant_id)
                         ->lockForUpdate()
                         ->first();
 
-                    if (!$variant) {
-                        throw new \RuntimeException(
-                            'Một biến thể sản phẩm không còn tồn tại!'
-                        );
+                    if (!$variant || !$variant->product || $variant->stock < $item->quantity) {
+                        throw new \RuntimeException('Một sản phẩm không còn đủ tồn kho!');
                     }
 
-                    if ($variant->stock < $item->quantity) {
-                        $productName =
-                            $item->productVariant->product->name ??
-                            'Sản phẩm';
-
-                        throw new \RuntimeException(
-                            "Sản phẩm {$productName} không đủ số lượng trong kho."
-                        );
-                    }
-
-                    $price = (float) $item->productVariant->product->current_price;
+                    $product = $variant->product;
 
                     OrderItem::create([
-                        'order_id' => $newOrder->id,
-                        'product_variant_id' => $item->product_variant_id,
+                        'order_id' => $order->id,
+                        'product_variant_id' => $variant->id,
                         'quantity' => $item->quantity,
-                        'price' => $price,
+                        'price' => (float) $product->current_price,
+                        'product_name_snapshot' => $product->name,
+                        'product_sku_snapshot' => $product->sku,
+                        'variant_color_snapshot' => $variant->color,
+                        'variant_size_snapshot' => $variant->size,
+                        'variant_image_snapshot' =>
+                            $variant->image_url
+                            ?: $variant->image
+                            ?: $product->thumbnail,
                     ]);
-
-                    $variant->decrement(
-                        'stock',
-                        (int) $item->quantity
-                    );
+                    $variant->decrement('stock', (int) $item->quantity);
                 }
 
-                if ($coupon) {
-                    $coupon->increment('used_count');
-                }
-
+                $this->vouchers->reserve(
+                    $order, $quote['product_coupon'], $quote['shipping_coupon'], $quote
+                );
                 CartItem::where('user_id', $user->id)->delete();
-
-                return $newOrder;
+                return $order;
             }, 3);
 
-            $order->load([
-                'user',
-                'items.productVariant.product',
-                'coupon',
-                'address',
-            ]);
-
-            // Với VNPay, email xác nhận sẽ được gửi sau khi thanh toán thành công.
+            $order->load($this->relations());
             if ($order->payment_method === 'cod') {
-                try {
-                    Mail::to($user->email)->send(
-                        new OrderSuccessMail($order)
-                    );
-                } catch (\Throwable $mailException) {
-                    Log::error(
-                        'Gửi email xác nhận đơn hàng thất bại: ' .
-                        $mailException->getMessage()
-                    );
-                }
+                try { Mail::to($user->email)->send(new OrderSuccessMail($order)); }
+                catch (\Throwable $e) { Log::warning('Không gửi được email COD', ['message' => $e->getMessage()]); }
             }
 
             return response()->json([
-                'status' => true,
-                'message' => 'Tạo đơn hàng thành công!',
-                'order_id' => $order->id,
-                'order' => $order,
+                'status' => true, 'message' => 'Tạo đơn hàng thành công!',
+                'order_id' => $order->id, 'order' => $order,
             ], 201);
-        } catch (\RuntimeException $exception) {
-            Log::warning('Không thể tạo đơn hàng', [
-                'user_id' => $user->id,
-                'message' => $exception->getMessage(),
-            ]);
-
-            return response()->json([
-                'status' => false,
-                'message' => $exception->getMessage(),
-            ], 422);
-        } catch (\Throwable $exception) {
-            Log::error('Lỗi tạo đơn hàng', [
-                'user_id' => $user->id,
-                'message' => $exception->getMessage(),
-            ]);
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Có lỗi xảy ra khi tạo đơn hàng!',
-            ], 500);
+        } catch (\RuntimeException $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            Log::error('Lỗi tạo đơn hàng', ['user_id' => $user->id, 'message' => $e->getMessage()]);
+            return response()->json(['status' => false, 'message' => 'Có lỗi xảy ra khi tạo đơn hàng!'], 500);
         }
     }
 
-    /**
-     * Hủy đơn hàng đang chờ xử lý.
-     */
+    public function updatePaymentMethod(Request $request, int $id)
+    {
+        $data = $request->validate(['payment_method' => ['required', Rule::in(['cod', 'vnpay'])]]);
+        try {
+            $order = DB::transaction(function () use ($request, $id, $data) {
+                $order = Order::where('user_id', $request->user()->id)->whereKey($id)->lockForUpdate()->first();
+                if (!$order || $order->status !== 'pending' || $order->payment_status === 'paid') {
+                    throw new \RuntimeException('Đơn hàng không còn ở trạng thái chờ thanh toán!');
+                }
+                $method = $data['payment_method'];
+                $order->update([
+                    'payment_method' => $method,
+                    'payment_status' => $method === 'vnpay' ? 'pending' : 'unpaid',
+                    'payment_expires_at' => $method === 'vnpay'
+                        ? now()->addMinutes(max(5, (int) config('vnpay.expire_minutes', 15))) : null,
+                ]);
+                if ($method === 'cod') {
+                    $order->vnpayPaymentAttempts()
+                        ->where('status', 'pending')->update(['status' => 'expired']);
+                    $order->update(['vnpay_txn_ref' => null]);
+                }
+                return $order->fresh();
+            });
+            return response()->json(['status' => true, 'order' => $order]);
+        } catch (\RuntimeException $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
+
     public function cancel(Request $request, int $id)
     {
-        $user = $request->user();
-
         try {
-            $this->orderService->cancelPendingOrder(
-                $id,
-                (int) $user->id,
-                'failed'
-            );
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Đã hủy đơn hàng và hoàn lại tồn kho!',
-            ]);
-        } catch (\RuntimeException $exception) {
-            return response()->json([
-                'status' => false,
-                'message' => $exception->getMessage(),
-            ], 422);
-        } catch (\Throwable $exception) {
-            Log::error('Lỗi hủy đơn hàng', [
-                'user_id' => $user->id,
-                'order_id' => $id,
-                'message' => $exception->getMessage(),
-            ]);
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Có lỗi xảy ra khi hủy đơn hàng!',
-            ], 500);
+            $this->orders->cancelPendingOrder($id, (int) $request->user()->id, 'failed');
+            return response()->json(['status' => true, 'message' => 'Đã hủy đơn, hoàn kho và trả voucher!']);
+        } catch (\RuntimeException $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 422);
         }
     }
 }

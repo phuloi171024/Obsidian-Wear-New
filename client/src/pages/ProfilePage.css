@@ -1,331 +1,445 @@
-.profile-content{
-
-    flex:1;
-
-    background:#fff;
-
-    padding:30px;
-
-    border-radius:10px;
-
+/* Profile Page - giao diện ASH, giữ nguyên logic API trong ProfilePage.jsx */
+.ash-account-page,
+.ash-account-page * {
+  box-sizing: border-box;
 }
 
-
-
-.profile-header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:30px;
-
+.ash-account-page {
+  min-height: 100vh;
+  padding: 54px 0 26px;
+  background: #f6f6f6;
+  color: #161616;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-
-
-.profile-header h2{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
-    font-size:24px;
-
+.ash-account-shell {
+  width: min(1380px, calc(100% - 72px));
+  margin: 0 auto;
+  padding: 8px 0 64px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 770px) 1fr;
+  gap: 54px;
 }
 
-
-
-.profile-header span{
-
-    color:#999;
-
-    font-size:13px;
-
+.ash-account-side-nav {
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 
-
-
-.profile-form{
-
-    display:grid;
-
-    grid-template-columns:repeat(2,1fr);
-
-    gap:20px;
-
+.ash-account-side-nav a {
+  color: #666;
+  text-decoration: none;
+  font-size: 24px;
+  line-height: 1.15;
 }
 
-
-
-.profile-form .form-group{
-
-    display:flex;
-
-    flex-direction:column;
-
+.ash-account-side-nav a.active,
+.ash-account-side-nav a:hover {
+  color: #111;
 }
 
-
-
-.profile-form .form-group label{
-
-    font-size:14px;
-
-    margin-bottom:8px;
-
-    font-weight:600;
-
+.ash-profile-main {
+  grid-column: 2;
+  min-width: 0;
 }
 
-
-
-.profile-form .form-group input{
-
-    height:45px;
-
-    border:1px solid #ddd;
-
-    border-radius:6px;
-
-    padding:0 15px;
-
-    font-size:15px;
-
+.ash-profile-section {
+  margin-bottom: 38px;
 }
 
-
-
-.profile-btn{
-
-    margin-top:30px;
-
-    text-align:right;
-
+.ash-profile-section h2 {
+  margin: 0 0 20px;
+  font-size: 19px;
+  line-height: 1.2;
+  font-weight: 700;
 }
 
-
-
-.profile-btn button{
-
-    background:#2563eb;
-
-    color:#fff;
-
-    border:none;
-
-    padding:12px 26px;
-
-    border-radius:6px;
-
-    cursor:pointer;
-
+.ash-profile-section-head {
+  min-height: 46px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 }
 
-
-
-.profile-btn button:hover{
-
-    background:#1d4ed8;
-
+.ash-profile-section-head h2 {
+  margin: 0;
 }
 
+.ash-outline-btn {
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid #d0d0d0;
+  border-radius: 14px;
+  background: transparent;
+  color: #111;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
 
+.ash-outline-btn:hover {
+  background: #fff;
+  border-color: #b5b5b5;
+}
 
-.account-menu a{
+.ash-profile-card {
+  width: 100%;
+  border: 1px solid #dfdfdf;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
 
-    text-decoration: none;
+.ash-contact-card {
+  overflow: hidden;
+}
 
-    color: #222;
+.ash-profile-row {
+  min-height: 62px;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid #ececec;
+}
 
-    display: flex;
+.ash-profile-row:last-child {
+  border-bottom: 0;
+}
 
-    align-items: center;
+.ash-profile-label {
+  color: #777;
+  font-size: 16px;
+}
 
-    gap: 12px;
+.ash-profile-row input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #111;
+  font-family: inherit;
+  font-size: 16px;
+  text-align: right;
+}
 
+.ash-profile-row input:disabled {
+  color: #111;
+  opacity: 1;
+  cursor: default;
+  -webkit-text-fill-color: #111;
+}
+
+.ash-profile-row input::placeholder {
+  color: #9a9a9a;
+}
+
+.ash-address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ash-address-empty,
+.ash-address-card {
+  min-height: 88px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ash-address-empty {
+  color: #777;
+  font-size: 16px;
+}
+
+.ash-address-icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #f5f5f5;
+  color: #111;
+  font-size: 22px;
+}
+
+.ash-address-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.ash-address-name-line {
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.ash-address-name-line strong {
+  font-size: 15px;
+}
+
+.ash-address-name-line > span {
+  color: #6f6f6f;
+  font-size: 14px;
+}
+
+.ash-address-name-line em {
+  padding: 3px 8px;
+  border: 1px solid #b9b9b9;
+  border-radius: 999px;
+  color: #555;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.ash-address-copy p {
+  margin: 3px 0 0;
+  color: #6a6a6a;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.ash-address-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ash-address-actions button {
+  border: 0;
+  background: transparent;
+  color: #333;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ash-address-actions button.delete {
+  padding: 5px;
+  color: #777;
+  font-size: 17px;
+}
+
+.ash-address-actions button:hover {
+  color: #000;
+}
+
+.ash-marketing-card {
+  min-height: 68px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.ash-marketing-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 16px;
+}
+
+.ash-mail-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 17px;
+}
+
+.ash-static-switch {
+  width: 48px;
+  height: 28px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-radius: 999px;
+  background: #2d2d2d;
+}
+
+.ash-static-switch > span {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #1f1f1f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ash-profile-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+
+.ash-logout-btn {
+  min-width: 112px;
+}
+
+.ash-link-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #555;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.ash-link-btn:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+.ash-password-link {
+  margin-left: auto;
+}
+
+@media (max-width: 1250px) {
+  .ash-account-shell {
+    width: min(1120px, calc(100% - 48px));
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 42px;
+  }
+
+  .ash-profile-main {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 820px) {
+  .ash-account-page {
+    padding-top: 34px;
+  }
+
+  .ash-account-shell {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-top: 8px;
+  }
+
+  .ash-account-side-nav {
+    flex-direction: row;
+    gap: 22px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #dedede;
+  }
+
+  .ash-account-side-nav a {
+    font-size: 20px;
+  }
+
+  .ash-profile-main {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .ash-account-shell {
+    width: calc(100% - 28px);
+    padding-bottom: 56px;
+  }
+
+  .ash-profile-section {
+    margin-bottom: 30px;
+  }
+
+  .ash-profile-section h2 {
+    font-size: 17px;
+  }
+
+  .ash-profile-section-head {
+    min-height: 42px;
+  }
+
+  .ash-outline-btn {
+    min-height: 42px;
+    padding: 0 13px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  .ash-profile-card {
+    border-radius: 16px;
+  }
+
+  .ash-profile-row {
+    min-height: 60px;
+    padding: 10px 16px;
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .ash-profile-label {
+    font-size: 13px;
+  }
+
+  .ash-profile-row input {
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .ash-address-empty,
+  .ash-address-card {
+    padding: 15px;
+    align-items: flex-start;
+  }
+
+  .ash-address-card {
+    flex-wrap: wrap;
+  }
+
+  .ash-address-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 19px;
+  }
+
+  .ash-address-copy {
+    width: calc(100% - 60px);
+  }
+
+  .ash-address-actions {
     width: 100%;
-
-}
-
-
-
-.account-menu a:hover{
-
-    text-decoration: none;
-
-}
-
-
-
-.account-menu a:visited{
-
-    text-decoration: none;
-
-}
-
-
-
-.account-menu a:active{
-
-    text-decoration: none;
-
-}
-
-
-
-.account-menu a:focus{
-
-    text-decoration: none;
-
-}
-
-
-
-/* ==============================
-
-   NÚT THÊM ĐỊA CHỈ MỚI
-
-   Đồng bộ với nút Cập nhật thông tin
-
-   ============================== */
-
-
-
-.profile-header > button {
-
-    height: 45px !important;
-
-    padding: 12px 26px !important;
-
-
-
-    display: flex !important;
-
-    align-items: center !important;
-
-    justify-content: center !important;
-
-
-
-    gap: 5px !important;
-
-
-
-    border: none !important;
-
-    border-radius: 6px !important;
-
-
-
-    background: #2563eb !important;
-
-    color: #fff !important;
-
-
-
-    font-size: 14px !important;
-
-    font-weight: normal !important;
-
-
-
-    cursor: pointer !important;
-
-    box-sizing: border-box !important;
-
-}
-
-
-
-.profile-header > button:hover {
-
-    background: #1d4ed8 !important;
-
-}
-
-
-
-/* =================================
-
-   CANH ĐỀU 2 NÚT
-
-   ================================= */
-
-
-
-.profile-header > button,
-
-.profile-btn button {
-
-    width: 203px !important;
-
-    height: 53px !important;
-
-
-
-    padding: 0 !important;
-
-    margin: 0 !important;
-
-
-
-    display: inline-flex !important;
-
-    align-items: center !important;
-
-    justify-content: center !important;
-
-
-
-    box-sizing: border-box !important;
-
-
-
-    border: none !important;
-
-    border-radius: 6px !important;
-
-
-
-    background: #2563eb !important;
-
-    color: #fff !important;
-
-
-
-    font-size: 14px !important;
-
-    font-weight: 400 !important;
-
-
-
-    cursor: pointer !important;
-
-}
-
-
-
-/* Khoảng cách giữa 2 nút */
-
-.profile-header > button {
-
-    gap: 6px !important;
-
-}
-
-
-
-/* Hover */
-
-.profile-header > button:hover,
-
-.profile-btn button:hover {
-
-    background: #1d4ed8 !important;
-
+    justify-content: flex-end;
+  }
+
+  .ash-marketing-card {
+    min-height: 64px;
+    padding: 0 16px;
+  }
+
+  .ash-profile-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ash-password-link {
+    margin-left: 0;
+  }
 }

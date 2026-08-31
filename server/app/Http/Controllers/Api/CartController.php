@@ -18,7 +18,8 @@ class CartController extends Controller
         $user = $request->user();
 
         $cartItems = CartItem::with([
-            'productVariant.product'
+            'productVariant.product.brand',
+            'productVariant.product.images',
         ])
             ->where('user_id', $user->id)
             ->latest()

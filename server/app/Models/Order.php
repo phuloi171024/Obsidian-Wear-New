@@ -15,8 +15,22 @@ class Order extends Model
         'coupon_id',
         'address_id',
         'note',
+        'subtotal',
+        'shipping_method',
+        'shipping_fee',
+        'discount_amount',
+        'shipping_discount',
         'total_amount',
         'status',
+        'shipping_receiver_name',
+        'shipping_phone',
+        'shipping_address_type',
+        'shipping_province_code',
+        'shipping_province',
+        'shipping_district',
+        'shipping_ward_code',
+        'shipping_ward',
+        'shipping_street',
 
         // Thông tin thanh toán
         'payment_method',
@@ -30,6 +44,10 @@ class Order extends Model
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'shipping_fee' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'shipping_discount' => 'decimal:2',
         'paid_at' => 'datetime',
         'payment_expires_at' => 'datetime',
     ];
@@ -63,7 +81,12 @@ class Order extends Model
      */
     public function address()
     {
-        return $this->belongsTo(Address::class);
+        return $this->belongsTo(Address::class)->withTrashed();
+    }
+
+    public function orderCoupons()
+    {
+        return $this->hasMany(OrderCoupon::class);
     }
 
     public function vnpayPaymentAttempts()

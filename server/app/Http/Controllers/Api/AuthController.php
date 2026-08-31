@@ -277,65 +277,145 @@ class AuthController extends Controller
     /**
      * 5. Đặt lại mật khẩu mới
      */
-    public function resetPassword(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email'                 => 'required|email|exists:users,email',
-            'token'                 => 'required|string',
-            'password'              => 'required|string|min:8|confirmed', // Yêu cầu field: password_confirmation
-        ]);
+public function resetPassword(Request $request)
+{
+    $validator = Validator::make(
+        $request->all(),
+        [
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+            ],
+            'token' => [
+                'required',
+                'string',
+                'size:60',
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+        ],
+        [
+            'email.required' =>
+                'Vui lòng nhập địa chỉ email.',
+            'email.email' =>
+                'Địa chỉ email không hợp lệ.',
+            'token.required' =>
+                'Liên kết đặt lại mật khẩu không hợp lệ.',
+            'token.size' =>
+                'Liên kết đặt lại mật khẩu không hợp lệ.',
+            'password.required' =>
+                'Vui lòng nhập mật khẩu mới.',
+            'password.min' =>
+                'Mật khẩu mới phải có ít nhất 8 ký tự.',
+            'password.confirmed' =>
+                'Mật khẩu xác nhận không khớp.',
+        ]
+    );
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()
-            ], 400);
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $email = mb_strtolower(
+        trim($request->input('email'))
+    );
+
+    $token = (string) $request->input('token');
+    $password = (string) $request->input('password');
+
+    $resetSucceeded = DB::transaction(
+        function () use ($email, $token, $password) {
+            /*
+             * Khóa bản ghi để hai request không thể sử dụng
+             * cùng một token tại cùng thời điểm.
+             */
+            $resetRecord = DB::table(
+                'password_reset_tokens'
+            )
+                ->where('email', $email)
+                ->lockForUpdate()
+                ->first();
+
+            $user = User::query()
+                ->where('email', $email)
+                ->where('status', true)
+                ->first();
+
+            $isExpired =
+                !$resetRecord ||
+                !$resetRecord->created_at ||
+                Carbon::parse($resetRecord->created_at)
+                    ->addMinutes(60)
+                    ->isPast();
+
+            $tokenIsValid =
+                $resetRecord &&
+                !$isExpired &&
+                Hash::check(
+                    $token,
+                    $resetRecord->token
+                );
+
+            /*
+             * Luôn trả cùng một lỗi nếu:
+             * - Email không tồn tại
+             * - Tài khoản bị khóa
+             * - Token không tồn tại
+             * - Token sai hoặc hết hạn
+             */
+            if (!$user || !$tokenIsValid) {
+                if ($resetRecord && $isExpired) {
+                    DB::table('password_reset_tokens')
+                        ->where('email', $email)
+                        ->delete();
+                }
+
+                return false;
+            }
+
+            $user->password = Hash::make($password);
+            $user->save();
+
+            /*
+             * Thu hồi tất cả token đăng nhập cũ để thiết bị
+             * đang đăng nhập phải xác thực lại.
+             */
+            $user->tokens()->delete();
+
+            /*
+             * Token đặt lại mật khẩu chỉ được sử dụng một lần.
+             */
+            DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->delete();
+
+            return true;
         }
+    );
 
-        $resetRecord = DB::table('password_reset_tokens')->where('email', $request->email)->first();
-
-        // Kiểm tra Token có hợp lệ không
-       $isExpired = !$resetRecord
-    || !$resetRecord->created_at
-    || Carbon::parse($resetRecord->created_at)
-        ->addMinutes(60)
-        ->isPast();
-
-if (
-    $isExpired
-    || !Hash::check($request->token, $resetRecord->token)
-) {
-    // Xóa token đã hết hạn khỏi database
-    if ($resetRecord && $isExpired) {
-        DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->delete();
+    if (!$resetSucceeded) {
+        return response()->json([
+            'status' => false,
+            'message' =>
+                'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.',
+        ], 400);
     }
 
     return response()->json([
-        'status' => false,
-        'message' => 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn!'
-    ], 400);
+        'status' => true,
+        'message' =>
+            'Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.',
+    ], 200);
 }
-
-        $user = User::where('email', $request->email)->first();
-
-$user->password = Hash::make($request->password);
-$user->save();
-
-// Thu hồi toàn bộ Sanctum token cũ
-$user->tokens()->delete();
-
-// Token reset chỉ được dùng một lần
-DB::table('password_reset_tokens')
-    ->where('email', $request->email)
-    ->delete();
-
-return response()->json([
-    'status' => true,
-    'message' => 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.'
-], 200);
-    }
 
     /**
      * 6. Chuyển hướng trực tiếp đến trang Đăng nhập Google

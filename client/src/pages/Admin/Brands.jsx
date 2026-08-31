@@ -25,12 +25,12 @@ export default function Brands() {
   });
 
   // ================= 1. GỌI API LẤY DANH SÁCH =================
-  const fetchBrands = async () => {
+  const fetchBrands = async (silent = false) => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await fetch(`${API_BASE_URL}/admin/brands`, {
         headers: {
           "Accept": "application/json",
@@ -45,7 +45,7 @@ export default function Brands() {
     } catch (error) {
       toast.error("Không thể tải danh sách thương hiệu!");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -121,7 +121,7 @@ export default function Brands() {
 
       if (res.ok) {
         toast.success(data.message || "Lưu thương hiệu thành công!");
-        fetchBrands(); // Refresh lại danh sách
+        fetchBrands(true); // Đồng bộ nền, không làm bảng tải lại
         closeModal();
       } else {
         if (data.errors && data.errors.name) {
@@ -155,7 +155,8 @@ export default function Brands() {
 
       if (res.ok) {
         toast.success(data.message || "Xóa thương hiệu thành công!");
-        fetchBrands();
+        setBrands((previous) => previous.filter((brand) => brand.id !== id));
+        fetchBrands(true);
       } else {
         // Bắt lỗi không cho xóa nếu đang có sản phẩm (Logic Backend của em trả về 400)
         toast.error(data.message || "Không thể xóa thương hiệu này!");

@@ -10,6 +10,10 @@ use RuntimeException;
 
 class OrderService
 {
+    public function __construct(
+        private readonly VoucherReservationService $vouchers
+    ) {}
+
     private const STATUS_FLOW = [
         'pending' => ['shipped', 'cancelled'],
         'shipped' => ['completed'],
@@ -59,6 +63,10 @@ class OrderService
 
             $order->update($updates);
 
+            if ($newStatus === 'completed' && $order->payment_method === 'cod') {
+                $this->vouchers->consume($order);
+            }
+
             return $order->fresh();
         }, 3);
     }
@@ -97,24 +105,32 @@ class OrderService
         }, 3);
     }
 
-    public function expirePendingVnpayOrders(int $limit = 100): int
+    public function expirePendingOrders(int $limit = 100): int
     {
         $expiredIds = Order::query()
-            ->where('payment_method', 'vnpay')
             ->where('status', 'pending')
             ->where('payment_status', '!=', 'paid')
             ->where(function ($query) {
                 $query
                     ->where('payment_expires_at', '<=', now())
                     ->orWhere(function ($legacyQuery) {
-                        $minutes = max(
-                            5,
-                            (int) config('vnpay.order_expire_minutes', 30)
-                        );
-
                         $legacyQuery
                             ->whereNull('payment_expires_at')
-                            ->where('created_at', '<=', now()->subMinutes($minutes));
+                            ->where(function ($methodQuery) {
+                                $methodQuery
+                                    ->where(function ($vnpayQuery) {
+                                        $vnpayQuery->where('payment_method', 'vnpay')
+                                            ->where('created_at', '<=', now()->subMinutes(
+                                                max(5, (int) config('vnpay.order_expire_minutes', 30))
+                                            ));
+                                    })
+                                    ->orWhere(function ($codQuery) {
+                                        $codQuery->where('payment_method', 'cod')
+                                            ->where('created_at', '<=', now()->subMinutes(
+                                                max(5, (int) config('checkout.cod_reservation_minutes', 1440))
+                                            ));
+                                    });
+                            });
                     });
             })
             ->orderBy('id')
@@ -137,6 +153,12 @@ class OrderService
         }
 
         return $expiredCount;
+    }
+
+    /** Giữ tương thích nếu máy chủ cũ vẫn đang gọi tên command/service này. */
+    public function expirePendingVnpayOrders(int $limit = 100): int
+    {
+        return $this->expirePendingOrders($limit);
     }
 
     private function cancelLockedOrder(
@@ -162,7 +184,10 @@ class OrderService
             }
         }
 
-        if ($order->coupon_id !== null) {
+        $this->vouchers->release($order);
+
+        // Tương thích đơn cũ dùng orders.coupon_id.
+        if ($order->coupon_id !== null && !$order->orderCoupons()->exists()) {
             $coupon = Coupon::withTrashed()
                 ->whereKey($order->coupon_id)
                 ->lockForUpdate()

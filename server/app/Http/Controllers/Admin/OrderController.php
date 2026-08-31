@@ -30,6 +30,7 @@ class OrderController extends Controller
                 'address',
                 'items.productVariant.product.images',
                 'coupon',
+                'orderCoupons.coupon',
             ])
             ->latest();
 
@@ -93,6 +94,7 @@ class OrderController extends Controller
                 'address',
                 'items.productVariant.product.images',
                 'coupon',
+                'orderCoupons.coupon',
             ])
             ->findOrFail($id);
 
@@ -127,6 +129,7 @@ class OrderController extends Controller
                 'address',
                 'items.productVariant.product.images',
                 'coupon',
+                'orderCoupons.coupon',
             ]);
 
             return response()->json([

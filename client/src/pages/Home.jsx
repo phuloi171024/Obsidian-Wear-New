@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 
 import Banner from "../components/Banner";
 import ProductSection from "../components/ProductSection";
@@ -42,6 +43,8 @@ export default function Home() {
 
   return (
     <>
+      <Toaster position="top-right" />
+
       <Banner />
 
       <Categories categories={featuredCategories} />

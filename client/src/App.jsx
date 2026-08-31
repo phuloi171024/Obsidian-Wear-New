@@ -7,6 +7,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import Header from "./components/Header";
+import { QuickAddProvider } from "./components/QuickAddProvider";
 
 // Import các trang Client & tài khoản
 import Home from "./pages/Home";
@@ -24,7 +25,6 @@ const SizeGuide = lazy(() => import("./pages/SizeGuide"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
 const ShippingInfoPage = lazy(() => import("./pages/ShippingInfoPage"));
-const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
 const CheckoutFailedPage = lazy(() => import("./pages/CheckoutFailedPage"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
@@ -81,10 +81,11 @@ function ConditionalHeader() {
 function App() {
   return (
     <BrowserRouter>
-      <ConditionalHeader />
+      <QuickAddProvider>
+        <ConditionalHeader />
 
-      <Suspense fallback={<div style={{ padding: "40px", textAlign: "center" }}>Đang tải...</div>}>
-      <Routes>
+        <Suspense fallback={<div style={{ padding: "40px", textAlign: "center" }}>Đang tải...</div>}>
+        <Routes>
         {/* Public */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductPage />} />
@@ -154,7 +155,7 @@ function App() {
           path="/payment"
           element={
             <ProtectedRoute>
-              <PaymentPage />
+              <Navigate to="/shipping-info" replace />
             </ProtectedRoute>
           }
         />
@@ -209,8 +210,9 @@ function App() {
             <Route path="brands" element={<Brands />} />
           </Route>
         </Route>
-      </Routes>
-      </Suspense>
+        </Routes>
+        </Suspense>
+      </QuickAddProvider>
     </BrowserRouter>
   );
 }

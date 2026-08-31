@@ -35,12 +35,12 @@ export default function Categories() {
   // ==========================================
   // 1. GỌI API LẤY DANH SÁCH DANH MỤC TỪ LARAVEL
   // ==========================================
-  const fetchCategories = async () => {
+  const fetchCategories = async (silent = false) => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await fetch(`${API_BASE_URL}/admin/categories`, {
         headers: {
           "Accept": "application/json",
@@ -64,7 +64,7 @@ export default function Categories() {
     } catch (error) {
       toast.error("Không thể tải danh sách danh mục!");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -160,7 +160,7 @@ export default function Categories() {
 
       if (res.ok) {
         toast.success(isUpdating ? "Cập nhật thành công!" : "Thêm mới thành công!");
-        fetchCategories(); // Gọi lại hàm lấy dữ liệu để làm mới bảng
+        fetchCategories(true); // Đồng bộ nền, không làm bảng tải lại
         closeModal();
       } else {
         toast.error(data.message || data.errors?.name?.[0] || "Có lỗi xảy ra!");
@@ -190,7 +190,8 @@ export default function Categories() {
 
       if (res.ok) {
         toast.success("Xóa danh mục thành công!");
-        fetchCategories(); // Cập nhật lại bảng
+        setCategories((previous) => previous.filter((item) => item.id !== id));
+        fetchCategories(true);
         setSelectedRows(prev => prev.filter(item => item !== id));
       } else {
         toast.error(data.message || "Không thể xóa danh mục đang có sản phẩm!");

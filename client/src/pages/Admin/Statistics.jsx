@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "../../config/api";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FiTrendingUp,
   FiShoppingBag,
@@ -26,6 +26,7 @@ import toast, { Toaster } from "react-hot-toast";
 export default function Statistics() {
   const [filter, setFilter] = useState("month");
   const [loading, setLoading] = useState(true);
+  const requestIdRef = useRef(0);
   const [statsData, setStatsData] = useState({
     revenue: { current: 0, growth: 0 },
     orders: { total: 0, growth: 0 },
@@ -55,34 +56,88 @@ export default function Statistics() {
 
   // Gọi API lấy dữ liệu thống kê theo bộ lọc thời gian
   useEffect(() => {
+    const controller = new AbortController();
+    const requestId = ++requestIdRef.current;
+
     const fetchStatistics = async () => {
       const token = localStorage.getItem("access_token");
-      if (!token) return;
+
+      if (!token) {
+        setLoading(false);
+        toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại!");
+        return;
+      }
 
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE_URL}/admin/dashboard?filter=${filter}`, {
-          headers: {
-            "Accept": "application/json",
-            "Authorization": `Bearer ${token}`
+
+        const res = await fetch(
+          `${API_BASE_URL}/admin/dashboard?filter=${encodeURIComponent(filter)}`,
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${token.trim()}`,
+            },
+            signal: controller.signal,
           }
-        });
-        const result = await res.json();
-        if (res.ok) {
+        );
+
+        const result = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(
+            result.message || `Không thể tải thống kê (${res.status})`
+          );
+        }
+
+        if (requestId === requestIdRef.current) {
           setStatsData(result);
         }
       } catch (error) {
-        toast.error("Không thể tải dữ liệu thống kê!");
+        if (error.name === "AbortError") {
+          return;
+        }
+
+        if (requestId === requestIdRef.current) {
+          toast.error(error.message || "Không thể tải dữ liệu thống kê!");
+        }
       } finally {
-        setLoading(false);
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+        }
       }
     };
 
     fetchStatistics();
+
+    return () => {
+      controller.abort();
+    };
   }, [filter]);
 
   const formatVND = (amount) => {
     return new Intl.NumberFormat('vi-VN').format(amount) + ' VND';
+  };
+
+  const renderGrowth = (growth) => {
+    if (filter === "all") {
+      return <span>Toàn bộ thời gian</span>;
+    }
+
+    if (growth === null || growth === undefined) {
+      return <span>Chưa có dữ liệu kỳ trước</span>;
+    }
+
+    const numericGrowth = Number(growth);
+
+    return (
+      <>
+        <span className={numericGrowth >= 0 ? "up" : "down"}>
+          {numericGrowth >= 0 ? "↗" : "↘"} {numericGrowth}%
+        </span>
+        <span>vs cùng khoảng thời gian kỳ trước</span>
+      </>
+    );
   };
 
   return (
@@ -96,10 +151,12 @@ export default function Statistics() {
           className="statistics-filter"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
+          disabled={loading}
         >
           <option value="month">Tháng này</option>
           <option value="week">Tuần này</option>
           <option value="year">Năm nay</option>
+          <option value="all">Tất cả</option>
         </select>
       </div>
 
@@ -110,10 +167,7 @@ export default function Statistics() {
             <p>Doanh thu trong kỳ</p>
             <h2>{formatVND(statsData.revenue.current)}</h2>
             <div className="stats-change">
-              <span className={statsData.revenue.growth >= 0 ? "up" : "down"}>
-                {statsData.revenue.growth >= 0 ? `↗ ${statsData.revenue.growth}%` : `↘ ${statsData.revenue.growth}%`}
-              </span>
-              <span>vs kỳ trước</span>
+              {renderGrowth(statsData.revenue.growth)}
             </div>
           </div>
           <div className="stats-icon"><FiDollarSign /></div>
@@ -124,10 +178,7 @@ export default function Statistics() {
             <p>Đơn hàng trong kỳ</p>
             <h2>{statsData.orders.total}</h2>
             <div className="stats-change">
-              <span className={statsData.orders.growth >= 0 ? "up" : "down"}>
-                {statsData.orders.growth >= 0 ? `↗ ${statsData.orders.growth}%` : `↘ ${statsData.orders.growth}%`}
-              </span>
-              <span>vs kỳ trước</span>
+              {renderGrowth(statsData.orders.growth)}
             </div>
           </div>
           <div className="stats-icon"><FiShoppingBag /></div>

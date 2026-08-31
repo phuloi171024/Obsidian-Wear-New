@@ -1,17 +1,29 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuickAdd } from "./QuickAddProvider";
 import "./ProductCard.css";
+
+const normalizeColorLabel = (value) =>
+  String(value ?? "")
+    .normalize("NFC")
+    .trim()
+    .replace(/\s+/g, " ");
+
+const normalizeColorKey = (value) =>
+  normalizeColorLabel(value).toLocaleLowerCase("vi-VN");
 
 export default function ProductCard({
   product,
   badgeText = "",
   showBuyNow = false,
+  onQuickAdd,
 }) {
-  if (!product) return null;
+  const { openQuickAdd } = useQuickAdd();
+  const quickAdd = onQuickAdd || openQuickAdd;
 
   const defaultImage =
-    product.thumbnail ||
-    product.image ||
+    product?.thumbnail ||
+    product?.image ||
     null;
 
   const swatchColors = {
@@ -29,18 +41,18 @@ export default function ProductCard({
 
   const uniqueVariants = Array.from(
     new Map(
-      (product.variants || [])
+      (product?.variants || [])
         .filter((variant) => variant.color)
-        .map((variant) => [variant.color, variant])
+        .map((variant) => [normalizeColorKey(variant.color), variant])
     ).values()
   );
 
   const productColors = uniqueVariants.length
     ? uniqueVariants.map((variant) => ({
         id: String(variant.id),
-        name: variant.color,
+        name: normalizeColorLabel(variant.color),
         color:
-          swatchColors[String(variant.color).toLowerCase()] ||
+          swatchColors[normalizeColorKey(variant.color)] ||
           "#d1d5db",
         image: variant.image_url || variant.image || defaultImage,
       }))
@@ -56,32 +68,32 @@ export default function ProductCard({
   const [selectedColor, setSelectedColor] =
     useState(productColors[0]);
 
-  const regularPrice = Number(product.price || 0);
-  const isOnSale = Boolean(product.is_on_sale);
+  const regularPrice = Number(product?.price || 0);
+  const isOnSale = Boolean(product?.is_on_sale);
   const price = Number(
-    product.current_price ||
-    (isOnSale ? product.sale_price : product.price) ||
+    product?.current_price ||
+    (isOnSale ? product?.sale_price : product?.price) ||
     0
   );
 
   const oldPrice = isOnSale
     ? regularPrice
     : Number(
-        product.old_price ||
-        product.original_price ||
-        product.compare_price ||
+        product?.old_price ||
+        product?.original_price ||
+        product?.compare_price ||
         0
       );
 
   const brand =
-    product.brand?.name ||
-    product.brand_name ||
-    product.brand ||
+    product?.brand?.name ||
+    product?.brand_name ||
+    product?.brand ||
     "";
 
   const promoText =
-    product.promotion_text ||
-    product.promotion ||
+    product?.promotion_text ||
+    product?.promotion ||
     "";
 
   const hasDiscount =
@@ -100,81 +112,83 @@ export default function ProductCard({
     setSelectedColor(color);
   };
 
+  const handleQuickAdd = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    quickAdd(product, selectedColor?.name || "");
+  };
+
+  if (!product) return null;
+
   return (
     <article className="ash-product-card">
+      <div className="ash-product-image-area">
+        <div className="ash-product-labels">
+          {badgeText && (
+            <span className="ash-product-label">{badgeText}</span>
+          )}
 
-      <Link
-        to={`/product/${product.id}`}
-        className="ash-product-card-link"
-      >
+          {promoText && (
+            <span className="ash-product-label">{promoText}</span>
+          )}
 
-        {/* ================= IMAGE ================= */}
+          {discountPercent && (
+            <span className="ash-product-label">-{discountPercent}%</span>
+          )}
+        </div>
 
-        <div className="ash-product-image-area">
-
-          <div className="ash-product-labels">
-
-            {badgeText && (
-              <span className="ash-product-label">
-                {badgeText}
-              </span>
-            )}
-
-            {promoText && (
-              <span className="ash-product-label">
-                {promoText}
-              </span>
-            )}
-
-            {discountPercent && (
-              <span className="ash-product-label">
-                -{discountPercent}%
-              </span>
-            )}
-
-          </div>
-
-
-          {/* CÓ HÌNH */}
-
+        <Link
+          to={`/product/${product.id}`}
+          className="ash-product-image-link"
+          aria-label={`Xem chi tiết ${product.name}`}
+        >
           {selectedColor.image ? (
             <img
               src={selectedColor.image}
               alt={product.name || "Sản phẩm"}
               className="ash-product-image"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = "/images/placeholder.png";
+              }}
             />
           ) : (
-
-            /* CHƯA CÓ HÌNH */
-
             <div className="ash-product-no-image">
               <span>CHƯA CÓ HÌNH</span>
             </div>
-
           )}
+        </Link>
 
-        </div>
+        {quickAdd && (
+          <div className="ash-product-quick-actions">
+            <button
+              type="button"
+              className="ash-product-quick-add"
+              onClick={handleQuickAdd}
+            >
+              THÊM GIỎ
+            </button>
 
+            <Link
+              to={`/product/${product.id}`}
+              className="ash-product-quick-buy"
+            >
+              MUA NGAY
+            </Link>
+          </div>
+        )}
+      </div>
 
-        {/* ================= INFO ================= */}
+      <div className="ash-product-info">
+        <Link
+          to={`/product/${product.id}`}
+          className="ash-product-card-link"
+        >
+          {brand && <div className="ash-product-brand">{brand}</div>}
 
-        <div className="ash-product-info">
-
-          {brand && (
-            <div className="ash-product-brand">
-              {brand}
-            </div>
-          )}
-
-          <h3 className="ash-product-name">
-            {product.name}
-          </h3>
-
-
-          {/* ================= PRICE ================= */}
+          <h3 className="ash-product-name">{product.name}</h3>
 
           <div className="ash-product-price-row">
-
             <span className="ash-product-price">
               {price.toLocaleString("vi-VN")} đ
             </span>
@@ -184,59 +198,37 @@ export default function ProductCard({
                 {oldPrice.toLocaleString("vi-VN")} đ
               </span>
             )}
-
           </div>
+        </Link>
 
-
-          {/* ================= COLORS ================= */}
-
-          <div className="ash-product-colors">
-
-            {productColors.map((item) => (
-
-              <button
-                key={item.id}
-                type="button"
-
-                className={`ash-product-color-button ${
-                  selectedColor.id === item.id
-                    ? "active"
-                    : ""
-                }`}
-
-                onClick={(event) =>
-                  handleColorClick(event, item)
-                }
-
-                aria-label={`Chọn màu ${item.name}`}
-              >
-
-                <span
-                  className="ash-product-color"
-                  style={{
-                    backgroundColor: item.color,
-                  }}
-                />
-
-              </button>
-
-            ))}
-
-          </div>
-
-
-          {/* ================= BUY NOW ================= */}
-
-          {showBuyNow && (
-            <span className="ash-product-buy-now">
-              MUA NGAY
-            </span>
-          )}
-
+        <div className="ash-product-colors">
+          {productColors.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`ash-product-color-button ${
+                selectedColor.id === item.id ? "active" : ""
+              }`}
+              onClick={(event) => handleColorClick(event, item)}
+              aria-label={`Chọn màu ${item.name}`}
+            >
+              <span
+                className="ash-product-color"
+                style={{ backgroundColor: item.color }}
+              />
+            </button>
+          ))}
         </div>
 
-      </Link>
-
+        {showBuyNow && !quickAdd && (
+          <Link
+            to={`/product/${product.id}`}
+            className="ash-product-buy-now"
+          >
+            MUA NGAY
+          </Link>
+        )}
+      </div>
     </article>
   );
 }
